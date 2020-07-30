@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<temp>
+    <description>这里放了一些以后可能会用到的API的源和依赖包</description>
+    <more>版本号请以对应API最新版本为准</more>
+    <repositories>
+        <repository>
+            <!--PaperMC-->
+            <!--https://papermc.io/repo/#browse/welcome-->
+            <id>papermc</id>
+            <url>https://papermc.io/repo/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <!--ProtocolLib-->
+            <!--https://github.com/dmulloy2/ProtocolLib/-->
+            <id>dmulloy2-repo</id>
+            <url>https://repo.dmulloy2.net/nexus/repository/public/</url>
+        </repository>
+        <repository>
+            <!--BKCommonLib-->
+            <!--https://github.com/bergerhealer/BKCommonLib-->
+            <id>MG-Dev Jenkins CI Maven Repository</id>
+            <url>https://ci.mg-dev.eu/plugin/repository/everything/</url>
+        </repository>
+        <repository>
+            <!--PlaceholderAPI-->
+            <!--https://github.com/PlaceholderAPI/PlaceholderAPI-->
+            <id>placeholderapi</id>
+            <url>https://repo.extendedclip.com/content/repositories/placeholderapi/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <!--ProtocolLib-->
+            <groupId>com.comphenix.protocol</groupId>
+            <artifactId>ProtocolLib</artifactId>
+            <version>4.5.1</version>
+        </dependency>
+        <dependency>
+            <!--BKCommonLib-->
+            <groupId>com.bergerkiller.bukkit</groupId>
+            <artifactId>BKCommonLib</artifactId>
+            <version>1.16.1-v1</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <!--https://papermc.io/javadocs/paper/1.14/overview-summary.html-->
+            <groupId>com.destroystokyo.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.14.4-R0.1-20200123.153709-95</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>me.clip</groupId>
+            <artifactId>placeholderapi</artifactId>
+            <version>2.10.7</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</temp>

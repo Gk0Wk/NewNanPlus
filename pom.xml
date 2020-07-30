@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <!--modelVersion 指定了当前 pom 的版本，对于 maven3 来说只能是 4.0.0-->
+    <modelVersion>4.0.0</modelVersion>
+    <!--groupId 指定了工程的归属，如某公司或某基金会，使用域名倒写来实现id唯一性-->
+    <groupId>city.newnan</groupId>
+    <!--artifactId 指定了项目在组中的唯一 ID-->
+    <artifactId>NewNanPlus</artifactId>
+    <!--packaging 指定了项目的打包方式-->
+    <packaging>jar</packaging>
+    <!--name 指定了 maven 工程的名字，可以省略-->
+    <name>NewNanPlus</name>
+    <!--version 指定了当前工程的版本号-->
+    <version>1.1</version>
+
+    <!--设置编码方式是为了保证跨平台的兼容性，而设置源及目标的JDK版本是为了能够正确的使用某些特性，否则在使用lambda的时候都有可能会编译错误-->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <package>city.newnan.NewNanPlus</package>
+    </properties>
+
+    <repositories>
+        <repository>
+            <!--Vault-->
+            <!--https://github.com/MilkBowl/VaultAPI-->
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <!--Spigot API-->
+            <!--https://hub.spigotmc.org/nexus/#welcome-->
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.github.MilkBowl</groupId>
+            <artifactId>VaultAPI</artifactId>
+            <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.14.4-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.bukkit</groupId>
+            <artifactId>bukkit</artifactId>
+            <version>1.14.4-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.2.0</version>
+                <configuration>
+                    <minimizeJar>true</minimizeJar>
+                    <createDependencyReducedPom>false</createDependencyReducedPom>
+                    <createSourcesJar>false</createSourcesJar>
+                    <filters>
+                        <filter>
+                            <artifact>*:*</artifact>
+                            <excludes>
+                                <exclude>META-INF/*.SF</exclude>
+                                <exclude>META-INF/*.DSA</exclude>
+                                <exclude>META-INF/*.RSA</exclude>
+                            </excludes>
+                        </filter>
+                    </filters>
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <!--指定入口函数，当插件被直接执行时的main函数-->
+                        <configuration>
+                            <transformers>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <manifestEntries>
+                                        <Main-Class>city.newnan.NewNanPlus.Main</Main-Class>
+                                    </manifestEntries>
+                                </transformer>
+                            </transformers>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+
+        <finalName>NewNanPlus</finalName>
+        <resources>
+            <resource>
+                <filtering>true</filtering>
+                <directory>src/main/resources</directory>
+            </resource>
+        </resources>
+    </build>
+</project>

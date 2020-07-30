@@ -1,0 +1,25 @@
+name: ${project.name}
+version: ${project.version}
+author: Sttot
+# 插件的主类，记得带包名
+main: 'city.newnan.NewNanPlus.NewNanPlusPlugin'
+depend: ['Vault'] # 'ProtocolLib', 'BKCommonLib', 'PlaceholderAPI'
+website: 'https://gk0wk.github.io/'
+api-version: '1.14'
+# 插件的命令（没有可以不写）
+commands:
+  # 命令名称，不带'/'
+  nnp:
+    # 命令描述，/help 时可以查看
+    description: ''
+    # 命令在控制台中的使用方式，带'/'
+    usage: ''
+  'nnp fly':
+    description: '用它飞起来或者取消飞行模式，记得着落再取消'
+    usage: 'nnp fly'
+  'nnp save':
+    description: '保存配置'
+    usage: 'nnp save'
+  'nnp reload':
+    description: '重新载入配置'
+    usage: 'nnp reload'

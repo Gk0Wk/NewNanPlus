@@ -1,0 +1,33 @@
+# NewNanPlus Plugins
+# Just made for NewNanCity Minecraft Server.
+# Powered by Sttot
+# Email: nmg_wk@yeah.net
+# GitHub: Gk0Wk
+
+version: ${version}
+global-data:
+  balance-symbol: '₦'
+  prefix: '&f&l[&b牛腩小助手&f&l] &r'
+global-settings: {}
+module-flyfee:
+  tick-per-count: 20
+  cost-per-count: 0.5
+  fly-speed: 0.05
+  msg-actionbar: '&6&l#飞行中# &7剩余飞行时长: {0} (余额 {1,number,#.##} ₦)'
+  msg-nofee: '&c余额不足，无法飞行！'
+  msg-begin: '已允许飞行，双击空格键开启飞行模式！'
+  msg-finish: '飞行结束！'
+  msg-feewraning: '&c余额即将耗尽，请尽快结束飞行！'
+module-deathcost:
+  min: 500
+  max: 500000
+  rate: 0.01
+  msg-player:
+    enable: true
+    text: '&c你重生了，消耗 {1,number,#.##} ₦，使用/back可快速回到死亡地点。'
+  msg-broadcast:
+    enable: false
+    text: '&7玩家 {0} 死亡，扣除 {1,number,#.##} ₦。'
+  msg-console:
+    enable: false
+    text: '玩家 {0} 死亡，扣除 {1,number,#.##} ₦。'
