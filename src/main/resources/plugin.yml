@@ -23,3 +23,12 @@ commands:
   'nnp reload':
     description: '重新载入配置'
     usage: 'nnp reload'
+  'nnp allow':
+    description: '允许某玩家正式进入游戏(获得玩家权限)'
+    usage: 'nnp allow [PlayerID]'
+  'nnp ctp':
+    description: '允许某玩家正式进入游戏(获得玩家权限)'
+    usage: 'nnp ctp [PlayerID]'
+  'nnp cnew':
+    description: '允许某玩家正式进入游戏(获得玩家权限)'
+    usage: 'nnp cnew [PlayerID] x1 z1 x2 z2'

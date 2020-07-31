@@ -9,6 +9,10 @@ global-data:
   balance-symbol: '₦'
   prefix: '&f&l[&b牛腩小助手&f&l] &r'
 global-settings: {}
+module-allownewbies:
+  newbies-group: 'newbie'
+  player-group: 'Player'
+  world-group: 'world'
 module-flyfee:
   tick-per-count: 20
   cost-per-count: 0.5

@@ -29,6 +29,10 @@ public class NewNanSchedule extends BukkitRunnable {
             double tick_per_count = Plugin.getConf().getDouble("module-flyfee.tick-per-count");
             double cost_per_second = (20.0 / tick_per_count) * cost_per_count;
             for (Player player : FlyingPlayers) {
+                if (player.hasPermission("newnanplus.fly.free")) {
+                    NewNanPlusPlugin.sendPlayerActionBar(player, "&6&l#飞行中# &7祝"+player.getName()+"白嫖快乐");
+                    continue;
+                }
                 // 获取玩家现金金额
                 double balance = Plugin.getVaultEco().getBalance(player);
                 // 如果玩家还有现金

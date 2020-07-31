@@ -1,12 +1,14 @@
 package city.newnan.NewNanPlus;
 
 import java.text.MessageFormat;
+import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 
@@ -87,6 +89,45 @@ public class NewNanPlusListener implements Listener {
             }
         }
 
+    }
+
+    @EventHandler
+    public void onJoin(final PlayerJoinEvent event) {
+        boolean need_refresh = false;
+        Player player = event.getPlayer();
+        // 获取已通过的新人组的List
+        List<String> list_yet = (List<String>) Plugin.NewbiesList.getList("yet-passed-newbies");
+        // 如果是新人组的话
+        if (Plugin.getVaultPerm().getPrimaryGroup(event.getPlayer()).toLowerCase().equals(Plugin.getConf().getString("module-allownewbies.newbies-group"))) {
+            if (list_yet.contains(player.getName())) {
+                // 查看玩家是否在已通过新人组，将玩家移入玩家权限组，并更新
+                Plugin.getServer().dispatchCommand(Plugin.getServer().getConsoleSender(),
+                        "manuadd " + player.getName()
+                                + " " + Plugin.getConf().getString("module-allownewbies.player-group")
+                                + " " + Plugin.getConf().getString("module-allownewbies.world-group"));
+                list_yet.remove(player.getName());
+                Plugin.NewbiesList.set("yet-passed-newbies", list_yet);
+                need_refresh = true;
+            } else {
+                Plugin.sendPlayerMessage(player, "&c你还没有获得游玩权限，请在官网完成新人试卷后向管理所要权限。");
+                // 获取未通过的新人组的List
+                List<String> list_not = (List<String>) Plugin.NewbiesList.getList("not-passed-newbies");
+                if (!list_not.contains(player.getName())) {
+                    // 查看玩家是否在未通过新人组，没加入就加入，并更新
+                    list_not.add(player.getName());
+                    Plugin.NewbiesList.set("not-passed-newbies", list_not);
+                    need_refresh = true;
+                }
+            }
+        } else if (list_yet.contains(player.getName())){
+            // 看看是不是已经成为玩家但是还在名单里
+            list_yet.remove(player.getName());
+            Plugin.NewbiesList.set("yet-passed-newbies", list_yet);
+            need_refresh = true;
+        }
+        if (need_refresh) {
+            Plugin.saveConf("newbies_list.yml", Plugin.NewbiesList);
+        }
     }
 
     @EventHandler

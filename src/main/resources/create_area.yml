@@ -1,0 +1,3 @@
+version: ${version}
+world: 'create_world'
+areas: {}

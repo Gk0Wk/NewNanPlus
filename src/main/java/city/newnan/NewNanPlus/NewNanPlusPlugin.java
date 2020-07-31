@@ -3,14 +3,20 @@ package city.newnan.NewNanPlus;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
+import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.configuration.file.FileConfiguration;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.Vector;
 
 /**
@@ -24,6 +30,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     protected Economy VaultEco = null;
     /**
+     * Vault 权限实例
+     */
+    protected Permission VaultPerm = null;
+
+    /**
      * 控制台日志实例，会自动带 <code>[NewNanPlus] </code>
      */
     protected java.util.logging.Logger ConsoleLogger = null;
@@ -31,6 +42,9 @@ public class NewNanPlusPlugin extends JavaPlugin {
      * 插件的配置实例，直接和文件关联
      */
     protected FileConfiguration Config = null;
+    public YamlConfiguration NewbiesList = null;
+    public YamlConfiguration CreateArea = null;
+    public YamlConfiguration BuildingField = null;
 
     /**
      * 正在飞行中的玩家数量，Vector是线程安全的
@@ -50,14 +64,16 @@ public class NewNanPlusPlugin extends JavaPlugin {
             printINFO("§6=================================");
             printINFO("§a插件启动中...");
             // 绑定Vault的经济模块
-            if (!bindVaultEconomy()) {
-                throw new Exception("Vault 经济模块绑定失败。");
+            if (!bindVault()) {
+                throw new Exception("Vault模块绑定失败。");
             }
 
             // 加载插件配置
             // 如果不存在config.yml就创建默认的，存在就不会覆盖
             saveDefaultConfig();
             Config = getConfig();
+            NewbiesList = loadConf("newbies_list.yml");
+            CreateArea = loadConf("create_area.yml");
             printINFO("§a配置文件载入完毕。");
 
             // 初始化监听实例
@@ -146,6 +162,14 @@ public class NewNanPlusPlugin extends JavaPlugin {
         player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(_msg));
     }
 
+    public void sendMessage(CommandSender sender, String msg) {
+        if (sender instanceof Player) {
+            sendPlayerMessage((Player) sender, msg);
+        } else if (sender instanceof ConsoleCommandSender) {
+            printINFO(msg);
+        }
+    }
+
     public void cancelFly(Player player, boolean sound) {
         FlyingPlayers.remove(player);
         player.setAllowFlight(false);
@@ -161,6 +185,14 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     public Economy getVaultEco() {
         return VaultEco;
+    }
+
+    /**
+     * 返回Vault的Permission实例
+     * @return Permission实例
+     */
+    public Permission getVaultPerm() {
+        return VaultPerm;
     }
 
     /**
@@ -183,22 +215,50 @@ public class NewNanPlusPlugin extends JavaPlugin {
     }
 
     /**
-     * 绑定Vault的经济模块，失败返回false
+     * 绑定Vault模块，失败返回false
      * @return 绑定成功返回true，反之false
      */
-    private boolean bindVaultEconomy() {
+    private boolean bindVault() {
         // 首先检查Vault插件是否加载
         if (getServer().getPluginManager().getPlugin("Vault") == null) {
             return false;
         }
         // 再检查并获取Vault的Economy公共服务
-        RegisteredServiceProvider<Economy> rsp = getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
+        RegisteredServiceProvider<Economy> rsp1 = getServer().getServicesManager().getRegistration(Economy.class);
+        if (rsp1 == null) {
             return false;
         }
         // 绑定
-        VaultEco = rsp.getProvider();
+        VaultEco = rsp1.getProvider();
+
+        // 再检查并获取Vault的Permission公共服务
+        RegisteredServiceProvider<Permission> rsp2 = getServer().getServicesManager().getRegistration(Permission.class);
+        if (rsp2 == null) {
+            return false;
+        }
+        // 绑定
+        VaultPerm = rsp2.getProvider();
+
         // 空值检查
-        return VaultEco != null;
+        return VaultEco != null && VaultPerm != null;
+    }
+
+    private YamlConfiguration loadConf(String file) {
+        File fp = new File(this.getDataFolder(), file);
+        if (!fp.exists()) {
+            this.saveResource(file, true);
+        }
+        return YamlConfiguration.loadConfiguration(fp);
+    }
+
+    public void saveConf(String file, YamlConfiguration conf) {
+        try{
+            File fp = new File(this.getDataFolder(), file);
+            conf.save(fp);
+            conf = loadConf(file);
+        }
+        catch (IOException e) {
+            printERROR("无法保存配置文件: " + e.getMessage());
+        }
     }
 }
