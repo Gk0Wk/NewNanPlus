@@ -4,9 +4,7 @@ import city.newnan.NewNanPlus.*;
 import java.util.Vector;
 import java.text.MessageFormat;
 
-import org.bukkit.Sound;
 import org.bukkit.ChatColor;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
