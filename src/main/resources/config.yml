@@ -6,26 +6,50 @@
 
 version: ${version}
 global-data:
+  # 经济符号
   balance-symbol: '₦'
+  # 消息前缀
   prefix: '&f&l[&b牛腩小助手&f&l] &r'
+  no-permission-msg: '&c你没有这样做的权限！'
+  player-offline-msg: '&c用户不在线或不存在！'
+  parameter-count-not-match: '&c参数数量不匹配！'
+  console-selfrun-refuse: '&c控制台无法为自己执行这条指令！'
 global-settings: {}
+module-world-setting:
+  keepInventoryOnDeath: []
+  mobGriefing: []
 module-allownewbies:
-  newbies-group: 'newbie'
+  newbies-group: 'Newbie'
   player-group: 'Player'
   world-group: 'world'
 module-flyfee:
   tick-per-count: 20
-  cost-per-count: 0.5
+  cost-per-count: 0.3
   fly-speed: 0.05
   msg-actionbar: '&6&l#飞行中# &7剩余飞行时长: {0} (余额 {1,number,#.##} ₦)'
+  msg-actionbar-bypass: '&6&l#飞行中# &7祝 {0} 白嫖快乐'
   msg-nofee: '&c余额不足，无法飞行！'
   msg-begin: '已允许飞行，双击空格键开启飞行模式！'
   msg-finish: '飞行结束！'
   msg-feewraning: '&c余额即将耗尽，请尽快结束飞行！'
 module-deathcost:
-  min: 500
-  max: 500000
-  rate: 0.01
+  use-simple-mode: false
+  simple-mode:
+    if-percent: false
+    cost: 50.0
+  complex-mode:
+    - max: 5000.0
+      cost: 0.0
+      if-percent: false
+    - max: 10000.0
+      cost: 20.0
+      if-percent: false
+    - max: 50000.0
+      cost: 0.001
+      if-percent: true
+    - max: -1.0
+      cost: 0.0024
+      if-percent: true
   msg-player:
     enable: true
     text: '&c你重生了，消耗 {1,number,#.##} ₦，使用/back可快速回到死亡地点。'

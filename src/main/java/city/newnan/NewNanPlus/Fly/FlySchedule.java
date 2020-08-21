@@ -1,68 +1,65 @@
-package city.newnan.NewNanPlus;
+package city.newnan.NewNanPlus.Fly;
+import city.newnan.NewNanPlus.*;
 
+import java.util.Vector;
 import java.text.MessageFormat;
 
 import org.bukkit.Sound;
 import org.bukkit.ChatColor;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.util.Vector;
-
-public class NewNanSchedule extends BukkitRunnable {
+public class FlySchedule extends BukkitRunnable {
     /**
-     * 插件对象，用于持久化存储和访问全局数据
+     * 持久化访问全局数据
      */
-    private NewNanPlusPlugin Plugin = null;
-    private Vector<Player> FlyingPlayers = null;
-    private Vector<Player> ToDeleteFlyingPlayer = new Vector<Player>();
+    private NewNanPlusGlobal GlobalData;
 
-    public NewNanSchedule(NewNanPlusPlugin plugin) {
-        Plugin = plugin;
-        FlyingPlayers = plugin.FlyingPlayers;
+    public FlySchedule(NewNanPlusGlobal globalData) {
+        GlobalData = globalData;
+        runTaskTimer(GlobalData.Plugin, 0, GlobalData.Config.getInt("module-flyfee.tick-per-count"));
     }
 
     @Override
     public void run() {
-        if (FlyingPlayers.size() > 0) {
-            double cost_per_count = Plugin.getConf().getDouble("module-flyfee.cost-per-count");
-            double tick_per_count = Plugin.getConf().getDouble("module-flyfee.tick-per-count");
+        if (GlobalData.FlyingPlayers.size() > 0) {
+            double cost_per_count = GlobalData.Config.getDouble("module-flyfee.cost-per-count");
+            double tick_per_count = GlobalData.Config.getDouble("module-flyfee.tick-per-count");
             double cost_per_second = (20.0 / tick_per_count) * cost_per_count;
-            for (Player player : FlyingPlayers) {
+            Vector<Player> ToDeleteFlyingPlayer = new Vector<Player>();
+            for (Player player : GlobalData.FlyingPlayers) {
                 if (player.hasPermission("newnanplus.fly.free")) {
-                    NewNanPlusPlugin.sendPlayerActionBar(player, "&6&l#飞行中# &7祝"+player.getName()+"白嫖快乐");
-                    continue;
+                   GlobalData.sendPlayerActionBar(player, MessageFormat.format(
+                           GlobalData.Config.getString("module-flyfee.msg-actionbar-bypass"),
+                           player.getName()));
+                   continue;
                 }
                 // 获取玩家现金金额
-                double balance = Plugin.getVaultEco().getBalance(player);
+                double balance = GlobalData.VaultEco.getBalance(player);
                 // 如果玩家还有现金
                 if (balance > 0.0) {
                     int remain_second = (int)(balance / cost_per_second);
-                    Plugin.getVaultEco().withdrawPlayer(player, cost_per_count);
-                    NewNanPlusPlugin.sendPlayerActionBar(player, MessageFormat.format(
-                                    Plugin.getConf().getString("module-flyfee.msg-actionbar"),
-                                    formatSecond(remain_second), balance));
-
+                    GlobalData.VaultEco.withdrawPlayer(player, (balance < cost_per_count) ? balance : cost_per_count);
+                    GlobalData.sendPlayerActionBar(player, MessageFormat.format(
+                            GlobalData.Config.getString("module-flyfee.msg-actionbar"),
+                            formatSecond(remain_second), balance));
 
                     // 如果只能飞一分钟以内，就警告
                     if (remain_second <= 60.0) {
                         String _msg = ChatColor.translateAlternateColorCodes('&',
-                                Plugin.getConf().getString("module-flyfee.msg-feewraning"));
+                                GlobalData.Config.getString("module-flyfee.msg-feewraning"));
                         player.sendTitle(_msg, null, 1, 7, 2);
                     }
                 } else {
                     // 如果玩家没钱了，就踢出去
                     // 不能直接从里面删除，不太好，会让迭代器受损，所以先登记，for完了再删
                     ToDeleteFlyingPlayer.add(player);
-                    player.setAllowFlight(false);
-                    player.setFlySpeed(1.0f);
-                    player.sendMessage(Plugin.getConf().getString("module-flyfee.msg-finish"));
-                    player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
                 }
             }
             // 删掉刚才需要踢除的
             for (Player player : ToDeleteFlyingPlayer) {
-                FlyingPlayers.remove(player);
+                GlobalData.FlyCommand.cancelFly(player, true);
             }
             ToDeleteFlyingPlayer.clear();
         }

@@ -1,23 +1,17 @@
 package city.newnan.NewNanPlus;
 
-import net.md_5.bungee.api.ChatMessageType;
-import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Sound;
-import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
-import org.bukkit.entity.Player;
+
+import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * NewNanPlus 主类
@@ -26,43 +20,36 @@ import java.util.Vector;
  */
 public class NewNanPlusPlugin extends JavaPlugin {
     /**
-     * Vault 经济实例
+     * 持久化存储和访问全局数据
      */
-    protected Economy VaultEco = null;
-    /**
-     * Vault 权限实例
-     */
-    protected Permission VaultPerm = null;
-
-    /**
-     * 控制台日志实例，会自动带 <code>[NewNanPlus] </code>
-     */
-    protected java.util.logging.Logger ConsoleLogger = null;
-    /**
-     * 插件的配置实例，直接和文件关联
-     */
-    protected FileConfiguration Config = null;
-    public YamlConfiguration NewbiesList = null;
-    public YamlConfiguration CreateArea = null;
-    public YamlConfiguration BuildingField = null;
-
-    /**
-     * 正在飞行中的玩家数量，Vector是线程安全的
-     */
-    public Vector<Player> FlyingPlayers = new Vector<Player>();
+    private NewNanPlusGlobal GlobalData;
 
     /**
      * 插件启用时调用的方法
      */
     @Override
     public void onEnable() {
-        ConsoleLogger = getLogger();
         try {
-            printINFO("§6=================================");
-            printINFO("§6牛腩插件组   -   Powered by Sttot");
-            printINFO("§6# 更多精彩，请见 www.newnan.city #");
-            printINFO("§6=================================");
-            printINFO("§a插件启动中...");
+            // 实例化全局存储对象
+            GlobalData = new NewNanPlusGlobal();
+            GlobalData.Plugin = this;
+            // 绑定控制台输出
+            GlobalData.ConsoleLogger = getLogger();
+        }
+        catch (Exception e) {
+            // 打印错误栈
+            e.printStackTrace();
+            // 禁用插件
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+
+        try {
+            GlobalData.printINFO("§6=================================");
+            GlobalData.printINFO("§6牛腩插件组   -   Powered by Sttot");
+            GlobalData.printINFO("§6# 更多精彩，请见 www.newnan.city #");
+            GlobalData.printINFO("§6=================================");
+            GlobalData.printINFO("§a插件启动中...");
+
             // 绑定Vault的经济模块
             if (!bindVault()) {
                 throw new Exception("Vault模块绑定失败。");
@@ -71,29 +58,49 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 加载插件配置
             // 如果不存在config.yml就创建默认的，存在就不会覆盖
             saveDefaultConfig();
-            Config = getConfig();
-            NewbiesList = loadConf("newbies_list.yml");
-            CreateArea = loadConf("create_area.yml");
-            printINFO("§a配置文件载入完毕。");
+            GlobalData.Config = getConfig();
+            GlobalData.NewbiesList = loadConf("newbies_list.yml");
+            GlobalData.CreateArea = loadConf("create_area.yml");
+            GlobalData.printINFO("§a配置文件载入完毕。");
 
             // 初始化监听实例
-            new NewNanPlusListener(this);
-            printINFO("§a事件监听模块注册完毕。");
+            GlobalData.Listener = new NewNanPlusListener(GlobalData);
+            GlobalData.printINFO("§a事件监听模块注册完毕。");
 
             // 注册命令
-            this.getCommand("nnp").setExecutor(new NewNanPlusCommand(this));
-            printINFO("§a命令模块注册完毕。");
+            GlobalData.Command = new NewNanPlusCommand(GlobalData);
+            GlobalData.printINFO("§a命令模块注册完毕。");
 
-            // 注册定时函数
-            new NewNanSchedule(this).runTaskTimer(this, 0, Config.getInt("module-flyfee.tick-per-count"));
-            printINFO("§a定时任务模块注册完毕。");
+            // 飞行模块
+            GlobalData.FlySchedule = new city.newnan.NewNanPlus.Fly.FlySchedule(GlobalData);
+            GlobalData.FlyCommand = new city.newnan.NewNanPlus.Fly.FlyCommand(GlobalData);
+            GlobalData.printINFO("§a付费飞行模块注册完毕。");
 
-            printINFO("§a插件启动完毕。");
+            // 创造区模块
+            GlobalData.CACommand = new city.newnan.NewNanPlus.CreateArea.CACommand(GlobalData);
+            GlobalData.printINFO("§a创造区模块注册完毕。");
+
+            // 新人模块
+            GlobalData.PlayerCommand = new city.newnan.NewNanPlus.Player.PlayerCommand(GlobalData);
+            GlobalData.printINFO("§a新人模块注册完毕。");
+
+            // 死亡触发器模块
+            GlobalData.DTCommand = new city.newnan.NewNanPlus.DeathTrigger.DTCommand(GlobalData);
+            GlobalData.printINFO("§a死亡触发器模块注册完毕。");
+
+            // 卡服分析器模块
+            GlobalData.LACommand = new city.newnan.NewNanPlus.LaggAnalyzer.LACommand(GlobalData);
+            GlobalData.printINFO("§a卡服分析器模块注册完毕。");
+
+            changeGamerules();
+
+            GlobalData.printINFO("§a插件启动完毕。");
         }
         catch (Exception e) {
             // 报个错
-            printERROR("§c插件启动失败：" + e.getMessage());
-            // 然后跑路
+            GlobalData.printERROR("§c插件启动失败：");
+            e.printStackTrace();
+            // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
         }
     }
@@ -103,104 +110,10 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     @Override
     public void onDisable(){
-        printINFO("§a正在保存配置文件");
+        if (GlobalData != null) {
+            GlobalData.printINFO("§a正在保存配置文件");
+        }
         saveConfig();
-    }
-
-    /**
-     * 向控制台(其实是向JAVA日志)输出INFO日志
-     * @param msg 要发送的消息
-     */
-    public void printINFO(String msg) {
-        ConsoleLogger.info(msg);
-    }
-
-    /**
-     * 向控制台(其实是向JAVA日志)输出WARN日志
-     * @param msg 要发送的消息
-     */
-    public void printWARN(String msg) {
-        ConsoleLogger.warning(msg);
-    }
-
-    /**
-     * 向控制台(其实是向JAVA日志)输出ERROR日志
-     * @param msg 要发送的消息
-     */
-    public void printERROR(String msg) {
-        ConsoleLogger.severe(msg);
-    }
-
-    /**
-     * 给玩家发送有样式码的信息
-     * @param player 玩家实例
-     * @param msg 信息内容
-     * @param prefix 是否带有前缀
-     */
-    public void sendPlayerMessage(Player player, String msg, boolean prefix) {
-        if (prefix) {
-            String _msg = ChatColor.translateAlternateColorCodes('&',
-                    Config.getString("global-data.prefix") + msg);
-            player.sendMessage(_msg);
-        } else {
-            String _msg = ChatColor.translateAlternateColorCodes('&', msg);
-            player.sendMessage(_msg);
-        }
-    }
-
-    /**
-     * 给玩家发送有样式码的信息
-     * @param player 玩家实例
-     * @param msg 信息内容
-     */
-    public void sendPlayerMessage(Player player, String msg) {
-        sendPlayerMessage(player, msg, true);
-    }
-
-    public static void sendPlayerActionBar(Player player, String msg) {
-        String _msg = ChatColor.translateAlternateColorCodes('&', msg);
-        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(_msg));
-    }
-
-    public void sendMessage(CommandSender sender, String msg) {
-        if (sender instanceof Player) {
-            sendPlayerMessage((Player) sender, msg);
-        } else if (sender instanceof ConsoleCommandSender) {
-            printINFO(msg);
-        }
-    }
-
-    public void cancelFly(Player player, boolean sound) {
-        FlyingPlayers.remove(player);
-        player.setAllowFlight(false);
-        player.setFlySpeed(1.0f);
-        if (sound) {
-            player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
-        }
-    }
-
-    /**
-     * 返回Vault的Economy实例
-     * @return Economy实例
-     */
-    public Economy getVaultEco() {
-        return VaultEco;
-    }
-
-    /**
-     * 返回Vault的Permission实例
-     * @return Permission实例
-     */
-    public Permission getVaultPerm() {
-        return VaultPerm;
-    }
-
-    /**
-     * 返回FileConfiguration实例
-     * @return FileConfiguration实例
-     */
-    public FileConfiguration getConf() {
-        return Config;
     }
 
     /**
@@ -211,7 +124,9 @@ public class NewNanPlusPlugin extends JavaPlugin {
         // 如果不存在config.yml就创建默认的，存在就不会覆盖
         saveDefaultConfig();
         super.reloadConfig();
-        Config = getConfig();
+        GlobalData.Config = getConfig();
+        GlobalData.NewbiesList = loadConf("newbies_list.yml");
+        GlobalData.CreateArea = loadConf("create_area.yml");
     }
 
     /**
@@ -229,7 +144,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             return false;
         }
         // 绑定
-        VaultEco = rsp1.getProvider();
+        GlobalData.VaultEco = rsp1.getProvider();
 
         // 再检查并获取Vault的Permission公共服务
         RegisteredServiceProvider<Permission> rsp2 = getServer().getServicesManager().getRegistration(Permission.class);
@@ -237,12 +152,17 @@ public class NewNanPlusPlugin extends JavaPlugin {
             return false;
         }
         // 绑定
-        VaultPerm = rsp2.getProvider();
+        GlobalData.VaultPerm = rsp2.getProvider();
 
         // 空值检查
-        return VaultEco != null && VaultPerm != null;
+        return GlobalData.VaultEco != null && GlobalData.VaultPerm != null;
     }
 
+    /**
+     * 从插件文件夹下面读取对应的配置文件
+     * @param file 文件名
+     * @return 配置实例
+     */
     private YamlConfiguration loadConf(String file) {
         File fp = new File(this.getDataFolder(), file);
         if (!fp.exists()) {
@@ -251,6 +171,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
         return YamlConfiguration.loadConfiguration(fp);
     }
 
+    /**
+     * 保存配置到插件文件夹下的某个文件
+     * @param file 文件名
+     * @param conf 配置实例
+     */
     public void saveConf(String file, YamlConfiguration conf) {
         try{
             File fp = new File(this.getDataFolder(), file);
@@ -258,7 +183,33 @@ public class NewNanPlusPlugin extends JavaPlugin {
             conf = loadConf(file);
         }
         catch (IOException e) {
-            printERROR("无法保存配置文件: " + e.getMessage());
+            GlobalData.printERROR("无法保存配置文件: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 设置世界的Gamerule
+     */
+    public void changeGamerules() {
+        ConfigurationSection rules = GlobalData.Config.getConfigurationSection("module-world-setting");
+        for (String rule : rules.getKeys(false)) {
+            switch (rule) {
+                case "keepInventoryOnDeath":
+                    changeWorldsGamerules((List<String>) rules.getList(rule), GameRule.KEEP_INVENTORY, true);
+                    break;
+            }
+        }
+    }
+
+    /**
+     * 设置一组世界的某一个Gamerule
+     * @param worlds 世界列表
+     * @param rule 规则
+     * @param value 目标值
+     */
+    private void changeWorldsGamerules(List<String> worlds, GameRule rule, boolean value) {
+        for (String world : worlds) {
+            this.getServer().getWorld(world).setGameRule(rule, value);
         }
     }
 }
