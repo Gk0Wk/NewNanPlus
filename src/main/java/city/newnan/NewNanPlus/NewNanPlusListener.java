@@ -1,18 +1,15 @@
 package city.newnan.NewNanPlus;
 
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
 import org.bukkit.event.server.*;
 import org.bukkit.inventory.Inventory;
-
-import org.maxgamer.quickshop.event.ShopSuccessPurchaseEvent;
-import org.maxgamer.quickshop.shop.ShopType;
 
 public class NewNanPlusListener implements Listener {
     /**
@@ -37,15 +34,26 @@ public class NewNanPlusListener implements Listener {
         // 别飞了，给我下来
         GlobalData.FlyCommand.cancelFly(player, false);
 
+        // 触发死亡惩罚
         GlobalData.DTCommand.onDeath(event);
     }
 
+//    @EventHandler
+//    public void onTeleport(PlayerTeleportEvent event) {
+//    }
+
     @EventHandler
-    public void onTeleport(PlayerTeleportEvent event) {
-        // 如果传送后不在一个世界
-        if (event.getFrom().getWorld() != event.getTo().getWorld()) {
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        // 如果新的世界没有该权限，就取消玩家的飞行
+        if (!event.getPlayer().hasPermission("newnanplus.fly.self"))
             GlobalData.FlyCommand.cancelFly(event.getPlayer(), true);
-        }
+    }
+
+    @EventHandler
+    public void onPlayerGameModeChange(PlayerGameModeChangeEvent event) {
+        // 如果玩家切换成创造或者旁观者模式，就取消玩家的飞行
+        if (event.getNewGameMode().equals(GameMode.CREATIVE) || event.getNewGameMode().equals(GameMode.SPECTATOR))
+            GlobalData.FlyCommand.cancelFly(event.getPlayer(), true);
     }
 
     @EventHandler
@@ -81,15 +89,15 @@ public class NewNanPlusListener implements Listener {
         GlobalData.CornCommand.runOnServerReady();
     }
 
-    @EventHandler(ignoreCancelled = true)
-    public void shopPurchase(ShopSuccessPurchaseEvent event) {
+//    @EventHandler(ignoreCancelled = true)
+//    public void shopPurchase(ShopSuccessPurchaseEvent event) {
         // event.getShop().getShopType()    ShopType.BUYING       ShopType.SELLING
         // event.getShop()
         // event.getPlayer()
-    }
+//    }
 
-    // @EventHandler
-    public void onInventoryMoveItem_Abandoned(InventoryMoveItemEvent e) {
-        GlobalData.LACommand.onInventoryMoveItem(e);
-    }
+//    @EventHandler
+//    public void onInventoryMoveItem(InventoryMoveItemEvent e) {
+//        GlobalData.LACommand.onInventoryMoveItem(e);
+//    }
 }

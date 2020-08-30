@@ -1,6 +1,7 @@
 package city.newnan.NewNanPlus.Fly;
 import city.newnan.NewNanPlus.*;
 
+import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
@@ -67,7 +68,11 @@ public class FlyCommand {
         // 检查这个玩家是否在飞行
         if (!cancelFly(player, true)) {
             // 不在飞行，就开启飞行
-            // 原本就能飞的不能进入飞行
+            // 原本在创造或者观察者模式不能进入付费飞行
+            if (player.getGameMode().equals(GameMode.CREATIVE) || player.getGameMode().equals(GameMode.SPECTATOR)) {
+                return true;
+            }
+            // 原本就能飞的不能进入付费飞行
             if (player.getAllowFlight()) {
                 return true;
             }
@@ -75,6 +80,10 @@ public class FlyCommand {
             if (GlobalData.VaultEco.getBalance(player) > 0.0) {
                 // 添加玩家
                 GlobalData.FlyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
+                // 如果玩家在疾跑，应当取消它，否则飞起来之后会快
+                if (player.isSprinting()) {
+                    player.setSprinting(false);
+                }
                 // 设置飞行和速度
                 player.setFlySpeed((float)GlobalData.Config.getDouble("module-flyfee.fly-speed"));
                 player.setAllowFlight(true);
