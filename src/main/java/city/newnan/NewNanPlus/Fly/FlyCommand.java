@@ -10,7 +10,7 @@ public class FlyCommand {
     /**
      * 持久化访问全局数据
      */
-    private NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal GlobalData;
 
     public FlyCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
@@ -67,11 +67,18 @@ public class FlyCommand {
         // 检查这个玩家是否在飞行
         if (!cancelFly(player, true)) {
             // 不在飞行，就开启飞行
+            // 原本就能飞的不能进入飞行
+            if (player.getAllowFlight()) {
+                return true;
+            }
             // 现金大于零才能飞
             if (GlobalData.VaultEco.getBalance(player) > 0.0) {
+                // 添加玩家
+                GlobalData.FlyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
+                // 设置飞行和速度
                 player.setFlySpeed((float)GlobalData.Config.getDouble("module-flyfee.fly-speed"));
                 player.setAllowFlight(true);
-                GlobalData.FlyingPlayers.add(player);
+                // 发送消息并播放声音
                 GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("module-flyfee.msg-begin"));
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
             } else {
@@ -90,18 +97,35 @@ public class FlyCommand {
      */
     public boolean cancelFly(Player player, boolean sound) {
         // 不存在于列表就不取消
-        if (!GlobalData.FlyingPlayers.contains(player)) {
+        if (!GlobalData.FlyingPlayers.containsKey(player)) {
             return false;
         }
-        GlobalData.FlyingPlayers.remove(player);
+        // 恢复玩家的状态
         player.setAllowFlight(false);
-        player.setFlySpeed(1.0f);
+        player.setFlySpeed(GlobalData.FlyingPlayers.get(player).PreviousFlyingSpeed);
         if (sound) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
         }
+        // 删除玩家
+        GlobalData.FlyingPlayers.remove(player);
         // 发送飞行结束通知
         GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("module-flyfee.msg-finish"));
         GlobalData.sendPlayerActionBar(player, GlobalData.Config.getString("module-flyfee.msg-finish"));
         return true;
     }
+
+    public boolean listFlyingPlayers(CommandSender sender) {
+        // 循环中不推荐使用 String 直接 +=，因为每次都会创建新的实例
+        // 使用StringBuilder解决这个问题
+        StringBuilder list = new StringBuilder();
+        GlobalData.FlyingPlayers.forEach(((player, flyingPlayer) -> {
+            list.append(player.getName()).append(" ");
+        }));
+        GlobalData.sendMessage(sender, "目前飞行人数：" + GlobalData.FlyingPlayers.size());
+        if (GlobalData.FlyingPlayers.size() > 0) {
+            GlobalData.sendMessage(sender, "飞行中：" + list);
+        }
+        return true;
+    }
 }
+

@@ -1,0 +1,27 @@
+{
+    "author": "Sttot",
+    "version": "${version}",
+    "inventories": {
+        "none": {
+            "global_items": {
+            },
+            "main_menu": {
+                "gui_name": "主菜单",
+                "gui_help": [
+                    "&7帮助内容"
+                ],
+                "items": {
+                    "settings": {
+                        "name": "&7&l按钮的名字",
+                        "lore": [
+                            "&e备注"
+                        ],
+                        "help": [
+                            "帮助"
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}

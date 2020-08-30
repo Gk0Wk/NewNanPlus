@@ -1,13 +1,26 @@
 package city.newnan.NewNanPlus;
 
+import me.wolfyscript.utilities.api.WolfyUtilities;
+import me.wolfyscript.utilities.api.inventory.GuiWindow;
+import me.wolfyscript.utilities.api.inventory.button.Button;
+import me.wolfyscript.utilities.api.inventory.button.ButtonAction;
+import me.wolfyscript.utilities.api.inventory.button.ButtonState;
+import me.wolfyscript.utilities.api.inventory.button.ButtonType;
+import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
+import me.wolfyscript.utilities.api.inventory.GuiCluster;
+import me.wolfyscript.utilities.api.inventory.button.buttons.DummyButton;
+import me.wolfyscript.utilities.api.language.Language;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 
 import org.bukkit.*;
+import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import me.wolfyscript.utilities.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -63,6 +76,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
             GlobalData.CreateArea = loadConf("create_area.yml");
             GlobalData.printINFO("§a配置文件载入完毕。");
 
+            bindWolfyUtilities();
+
             // 初始化监听实例
             GlobalData.Listener = new NewNanPlusListener(GlobalData);
             GlobalData.printINFO("§a事件监听模块注册完毕。");
@@ -92,6 +107,10 @@ public class NewNanPlusPlugin extends JavaPlugin {
             GlobalData.LACommand = new city.newnan.NewNanPlus.LaggAnalyzer.LACommand(GlobalData);
             GlobalData.printINFO("§a卡服分析器模块注册完毕。");
 
+            // 定时任务模块
+            GlobalData.CornCommand = new city.newnan.NewNanPlus.Corn.CornCommand(GlobalData);
+            GlobalData.printINFO("§a定时任务模块注册完毕。");
+
             changeGamerules();
 
             GlobalData.printINFO("§a插件启动完毕。");
@@ -111,6 +130,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
     @Override
     public void onDisable(){
         if (GlobalData != null) {
+            GlobalData.CornCommand.runOnPluginDisable();
             GlobalData.printINFO("§a正在保存配置文件");
         }
         saveConfig();
@@ -125,8 +145,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
         saveDefaultConfig();
         super.reloadConfig();
         GlobalData.Config = getConfig();
-        GlobalData.NewbiesList = loadConf("newbies_list.yml");
-        GlobalData.CreateArea = loadConf("create_area.yml");
     }
 
     /**
@@ -158,12 +176,43 @@ public class NewNanPlusPlugin extends JavaPlugin {
         return GlobalData.VaultEco != null && GlobalData.VaultPerm != null;
     }
 
+    private boolean bindWolfyUtilities() {
+        // 创建API实例
+        GlobalData.WolfyAPI = WolfyUtilities.getOrCreateAPI(this);
+        // 设置前缀
+        GlobalData.WolfyAPI.setCHAT_PREFIX(GlobalData.Config.getString("global-data.prefix"));
+        GlobalData.WolfyAPI.setCONSOLE_PREFIX(GlobalData.Config.getString("NewNanCity"));
+        // 多语言模块
+        this.saveResource("lang/zh-CN.json", true);
+        GlobalData.WolfyLanguageAPI = GlobalData.WolfyAPI.getLanguageAPI();
+        try{
+            GlobalData.WolfyLanguageAPI.registerLanguage(new Language(this, "zh-CN"));
+        }
+        catch (IOException e) {
+            GlobalData.printERROR("无法打开语言文件！");
+            e.printStackTrace();
+            Bukkit.getPluginManager().disablePlugin(this);
+        }
+        // 创建背包界面API实例
+        GlobalData.WolfyInventoryAPI = GlobalData.WolfyAPI.getInventoryAPI();
+
+        // demo
+        GuiCluster cluster = GlobalData.WolfyInventoryAPI.getOrRegisterGuiCluster("none");
+        GuiWindow window = new GuiWindow("main_menu", GlobalData.WolfyInventoryAPI, InventoryType.CHEST);
+        ButtonState bstate = new ButtonState("settings", Material.OAK_LOG);
+        DummyButton button = new DummyButton("settings", bstate);
+        window.registerButton(button);
+        cluster.registerGuiWindow(window);
+
+        return true;
+    }
+
     /**
      * 从插件文件夹下面读取对应的配置文件
      * @param file 文件名
      * @return 配置实例
      */
-    private YamlConfiguration loadConf(String file) {
+    public YamlConfiguration loadConf(String file) {
         File fp = new File(this.getDataFolder(), file);
         if (!fp.exists()) {
             this.saveResource(file, true);
@@ -180,7 +229,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
         try{
             File fp = new File(this.getDataFolder(), file);
             conf.save(fp);
-            conf = loadConf(file);
         }
         catch (IOException e) {
             GlobalData.printERROR("无法保存配置文件: " + e.getMessage());

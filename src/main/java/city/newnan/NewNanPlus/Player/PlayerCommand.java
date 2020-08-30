@@ -14,6 +14,7 @@ public class PlayerCommand {
 
     public PlayerCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
+        GlobalData.NewbiesList = GlobalData.Plugin.loadConf("newbies_list.yml");
     }
 
     public boolean allowNewbieToPlayer(CommandSender sender, String args[]) {

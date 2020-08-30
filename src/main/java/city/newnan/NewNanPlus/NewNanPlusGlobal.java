@@ -1,7 +1,9 @@
 package city.newnan.NewNanPlus;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.Vector;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -26,6 +28,12 @@ public class NewNanPlusGlobal {
 
     /* =============================================================================================== */
     /* 全局 */
+    public me.wolfyscript.utilities.api.WolfyUtilities WolfyAPI;
+    public me.wolfyscript.utilities.api.inventory.InventoryAPI WolfyInventoryAPI;
+    public me.wolfyscript.utilities.api.language.LanguageAPI WolfyLanguageAPI;
+
+    public SimpleDateFormat DateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+
     public FileConfiguration Config = null;
     /**
      * 控制台日志实例，会自动带 <code>[NewNanPlus] </code>
@@ -43,34 +51,41 @@ public class NewNanPlusGlobal {
 
     /* =============================================================================================== */
     /* 模块 */
-    /** NewNanPlus BuildingField*/
+    /* NewNanPlus BuildingField*/
     // public YamlConfiguration BuildingField;
 
+    /* NewNanPlus Town */
+    public ConcurrentHashMap<UUID, city.newnan.NewNanPlus.Town.Town> Towns =
+            new ConcurrentHashMap<UUID, city.newnan.NewNanPlus.Town.Town>();
+    public city.newnan.NewNanPlus.Town.TownCommand TownCommand;
 
-    /** NewNanPlus CreateArea **/
+    /* NewNanPlus CreateArea **/
     public YamlConfiguration CreateArea;
     public city.newnan.NewNanPlus.CreateArea.CACommand CACommand;
 
 
-    /** NewNanPlus Player **/
+    /* NewNanPlus Player **/
     public YamlConfiguration NewbiesList;
     public city.newnan.NewNanPlus.Player.PlayerCommand PlayerCommand;
 
 
-    /** NewNanPlus DeathTrigger **/
+    /* NewNanPlus DeathTrigger **/
     public city.newnan.NewNanPlus.DeathTrigger.DTCommand DTCommand;
 
 
-    /** NewNanPlus LaggAnalyzer */
+    /* NewNanPlus LaggAnalyzer */
     public HashMap<String, Integer> HopperMap = new HashMap<String, Integer>();
     public city.newnan.NewNanPlus.LaggAnalyzer.LACommand LACommand;
 
 
-    /** NewNanPlus Fly **/
-    /**
-     * 正在飞行中的玩家数量，Vector是线程安全的
-     */
-    public Vector<Player> FlyingPlayers = new Vector<Player>();
+    /* NewNanPlus Corn */
+    public city.newnan.NewNanPlus.Corn.CornCommand CornCommand;
+
+
+    /* NewNanPlus Fly **/
+    /** 正在飞行中的玩家，ConcurrentHashMap具有高并发性 */
+    public ConcurrentHashMap<Player, city.newnan.NewNanPlus.Fly.FlyingPlayer> FlyingPlayers =
+            new ConcurrentHashMap<Player, city.newnan.NewNanPlus.Fly.FlyingPlayer>();
     public city.newnan.NewNanPlus.Fly.FlyCommand FlyCommand;
     public city.newnan.NewNanPlus.Fly.FlySchedule FlySchedule;
 

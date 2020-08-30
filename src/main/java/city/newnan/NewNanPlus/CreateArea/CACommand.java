@@ -16,6 +16,7 @@ public class CACommand {
 
     public CACommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
+        GlobalData.CreateArea = GlobalData.Plugin.loadConf("create_area.yml");
     }
 
     public boolean teleportToCreateArea(CommandSender sender, String args[]) {
@@ -41,7 +42,7 @@ public class CACommand {
                 return false;
             }
             // 看看对应的玩家有没有创造区
-            if (!GlobalData.CreateArea.isConfigurationSection("areas."+_player.getUniqueId())) {
+            if (GlobalData.CreateArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
                 GlobalData.sendPlayerMessage(player, "&c玩家还有没创造区！");
                 return false;
             }

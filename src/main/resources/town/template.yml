@@ -1,0 +1,32 @@
+# 这只是一个示例
+version: ${version}
+uuid: ''
+name: ''
+location:
+  world: 'world'
+  x: 0.0
+  y: 0.0
+  z: 0.0
+balance: 0.0
+exp: 0
+level: 1
+town-leader: ''
+intro-website: ''
+resource:
+  wood: 0.0
+  stone: 0.0
+  coal: 0.0
+  iron: 0.0
+  gold: 0.0
+  lapis: 0.0
+  redstone: 0.0
+  diamond: 0.0
+  emerald: 0.0
+  meat: 0.0
+  seed: 0.0
+  crop: 0.0
+  book: 0.0
+  tool: 0.0
+effect:
+  - name: "beginner"
+    expirydate: "2020-09-31 00:00:00"

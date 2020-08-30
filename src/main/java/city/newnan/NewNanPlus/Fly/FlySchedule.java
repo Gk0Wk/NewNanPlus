@@ -12,7 +12,7 @@ public class FlySchedule extends BukkitRunnable {
     /**
      * 持久化访问全局数据
      */
-    private NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal GlobalData;
 
     public FlySchedule(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
@@ -25,13 +25,18 @@ public class FlySchedule extends BukkitRunnable {
             double cost_per_count = GlobalData.Config.getDouble("module-flyfee.cost-per-count");
             double tick_per_count = GlobalData.Config.getDouble("module-flyfee.tick-per-count");
             double cost_per_second = (20.0 / tick_per_count) * cost_per_count;
+
+            // 不能在遍历的时候删除元组，所以需要暂时记录
             Vector<Player> ToDeleteFlyingPlayer = new Vector<Player>();
-            for (Player player : GlobalData.FlyingPlayers) {
+
+            // 遍历飞行玩家 - 改用Lambda forEach
+            GlobalData.FlyingPlayers.forEach(((player, flyingPlayer) -> {
                 if (player.hasPermission("newnanplus.fly.free")) {
-                   GlobalData.sendPlayerActionBar(player, MessageFormat.format(
-                           GlobalData.Config.getString("module-flyfee.msg-actionbar-bypass"),
-                           player.getName()));
-                   continue;
+                    GlobalData.sendPlayerActionBar(player, MessageFormat.format(
+                            GlobalData.Config.getString("module-flyfee.msg-actionbar-bypass"),
+                            player.getName()));
+                    // lambda表达式中要用return跳过本次调用，相当于for的continue
+                    return;
                 }
                 // 获取玩家现金金额
                 double balance = GlobalData.VaultEco.getBalance(player);
@@ -54,11 +59,12 @@ public class FlySchedule extends BukkitRunnable {
                     // 不能直接从里面删除，不太好，会让迭代器受损，所以先登记，for完了再删
                     ToDeleteFlyingPlayer.add(player);
                 }
-            }
+            }));
+
             // 删掉刚才需要踢除的
-            for (Player player : ToDeleteFlyingPlayer) {
+            ToDeleteFlyingPlayer.forEach((player) -> {
                 GlobalData.FlyCommand.cancelFly(player, true);
-            }
+            });
             ToDeleteFlyingPlayer.clear();
         }
     }
@@ -66,11 +72,11 @@ public class FlySchedule extends BukkitRunnable {
     private static String formatSecond(int second) {
         if (second < 60) {
             return second + "秒";
-        }else if (second >= 60 && second < 3600) {
+        }else if (second < 3600) {
             int m = second / 60;
             int s = second % 60;
             return m + "分" + s + "秒";
-        }else if (second >= 3600 && second < 86400) {
+        }else if (second < 86400) {
             int h = second / 3600;
             int m = (second % 3600) / 60;
             int s = (second % 3600) % 60;

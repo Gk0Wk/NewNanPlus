@@ -1,5 +1,6 @@
 package city.newnan.NewNanPlus;
 
+import me.wolfyscript.utilities.api.inventory.GuiHandler;
 import org.bukkit.*;
 import org.bukkit.command.*;
 import org.bukkit.entity.Player;
@@ -69,6 +70,12 @@ public class NewNanPlusCommand implements CommandExecutor {
     }
 
     private boolean nnpMainCommand(CommandSender sender, String[] args) {
+        if (sender instanceof Player) {
+
+            GuiHandler h = GlobalData.WolfyInventoryAPI.getGuiHandler((Player) sender);
+            h.setButton(GlobalData.WolfyInventoryAPI.getGuiWindow("none", "main_menu"), 1, "settings");
+            GlobalData.WolfyInventoryAPI.openGui((Player)sender, "none", "main_menu");
+        }
         return true;
     }
 
@@ -112,16 +119,7 @@ public class NewNanPlusCommand implements CommandExecutor {
             return false;
         }
         if (args[1].equalsIgnoreCase("fly")) {
-            // 循环中不推荐使用 String 直接 +=，因为每次都会创建新的实例
-            // 使用StringBuilder解决这个问题
-            StringBuilder list = new StringBuilder();
-            for (Player player : GlobalData.FlyingPlayers) {
-                list.append(player.getName()).append(" ");
-            }
-            GlobalData.sendMessage(sender, "目前飞行人数：" + GlobalData.FlyingPlayers.size());
-            if (GlobalData.FlyingPlayers.size() > 0) {
-                GlobalData.sendMessage(sender, "飞行中：" + list);
-            }
+            return GlobalData.FlyCommand.listFlyingPlayers(sender);
         }
         return true;
     }

@@ -3,12 +3,16 @@ package city.newnan.NewNanPlus;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.*;
 import org.bukkit.event.player.*;
+import org.bukkit.event.server.*;
 import org.bukkit.inventory.Inventory;
 
+import org.maxgamer.quickshop.event.ShopSuccessPurchaseEvent;
+import org.maxgamer.quickshop.shop.ShopType;
 
 public class NewNanPlusListener implements Listener {
     /**
@@ -70,6 +74,18 @@ public class NewNanPlusListener implements Listener {
         if (inv.contains(Material.BEDROCK)) {
             GlobalData.printINFO(event.getPlayer().getName() + " has Bedrock!");
         }
+    }
+
+    @EventHandler
+    public void onServerLoadEvent(ServerLoadEvent event) {
+        GlobalData.CornCommand.runOnServerReady();
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void shopPurchase(ShopSuccessPurchaseEvent event) {
+        // event.getShop().getShopType()    ShopType.BUYING       ShopType.SELLING
+        // event.getShop()
+        // event.getPlayer()
     }
 
     // @EventHandler

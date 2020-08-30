@@ -8,8 +8,6 @@ import org.bukkit.event.inventory.InventoryType;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.Map;
 
 
 public class LACommand {
@@ -39,14 +37,15 @@ public class LACommand {
     public boolean genHopperReport() {
         try {
             FileWriter fp = new FileWriter("hopper.csv");
-            Iterator<Map.Entry<String, Integer>> entries = GlobalData.HopperMap.entrySet().iterator();
             fp.write("Event_Count,Chunk_X,Chunk_Z\n");
-            while(entries.hasNext()){
-                Map.Entry<String, Integer> entry = entries.next();
-                String key = entry.getKey();
-                Integer value = entry.getValue();
-                fp.write(value+","+key+"\n");
-            }
+            GlobalData.HopperMap.forEach((key, value) -> {
+                try{
+                    fp.write(value+","+key+"\n");
+                }
+                catch (IOException e) {
+                    e.printStackTrace();
+                }
+            });
             fp.close();
             GlobalData.printINFO("漏斗报告已保存至 hopper.csv");
         } catch (IOException e) {
