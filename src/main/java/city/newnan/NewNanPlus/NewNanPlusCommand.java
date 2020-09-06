@@ -7,6 +7,10 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
+/**
+ * 全局的命令监听和执行类，解析命令并调用各模块的方法，
+ * 和全局事件监听类一样不适合可拆卸模块设计，未来可能会被替换掉。
+ */
 public class NewNanPlusCommand implements CommandExecutor {
     /**
      * 用于持久化存储和访问全局数据
@@ -14,7 +18,7 @@ public class NewNanPlusCommand implements CommandExecutor {
     private final NewNanPlusGlobal GlobalData;
 
     /**
-     * 初始化实例
+     * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public NewNanPlusCommand(NewNanPlusGlobal globalData) {

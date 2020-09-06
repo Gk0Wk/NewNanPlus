@@ -11,6 +11,10 @@ public class CornCommand {
      */
     NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
+     */
     public CornCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
     }

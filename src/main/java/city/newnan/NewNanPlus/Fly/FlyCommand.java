@@ -13,6 +13,10 @@ public class FlyCommand {
      */
     private final NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
+     */
     public FlyCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
     }
@@ -81,9 +85,7 @@ public class FlyCommand {
                 // 添加玩家
                 GlobalData.FlyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
                 // 如果玩家在疾跑，应当取消它，否则飞起来之后会快
-                if (player.isSprinting()) {
-                    player.setSprinting(false);
-                }
+                player.setSprinting(false);
                 // 设置飞行和速度
                 player.setFlySpeed((float)GlobalData.Config.getDouble("module-flyfee.fly-speed"));
                 player.setAllowFlight(true);

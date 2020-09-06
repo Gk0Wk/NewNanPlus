@@ -17,6 +17,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
+/**
+ * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
+ */
 public class NewNanPlusGlobal {
     /* =============================================================================================== */
     /* 本体 */
@@ -66,6 +69,7 @@ public class NewNanPlusGlobal {
 
     /* NewNanPlus Player **/
     public YamlConfiguration NewbiesList;
+    public HashMap<String, UUID> ReversePlayerList = new HashMap<String, UUID>();
     public city.newnan.NewNanPlus.Player.PlayerCommand PlayerCommand;
 
 

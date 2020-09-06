@@ -14,11 +14,18 @@ public class FlySchedule extends BukkitRunnable {
      */
     private final NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
+     */
     public FlySchedule(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
         runTaskTimer(GlobalData.Plugin, 0, GlobalData.Config.getInt("module-flyfee.tick-per-count"));
     }
 
+    /**
+     * 定时任务入口函数
+     */
     @Override
     public void run() {
         if (GlobalData.FlyingPlayers.size() > 0) {
@@ -69,6 +76,11 @@ public class FlySchedule extends BukkitRunnable {
         }
     }
 
+    /**
+     * 格式化时间
+     * @param second 待格式化的秒数
+     * @return 格式化的字符串
+     */
     private static String formatSecond(int second) {
         if (second < 60) {
             return second + "秒";

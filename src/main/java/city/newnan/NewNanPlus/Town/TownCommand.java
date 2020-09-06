@@ -12,12 +12,22 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+// Mojang生成玩家UUID的办法：
+// UUID.nameUUIDFromBytes(("OfflinePlayer:" + characterName).getBytes(StandardCharsets.UTF_8))
+
+/**
+ * 小镇模块指令模块
+ */
 public class TownCommand {
     /**
      * 持久化访问全局数据
      */
     NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
+     */
     public TownCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
         File townDir = new File(GlobalData.Plugin.getDataFolder(), "town");

@@ -1,5 +1,8 @@
 package city.newnan.NewNanPlus.Town;
 
+/**
+ * 小镇资源种类
+ */
 public enum ResourceType {
     /**
      * 未知

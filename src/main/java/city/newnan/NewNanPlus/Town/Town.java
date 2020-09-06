@@ -10,6 +10,9 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 小镇类，记录一个小镇的各种属性。
+ */
 public class Town {
     /**
      * 小镇配置文件

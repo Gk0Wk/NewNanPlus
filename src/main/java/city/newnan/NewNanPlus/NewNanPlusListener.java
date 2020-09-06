@@ -11,6 +11,10 @@ import org.bukkit.event.player.*;
 import org.bukkit.event.server.*;
 import org.bukkit.inventory.Inventory;
 
+/**
+ * 插件负责全局事件监听的类。插件当前采用的逻辑是，全局监听类捕捉事件，不同事件再去分别调用各个模块内的一些方法。
+ * 这种方式不适合可拆卸模块化设计，未来可能会被替换成每个模块各自的监听类。
+ */
 public class NewNanPlusListener implements Listener {
     /**
      * 插件对象，用于持久化存储和访问全局数据
@@ -18,7 +22,7 @@ public class NewNanPlusListener implements Listener {
     private final NewNanPlusGlobal GlobalData;
 
     /**
-     * 初始化实例
+     * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public NewNanPlusListener(NewNanPlusGlobal globalData) {
@@ -57,7 +61,8 @@ public class NewNanPlusListener implements Listener {
     }
 
     @EventHandler
-    public void onJoin(final PlayerJoinEvent event) {
+    public void onPlayerJoin(final PlayerJoinEvent event) {
+        GlobalData.PlayerCommand.touchPlayer(event.getPlayer());
         GlobalData.PlayerCommand.joinCheck(event.getPlayer());
     }
 

@@ -16,19 +16,28 @@ public class DTCommand {
     private final NewNanPlusGlobal GlobalData;
 
     /**
-     * 初始化实例
+     * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public DTCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
     }
 
+    /**
+     * 玩家死亡时触发的方法
+     * @param event 玩家死亡事件
+     */
     public void onDeath(PlayerDeathEvent event) {
         Player player = event.getEntity();
         double cost = fineMoney(player);
         sendDeathMessage(player, cost);
     }
 
+    /**
+     * 死亡罚款
+     * @param player 死亡的玩家
+     * @return 扣的款数(调用方法就已经扣款，不用再扣一次)
+     */
     public double fineMoney(Player player) {
         // 如果玩家有死亡不扣钱权限
         if (player.hasPermission("newnanplus.deathcost.bypass")) {
@@ -77,6 +86,11 @@ public class DTCommand {
         return cost;
     }
 
+    /**
+     * 发送死亡消息
+     * @param player 死亡玩家
+     * @param cost 玩家死亡花费
+     */
     public void sendDeathMessage(Player player, double cost) {
         // 向玩家发送消息
         if (GlobalData.Config.getBoolean("module-deathcost.msg-player.enable")) {

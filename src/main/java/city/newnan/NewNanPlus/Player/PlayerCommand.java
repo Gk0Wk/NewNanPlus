@@ -1,6 +1,7 @@
 package city.newnan.NewNanPlus.Player;
 
 import city.newnan.NewNanPlus.NewNanPlusGlobal;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -12,11 +13,26 @@ public class PlayerCommand {
      */
     NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData 全局实例
+     */
     public PlayerCommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
         GlobalData.NewbiesList = GlobalData.Plugin.loadConf("newbies_list.yml");
+
+        // 创建反射表
+        for (OfflinePlayer player : GlobalData.Plugin.getServer().getOfflinePlayers()) {
+            GlobalData.ReversePlayerList.put(player.getName(), player.getUniqueId());
+        }
     }
 
+    /**
+     * /nnp allow指令的实现，将一个玩家纳入已验证新人名单中，如果玩家已经在线，那么就直接赋予玩家权限
+     * @param sender 命令的发送者
+     * @param args 命令的参数，包括allow
+     * @return
+     */
     public boolean allowNewbieToPlayer(CommandSender sender, String args[]) {
         // 检查权限
         if (!sender.hasPermission("nnp.newbies.allow")) {
@@ -75,6 +91,10 @@ public class PlayerCommand {
         return true;
     }
 
+    /**
+     * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组
+     * @param player 待检测的玩家实例
+     */
     public void joinCheck(Player player) {
         boolean need_refresh = false;
         // 获取已通过的新人组的List
@@ -111,5 +131,17 @@ public class PlayerCommand {
         if (need_refresh) {
             GlobalData.Plugin.saveConf("newbies_list.yml", GlobalData.NewbiesList);
         }
+    }
+
+    /**
+     * 检测这个玩家是否不在反射表中(是否第一次加入游戏)，并将其加入反射表
+     * @param player 玩家实例
+     * @return 如果玩家已经在反射表中则返回true，反之
+     */
+    public boolean touchPlayer(Player player) {
+        if (GlobalData.ReversePlayerList.containsKey(player.getName()))
+            return true;
+        GlobalData.ReversePlayerList.put(player.getName(), player.getUniqueId());
+        return false;
     }
 }

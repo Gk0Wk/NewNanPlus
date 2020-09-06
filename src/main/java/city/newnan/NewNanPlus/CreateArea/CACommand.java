@@ -14,11 +14,21 @@ public class CACommand {
      */
     NewNanPlusGlobal GlobalData;
 
+    /**
+     * 构造函数
+     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
+     */
     public CACommand(NewNanPlusGlobal globalData) {
         GlobalData = globalData;
         GlobalData.CreateArea = GlobalData.Plugin.loadConf("create_area.yml");
     }
 
+    /**
+     * /nnp ct指令实现，将玩家传送到自己/某人的创造区域
+     * @param sender 指令发送方
+     * @param args 指令参数，包括fly
+     * @return 成功执行，返回true，反之
+     */
     public boolean teleportToCreateArea(CommandSender sender, String args[]) {
         // 控制台无法执行该命令
         if (sender instanceof ConsoleCommandSender) {
@@ -84,6 +94,12 @@ public class CACommand {
         return true;
     }
 
+    /**
+     * /nnp cnew指令实现，创建某个玩家的创造区
+     * @param sender 指令发送方
+     * @param args 命令参数，包括cnew
+     * @return 成功执行，返回true，反之
+     */
     public boolean createCreateArea(CommandSender sender, String args[]) {
         // 检查权限
         if (!sender.hasPermission("newnanplus.cnew")) {
@@ -111,6 +127,11 @@ public class CACommand {
         return true;
     }
 
+    /**
+     * 创造/更新创造区
+     * @param args 命令行参数，cnew [PlayerName] [X1] [Z1] [X2] [Z2]
+     * @param player 创造区所属玩家
+     */
     public void newCreateArea(String args[], Player player) {
         // 坐标解析
         int x1 = Integer.parseInt(args[2]);
