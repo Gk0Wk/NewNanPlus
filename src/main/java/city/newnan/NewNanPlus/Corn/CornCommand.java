@@ -5,6 +5,9 @@ import org.bukkit.command.ConsoleCommandSender;
 
 import java.util.List;
 
+/**
+ * NewNanPlus 定时任务
+ */
 public class CornCommand {
     /**
      * 持久化访问全局数据
@@ -20,7 +23,7 @@ public class CornCommand {
     }
 
     /**
-     * 执行在插件启动时执行的命令，即on-plugin-enable
+     * 执行在服务器就绪时执行的命令，即on-server-ready
      */
     public void runOnServerReady() {
         List<String> commands = GlobalData.Config.getStringList("module-corn.on-server-ready");
