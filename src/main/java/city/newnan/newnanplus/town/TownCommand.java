@@ -1,6 +1,6 @@
-package city.newnan.NewNanPlus.Town;
+package city.newnan.newnanplus.town;
 
-import city.newnan.NewNanPlus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -22,15 +22,15 @@ public class TownCommand {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal GlobalData;
+    NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public TownCommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
-        File townDir = new File(GlobalData.Plugin.getDataFolder(), "town");
+        this.globalData = globalData;
+        File townDir = new File(this.globalData.plugin.getDataFolder(), "town");
         if (!townDir.exists()) {
             townDir.mkdir();
         }
@@ -40,35 +40,35 @@ public class TownCommand {
         }
     }
 
-    private Town _loadTown(String ConfigPath) {
-        YamlConfiguration config = GlobalData.Plugin.loadConf(ConfigPath);
+    private Town _loadTown(String configPath) {
+        YamlConfiguration config = globalData.plugin.loadConf(configPath);
         Town town = new Town();
-        town.TownConfig = config;
-        town.UniqueID = UUID.fromString(config.getString("uuid"));
-        town.Name = config.getString("name");
-        town.Location = new Location(
-                GlobalData.Plugin.getServer().getWorld(config.getString("location.world")),
+        town.townConfig = config;
+        town.uniqueID = UUID.fromString(config.getString("uuid"));
+        town.name = config.getString("name");
+        town.location = new Location(
+                globalData.plugin.getServer().getWorld(config.getString("location.world")),
                 config.getDouble("location.x"),
                 config.getDouble("location.y"),
                 config.getDouble("location.z")
         );
-        town.Balance = config.getDouble("balance");
-        town.Exp = config.getInt("exp");
-        town.Level  = config.getInt("level");
-        town.Leader = GlobalData.Plugin.getServer().getOfflinePlayer(UUID.fromString(config.getString("town-leader")));
-        town.Website = config.getString("intro-website");
+        town.balance = config.getDouble("balance");
+        town.exp = config.getInt("exp");
+        town.level = config.getInt("level");
+        town.leader = globalData.plugin.getServer().getOfflinePlayer(UUID.fromString(config.getString("town-leader")));
+        town.website = config.getString("intro-website");
 
         ConfigurationSection resource = config.getConfigurationSection("resource");
         resource.getKeys(false).forEach(key -> {
-            town.Resources.put(ResourceType.fromString(key), resource.getDouble(key));
+            town.resources.put(ResourceType.fromString(key), resource.getDouble(key));
         });
 
         List<Map<?,?>> effects = config.getMapList("effect");
         effects.forEach(map -> {
             try {
                 TownEffectType effect = TownEffectType.fromString((String) map.get("name"));
-                Date date = GlobalData.DateFormatter.parse((String) map.get("expirydate"));
-                town.Effects.put(effect, date);
+                Date date = globalData.dateFormatter.parse((String) map.get("expirydate"));
+                town.effects.put(effect, date);
             }
             catch (ParseException e) {
                 e.printStackTrace();
@@ -79,29 +79,29 @@ public class TownCommand {
     }
 
     private void resistTown(Town town) {
-        GlobalData.Towns.put(town.UniqueID, town);
+        globalData.towns.put(town.uniqueID, town);
     }
 
     public void loadTown(UUID uuid) {
-        if (GlobalData.Towns.containsKey(uuid))
+        if (globalData.towns.containsKey(uuid))
             return;
-        Town town =  _loadTown((new File(GlobalData.Plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
+        Town town =  _loadTown((new File(globalData.plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
         resistTown(town);
     }
 
     public void saveTowns() {
-        GlobalData.Towns.forEach((uuid, town) -> {
+        globalData.towns.forEach((uuid, town) -> {
             saveTown(town);
         });
     }
 
     public void saveTown(Town town) {
-        town.saveCacheToConfig(GlobalData.DateFormatter);
-        GlobalData.Plugin.saveConf("town/" + town.UniqueID.toString() + ".yml", town.TownConfig);
+        town.saveCacheToConfig(globalData.dateFormatter);
+        globalData.plugin.saveConf("town/" + town.uniqueID.toString() + ".yml", town.townConfig);
     }
 
     public boolean checkANDremoveOutdatedTownEffect(Town town, TownEffectType effect) {
-        if (town.Effects.get(effect).before(new Date())) {
+        if (town.effects.get(effect).before(new Date())) {
             detachEffect(town, effect);
             return true;
         } else {
@@ -110,23 +110,23 @@ public class TownCommand {
     }
 
     public void detachEffect(Town town, TownEffectType effect) {
-        if (!town.Effects.containsKey(effect))
+        if (!town.effects.containsKey(effect))
             return;
         // Unregists Something...
 
         // Remove from map
-        town.Effects.remove(effect);
+        town.effects.remove(effect);
     }
 
     public void attachEffect(Town town, TownEffectType effect, Date date) {
         // 如果已经有了，就更新日期
-        if (town.Effects.containsKey(effect)) {
-            town.Effects.put(effect, date);
+        if (town.effects.containsKey(effect)) {
+            town.effects.put(effect, date);
             return;
         }
         // Regists Something...
 
         // Add to map
-        town.Effects.put(effect, date);
+        town.effects.put(effect, date);
     }
 }

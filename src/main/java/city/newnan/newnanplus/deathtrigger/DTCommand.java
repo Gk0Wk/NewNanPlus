@@ -1,6 +1,6 @@
-package city.newnan.NewNanPlus.DeathTrigger;
+package city.newnan.newnanplus.deathtrigger;
 
-import city.newnan.NewNanPlus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.PlayerDeathEvent;
@@ -13,14 +13,14 @@ public class DTCommand {
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public DTCommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
+        this.globalData = globalData;
     }
 
     /**
@@ -45,19 +45,19 @@ public class DTCommand {
         }
 
         // 获得玩家的现金
-        double bal = GlobalData.VaultEco.getBalance(player);
+        double bal = globalData.vaultEco.getBalance(player);
         double cost = 0.0;
 
-        if (GlobalData.Config.getBoolean("module-deathcost.use-simple-mode")) {
+        if (globalData.config.getBoolean("module-deathcost.use-simple-mode")) {
             // 简单扣费模式
-            cost = GlobalData.Config.getDouble("module-deathcost.simple-mode.cost");
+            cost = globalData.config.getDouble("module-deathcost.simple-mode.cost");
             // 如果是百分比模式
-            if (GlobalData.Config.getBoolean("module-deathcost.simple-mode.if-percent")) {
+            if (globalData.config.getBoolean("module-deathcost.simple-mode.if-percent")) {
                 cost *= bal;
             }
         } else {
             // 复杂扣费模式
-            List<Map<?,?>> list_map = GlobalData.Config.getMapList("module-deathcost.complex-mode");
+            List<Map<?,?>> list_map = globalData.config.getMapList("module-deathcost.complex-mode");
 
             double pre_max = 0.0;
             // 遍历扣费阶梯
@@ -80,7 +80,7 @@ public class DTCommand {
 
         // 扣钱
         if (cost > 0) {
-            GlobalData.VaultEco.withdrawPlayer(player, cost);
+            globalData.vaultEco.withdrawPlayer(player, cost);
         }
 
         return cost;
@@ -93,25 +93,25 @@ public class DTCommand {
      */
     public void sendDeathMessage(Player player, double cost) {
         // 向玩家发送消息
-        if (GlobalData.Config.getBoolean("module-deathcost.msg-player.enable")) {
-            GlobalData.sendPlayerMessage(player,
+        if (globalData.config.getBoolean("module-deathcost.msg-player.enable")) {
+            globalData.sendPlayerMessage(player,
                     MessageFormat.format(
-                            GlobalData.Config.getString("module-deathcost.msg-player.text"),
+                            globalData.config.getString("module-deathcost.msg-player.text"),
                             player.getDisplayName(), cost
                     ));
         }
         // 广播发送消息
-        if (GlobalData.Config.getBoolean("module-deathcost.msg-broadcast.enable")) {
+        if (globalData.config.getBoolean("module-deathcost.msg-broadcast.enable")) {
             String msg = ChatColor.translateAlternateColorCodes('&',
-                    GlobalData.Config.getString("module-deathcost.msg-player.text"));
-            GlobalData.Plugin.getServer().broadcastMessage(MessageFormat.format(msg,
+                    globalData.config.getString("module-deathcost.msg-player.text"));
+            globalData.plugin.getServer().broadcastMessage(MessageFormat.format(msg,
                     player.getDisplayName(), cost));
         }
         // 控制台发送消息
-        if (GlobalData.Config.getBoolean("module-deathcost.msg-console.enable")) {
+        if (globalData.config.getBoolean("module-deathcost.msg-console.enable")) {
             String msg = ChatColor.translateAlternateColorCodes('&',
-                    GlobalData.Config.getString("module-deathcost.msg-console.text"));
-            GlobalData.printINFO(MessageFormat.format(msg, player.getDisplayName(), cost));
+                    globalData.config.getString("module-deathcost.msg-console.text"));
+            globalData.printINFO(MessageFormat.format(msg, player.getDisplayName(), cost));
         }
     }
 }

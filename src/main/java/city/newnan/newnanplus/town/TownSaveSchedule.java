@@ -1,20 +1,20 @@
-package city.newnan.NewNanPlus.Town;
+package city.newnan.newnanplus.town;
 
-import city.newnan.NewNanPlus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.scheduler.BukkitRunnable;
 
 public class TownSaveSchedule extends BukkitRunnable {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal GlobalData;
+    NewNanPlusGlobal globalData;
 
     public TownSaveSchedule(NewNanPlusGlobal globalData) {
-        this.GlobalData = globalData;
+        this.globalData = globalData;
     }
 
     @Override
     public void run() {
-        GlobalData.TownCommand.saveTowns();
+        globalData.townCommand.saveTowns();
     }
 }

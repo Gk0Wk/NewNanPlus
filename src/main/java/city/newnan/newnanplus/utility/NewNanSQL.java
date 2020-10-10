@@ -1,13 +1,13 @@
-package city.newnan.NewNanPlus.Utility;
-
-import java.sql.*;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.TreeMap;
-import java.util.concurrent.atomic.AtomicBoolean;
+package city.newnan.newnanplus.utility;
 
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
+
+import java.sql.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * NewNanCity 通用库 MySQL
@@ -17,39 +17,39 @@ public class NewNanSQL {
     /**
      * 数据库连接
      */
-    private Connection Connection;
+    private Connection connection;
     /**
      * Bukkit 插件实例
      */
-    private final Plugin Plugin;
+    private final Plugin plugin;
     /**
      * 数据库程序所在的Host地址
      */
-    private final String Host;
+    private final String host;
     /**
      * 数据库程序的监听端口
      */
-    private final int Port;
+    private final int port;
     /**
      * 数据库名称
      */
-    private final String Database;
+    private final String database;
     /**
      * 登录用户名
      */
-    private final String Username;
+    private final String username;
     /**
      * 登录密码
      */
-    private final String Password;
+    private final String password;
     /**
      * 数据库连接参数
      */
-    private final Map<String, String> Parameters;
+    private final Map<String, String> parameters;
     /**
      * 缓存的查询结果
      */
-    private final Map<PreparedStatement, ResultSet> Results = new HashMap<>();
+    private final Map<PreparedStatement, ResultSet> results = new HashMap<>();
 
     /**
      * 构造方法
@@ -62,13 +62,13 @@ public class NewNanSQL {
      * @param parameters 数据库连接参数
      */
     public NewNanSQL(Plugin plugin, String host, int port, String database, String username, String password, Map<String, String> parameters) {
-        Plugin = plugin;
-        Host = host;
-        Port = port;
-        Database = database;
-        Username = username;
-        Password = password;
-        Parameters = parameters;
+        this.plugin = plugin;
+        this.host = host;
+        this.port = port;
+        this.database = database;
+        this.username = username;
+        this.password = password;
+        this.parameters = parameters;
 
         // 为什么要这么做：https://blog.csdn.net/yanwushu/article/details/7574713?utm_medium=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param&depth_1-utm_source=distribute.pc_relevant.none-task-blog-BlogCommendFromMachineLearnPai2-1.channel_param
         try {
@@ -123,15 +123,15 @@ public class NewNanSQL {
     public void openConnectionSync() {
         try {
             synchronized (this) {
-                if (Connection != null && !Connection.isClosed()) {
+                if (this.connection != null && !this.connection.isClosed()) {
                     return;
                 }
 
                 // URL生成
                 StringBuilder url = new StringBuilder();
                 AtomicBoolean ifFirst = new AtomicBoolean(true);
-                url.append("jdbc:mysql://").append(Host).append(":").append(Port).append("/").append(Database);
-                Parameters.forEach((key, value) -> {
+                url.append("jdbc:mysql://").append(this.host).append(":").append(this.port).append("/").append(this.database);
+                this.parameters.forEach((key, value) -> {
                     if (ifFirst.get()) {
                         url.append("?");
                         ifFirst.set(false);
@@ -140,7 +140,7 @@ public class NewNanSQL {
                     }
                     url.append(key).append("=").append(value);
                 });
-                Connection = DriverManager.getConnection(url.toString(), Username, Password);
+                this.connection = DriverManager.getConnection(url.toString(), this.username, this.password);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -151,7 +151,7 @@ public class NewNanSQL {
      * 异步建立数据库连接
      */
     public void openConnectionAsync() {
-        Bukkit.getScheduler().runTaskAsynchronously(Plugin, this::openConnectionSync);
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, this::openConnectionSync);
     }
 
     /**
@@ -160,7 +160,7 @@ public class NewNanSQL {
      */
     public void executeUpdateSync(PreparedStatement preparedStatement) {
         try {
-            if (!Connection.isValid(0)) {
+            if (!this.connection.isValid(0)) {
                 openConnectionSync();
             }
             preparedStatement.executeUpdate();
@@ -175,7 +175,7 @@ public class NewNanSQL {
      * @param preparedStatement 预构造的更新语句
      */
     public void executeUpdateAsync(PreparedStatement preparedStatement) {
-        Bukkit.getScheduler().runTaskAsynchronously(Plugin, () -> {
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
             executeUpdateSync(preparedStatement);
         });
     }
@@ -186,7 +186,7 @@ public class NewNanSQL {
      */
     public void executeUpdateSync(String sql) {
         try {
-            executeUpdateSync(Connection.prepareStatement(sql));
+            executeUpdateSync(this.connection.prepareStatement(sql));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -198,7 +198,7 @@ public class NewNanSQL {
      */
     public void executeUpdateAsync(String sql) {
         try {
-            executeUpdateAsync(Connection.prepareStatement(sql));
+            executeUpdateAsync(this.connection.prepareStatement(sql));
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -207,11 +207,11 @@ public class NewNanSQL {
     /**
      * 获得预构造语句
      * @param sql SQL语句
-     * @return 预构造语句
+     * @return 预构造语句，若出错就返回null
      */
     public PreparedStatement prepareStatement(String sql) {
         try {
-            return Connection.prepareStatement(sql);
+            return this.connection.prepareStatement(sql);
         } catch (SQLException e) {
             e.printStackTrace();
             return null;
@@ -221,11 +221,11 @@ public class NewNanSQL {
     /**
      * 执行一次性查询，不缓存查询结果
      * @param preparedStatement 预构造的查询
-     * @return 查询结果
+     * @return 查询结果，若出错就返回null
      */
     public ResultSet executeQueryOneTime(PreparedStatement preparedStatement) {
         try {
-            if (!Connection.isValid(0)) {
+            if (!this.connection.isValid(0)) {
                 openConnectionSync();
             }
             ResultSet result = preparedStatement.executeQuery();
@@ -244,7 +244,7 @@ public class NewNanSQL {
      */
     public ResultSet executeQuery(PreparedStatement preparedStatement) {
         ResultSet result = executeQueryOneTime(preparedStatement);
-        Results.put(preparedStatement, result);
+        this.results.put(preparedStatement, result);
         return result;
     }
 
@@ -254,8 +254,8 @@ public class NewNanSQL {
      * @return 查询结果
      */
     public ResultSet getQueryResult(PreparedStatement preparedStatement) {
-        if (Results.containsKey(preparedStatement)) {
-            return Results.get(preparedStatement);
+        if (this.results.containsKey(preparedStatement)) {
+            return this.results.get(preparedStatement);
         } else {
             return executeQuery(preparedStatement);
         }
@@ -267,9 +267,9 @@ public class NewNanSQL {
      * @return 查询结果上一次的缓存结果，如果没有缓存就返回null
      */
     public ResultSet popResult(PreparedStatement preparedStatement) {
-        if (Results.containsKey(preparedStatement)) {
-            ResultSet result = Results.get(preparedStatement);
-            Results.remove(preparedStatement);
+        if (this.results.containsKey(preparedStatement)) {
+            ResultSet result = this.results.get(preparedStatement);
+            this.results.remove(preparedStatement);
             return result;
         } else {
             return null;
@@ -280,7 +280,7 @@ public class NewNanSQL {
      * 清除所有的查询缓存
      */
     public void clearResults() {
-        Results.clear();
+        this.results.clear();
     }
 
     /**
@@ -288,7 +288,7 @@ public class NewNanSQL {
      * @return 注册该模块的插件实例
      */
     public Plugin getPlugin() {
-        return Plugin;
+        return this.plugin;
     }
 
     /**
@@ -296,7 +296,7 @@ public class NewNanSQL {
      * @return 数据库连接实例
      */
     public Connection getConnection() {
-        return Connection;
+        return this.connection;
     }
 
     /**
@@ -304,7 +304,7 @@ public class NewNanSQL {
      * @return 数据库软件所在Host的地址
      */
     public String getHost() {
-        return Host;
+        return this.host;
     }
 
     /**
@@ -312,7 +312,7 @@ public class NewNanSQL {
      * @return 数据库软件监听端口
      */
     public int getPort() {
-        return Port;
+        return this.port;
     }
 
     /**
@@ -320,7 +320,7 @@ public class NewNanSQL {
      * @return 数据库名称
      */
     public String getDatabase() {
-        return Database;
+        return this.database;
     }
 
     /**
@@ -328,7 +328,7 @@ public class NewNanSQL {
      * @return 登录用户名
      */
     public String getUsername() {
-        return Username;
+        return this.username;
     }
 
     /**
@@ -336,7 +336,7 @@ public class NewNanSQL {
      * @return 登录密码
      */
     public String getPassword() {
-        return Password;
+        return this.password;
     }
 
     /**
@@ -344,6 +344,6 @@ public class NewNanSQL {
      * @return 数据库连接参数
      */
     public Map<String, String> getParameters() {
-        return Parameters;
+        return this.parameters;
     }
 }

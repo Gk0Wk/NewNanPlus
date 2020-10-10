@@ -1,14 +1,17 @@
-package city.newnan.NewNanPlus;
+package city.newnan.newnanplus;
 
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.*;
-import org.bukkit.event.inventory.*;
-import org.bukkit.event.player.*;
-import org.bukkit.event.server.*;
+import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerGameModeChangeEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
+import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.Inventory;
 
 /**
@@ -19,15 +22,15 @@ public class NewNanPlusListener implements Listener {
     /**
      * 插件对象，用于持久化存储和访问全局数据
      */
-    private final NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public NewNanPlusListener(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
-        GlobalData.Plugin.getServer().getPluginManager().registerEvents(this, GlobalData.Plugin);
+        this.globalData = globalData;
+        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
     }
 
     @EventHandler
@@ -36,10 +39,10 @@ public class NewNanPlusListener implements Listener {
         Player player = event.getEntity();
 
         // 别飞了，给我下来
-        GlobalData.FlyCommand.cancelFly(player, false);
+        globalData.flyCommand.cancelFly(player, false);
 
         // 触发死亡惩罚
-        GlobalData.DTCommand.onDeath(event);
+        globalData.dtCommand.onDeath(event);
     }
 
 //    @EventHandler
@@ -50,26 +53,26 @@ public class NewNanPlusListener implements Listener {
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         // 如果新的世界没有该权限，就取消玩家的飞行
         if (!event.getPlayer().hasPermission("newnanplus.fly.self"))
-            GlobalData.FlyCommand.cancelFly(event.getPlayer(), true);
+            globalData.flyCommand.cancelFly(event.getPlayer(), true);
     }
 
     @EventHandler
     public void onPlayerGameModeChange(PlayerGameModeChangeEvent event) {
         // 如果玩家切换成创造或者旁观者模式，就取消玩家的飞行
         if (event.getNewGameMode().equals(GameMode.CREATIVE) || event.getNewGameMode().equals(GameMode.SPECTATOR))
-            GlobalData.FlyCommand.cancelFly(event.getPlayer(), true);
+            globalData.flyCommand.cancelFly(event.getPlayer(), true);
     }
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
-        GlobalData.PlayerCommand.touchPlayer(event.getPlayer());
-        GlobalData.PlayerCommand.joinCheck(event.getPlayer());
+        globalData.playerCommand.touchPlayer(event.getPlayer());
+        globalData.playerCommand.joinCheck(event.getPlayer());
     }
 
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) {
         // 取消飞行
-        GlobalData.FlyCommand.cancelFly(event.getPlayer(), false);
+        globalData.flyCommand.cancelFly(event.getPlayer(), false);
     }
 
     @EventHandler
@@ -78,20 +81,20 @@ public class NewNanPlusListener implements Listener {
             return;
         }
 
-        GlobalData.printINFO(event.getPlayer().getName() + " open the inventory.");
+        globalData.printINFO(event.getPlayer().getName() + " open the inventory.");
 
         Inventory inv = event.getInventory();
         if (inv.contains(Material.BARRIER)) {
-            GlobalData.printINFO(event.getPlayer().getName() + " has Barrier!");
+            globalData.printINFO(event.getPlayer().getName() + " has Barrier!");
         }
         if (inv.contains(Material.BEDROCK)) {
-            GlobalData.printINFO(event.getPlayer().getName() + " has Bedrock!");
+            globalData.printINFO(event.getPlayer().getName() + " has Bedrock!");
         }
     }
 
     @EventHandler
     public void onServerLoadEvent(ServerLoadEvent event) {
-        GlobalData.CornCommand.runOnServerReady();
+        globalData.cornCommand.runOnServerReady();
     }
 
 //    @EventHandler(ignoreCancelled = true)

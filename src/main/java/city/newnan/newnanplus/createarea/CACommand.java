@@ -1,6 +1,6 @@
-package city.newnan.NewNanPlus.CreateArea;
+package city.newnan.newnanplus.createarea;
 
-import city.newnan.NewNanPlus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
@@ -12,15 +12,15 @@ public class CACommand {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal GlobalData;
+    NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public CACommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
-        GlobalData.CreateArea = GlobalData.Plugin.loadConf("create_area.yml");
+        this.globalData = globalData;
+        this.globalData.createArea = this.globalData.plugin.loadConf("create_area.yml");
     }
 
     /**
@@ -32,7 +32,7 @@ public class CACommand {
     public boolean teleportToCreateArea(CommandSender sender, String args[]) {
         // 控制台无法执行该命令
         if (sender instanceof ConsoleCommandSender) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.console-selfrun-refuse"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.console-selfrun-refuse"));
             return false;
         }
 
@@ -41,55 +41,55 @@ public class CACommand {
         if (args.length > 1) {
             // 检查权限
             if (!player.hasPermission("newnanplus.ctp.other")) {
-                GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("global-data.no-permission-msg"));
+                globalData.sendPlayerMessage(player, globalData.config.getString("global-data.no-permission-msg"));
                 return false;
             }
             // 查找对应的玩家
-            Player _player = GlobalData.Plugin.getServer().getPlayer(args[1]);
+            Player _player = globalData.plugin.getServer().getPlayer(args[1]);
             // 如果找不到
             if (_player == null) {
-                GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("global-data.player-offline-msg"));
+                globalData.sendPlayerMessage(player, globalData.config.getString("global-data.player-offline-msg"));
                 return false;
             }
             // 看看对应的玩家有没有创造区
-            if (GlobalData.CreateArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
-                GlobalData.sendPlayerMessage(player, "&c玩家还有没创造区！");
+            if (globalData.createArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
+                globalData.sendPlayerMessage(player, "&c玩家还有没创造区！");
                 return false;
             }
-            ConfigurationSection section = GlobalData.CreateArea.getConfigurationSection("areas."+_player.getUniqueId());
+            ConfigurationSection section = globalData.createArea.getConfigurationSection("areas."+_player.getUniqueId());
             int x = section.getInt("x1");
             int z = section.getInt("z1");
-            World world = GlobalData.Plugin.getServer().getWorld(GlobalData.CreateArea.getString("world"));
+            World world = globalData.plugin.getServer().getWorld(globalData.createArea.getString("world"));
             Location locate = new Location(
                     world,
                     x,
                     world.getHighestBlockYAt(x, z),
                     z);
             player.teleport(locate);
-            GlobalData.sendPlayerActionBar(player, "已到达["+_player.getName()+"]的创造区");
+            globalData.sendPlayerActionBar(player, "已到达["+_player.getName()+"]的创造区");
         } else {
             // 不带参数，传送到自己的创造区
             // 检查权限
             if (!player.hasPermission("newnanplus.ctp.self")) {
-                GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("global-data.no-permission-msg"));
+                globalData.sendPlayerMessage(player, globalData.config.getString("global-data.no-permission-msg"));
                 return false;
             }
             // 看看玩家有没有创造区
-            if (!GlobalData.CreateArea.isConfigurationSection("areas."+player.getUniqueId())) {
-                GlobalData.sendPlayerMessage(player, "&c你还有没创造区！");
+            if (!globalData.createArea.isConfigurationSection("areas."+player.getUniqueId())) {
+                globalData.sendPlayerMessage(player, "&c你还有没创造区！");
                 return false;
             }
-            ConfigurationSection section = GlobalData.CreateArea.getConfigurationSection("areas."+player.getUniqueId());
+            ConfigurationSection section = globalData.createArea.getConfigurationSection("areas."+player.getUniqueId());
             int x = section.getInt("x1");
             int z = section.getInt("z1");
-            World world = GlobalData.Plugin.getServer().getWorld(GlobalData.CreateArea.getString("world"));
+            World world = globalData.plugin.getServer().getWorld(globalData.createArea.getString("world"));
             Location locate = new Location(
                     world,
                     x,
                     world.getHighestBlockYAt(x, z),
                     z);
             player.teleport(locate);
-            GlobalData.sendPlayerActionBar(player, "已到达你的创造区");
+            globalData.sendPlayerActionBar(player, "已到达你的创造区");
         }
         return true;
     }
@@ -103,21 +103,21 @@ public class CACommand {
     public boolean createCreateArea(CommandSender sender, String args[]) {
         // 检查权限
         if (!sender.hasPermission("newnanplus.cnew")) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.no-permission-msg"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
             return false;
         }
 
         // 检查参数
         if (args.length < 6) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.parameter-count-not-match"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.parameter-count-not-match"));
             return false;
         }
 
         // 查找对应的玩家
-        Player _player = GlobalData.Plugin.getServer().getPlayer(args[1]);
+        Player _player = globalData.plugin.getServer().getPlayer(args[1]);
         // 如果找不到
         if (_player == null) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.player-offline-msg"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.player-offline-msg"));
             return false;
         }
 
@@ -150,34 +150,34 @@ public class CACommand {
         }
 
         // 获取世界名称
-        String world_name = GlobalData.CreateArea.getString("world");
+        String world_name = globalData.createArea.getString("world");
 
         // 看看玩家原来有没有创造区，有的话需要重新设置dynmap
-        if (GlobalData.CreateArea.getString("areas."+player.getUniqueId()+".name") != null) {
-            GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        if (globalData.createArea.getString("areas."+player.getUniqueId()+".name") != null) {
+            globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                     "dmarker deletearea id:" + player.getUniqueId());
         }
 
         // 地图上绘制区域
-        GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                 "dmarker addcorner " + x1 + " 70 " + z1 + " " + world_name);
-        GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                 "dmarker addcorner " + x1 + " 70 " + z2 + " " + world_name);
-        GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                 "dmarker addcorner " + x2 + " 70 " + z2 + " " + world_name);
-        GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                 "dmarker addcorner " + x2 + " 70 " + z1 + " " + world_name);
-        GlobalData.Plugin.getServer().dispatchCommand(GlobalData.Plugin.getServer().getConsoleSender(),
+        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                 "dmarker addarea id:" + player.getUniqueId() + " " + player.getName()+"的创造区");
 
         // 存储玩家数据
-        ConfigurationSection section = GlobalData.CreateArea.createSection("areas."+player.getUniqueId());
+        ConfigurationSection section = globalData.createArea.createSection("areas."+player.getUniqueId());
         section.set("name", player.getName());
         section.set("x1", x1);
         section.set("z1", z1);
         section.set("x2", x2);
         section.set("z2", z2);
         // 存储设置
-        GlobalData.Plugin.saveConf("create_area.yml", GlobalData.CreateArea);
+        globalData.plugin.saveConf("create_area.yml", globalData.createArea);
     }
 }

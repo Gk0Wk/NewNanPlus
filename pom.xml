@@ -7,20 +7,20 @@
     <!--groupId 指定了工程的归属，如某公司或某基金会，使用域名倒写来实现id唯一性-->
     <groupId>city.newnan</groupId>
     <!--artifactId 指定了项目在组中的唯一 ID-->
-    <artifactId>NewNanPlus</artifactId>
+    <artifactId>newnanplus</artifactId>
     <!--packaging 指定了项目的打包方式-->
     <packaging>jar</packaging>
     <!--name 指定了 maven 工程的名字，可以省略-->
     <name>NewNanPlus</name>
     <!--version 指定了当前工程的版本号-->
-    <version>1.5.0-beta</version>
+    <version>1.5.1</version>
 
     <!--设置编码方式是为了保证跨平台的兼容性，而设置源及目标的JDK版本是为了能够正确的使用某些特性，否则在使用lambda的时候都有可能会编译错误-->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <package>city.newnan.NewNanPlus</package>
+        <package>city.newnan.newnanplus</package>
     </properties>
 
     <repositories>
@@ -39,10 +39,6 @@
         <repository>
             <id>dynmap-repo</id>
             <url>http://repo.mikeprimm.com/</url>
-        </repository>
-        <repository>
-            <id>Ghost_chu</id>
-            <url>https://raw.githubusercontent.com/Ghost-chu/maven-repo/master</url>
         </repository>
     </repositories>
 
@@ -81,13 +77,14 @@
         <dependency>
             <groupId>org.maxgamer</groupId>
             <artifactId>QuickShop</artifactId>
-            <version>4.0.3.3</version>
-            <scope>provided</scope>
+            <version>4.0.4.14</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/lib/QuickShop-4.0.4.14.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>us.dynmap</groupId>
             <artifactId>dynmap-api</artifactId>
-            <version>3.0-SNAPSHOT</version>
+            <version>3.0</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>
@@ -126,7 +123,7 @@
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
-                                        <Main-Class>city.newnan.NewNanPlus.NewNanPlusExecute</Main-Class>
+                                        <Main-Class>city.newnan.newnanplus.NewNanPlusExecute</Main-Class>
                                     </manifestEntries>
                                 </transformer>
                             </transformers>

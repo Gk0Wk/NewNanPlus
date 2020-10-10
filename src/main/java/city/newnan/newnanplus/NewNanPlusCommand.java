@@ -1,8 +1,11 @@
-package city.newnan.NewNanPlus;
+package city.newnan.newnanplus;
 
 import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import org.bukkit.*;
-import org.bukkit.command.*;
+import org.bukkit.Material;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandExecutor;
+import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -15,15 +18,15 @@ public class NewNanPlusCommand implements CommandExecutor {
     /**
      * 用于持久化存储和访问全局数据
      */
-    private final NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public NewNanPlusCommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
-        GlobalData.Plugin.getCommand("nnp").setExecutor(this);
+        this.globalData = globalData;
+        this.globalData.plugin.getCommand("nnp").setExecutor(this);
     }
 
     /**
@@ -52,19 +55,19 @@ public class NewNanPlusCommand implements CommandExecutor {
         } else {
             switch(args[0].toLowerCase()) {
                 case "fly":
-                    return GlobalData.FlyCommand.applyFly(sender, args);
+                    return globalData.flyCommand.applyFly(sender, args);
                 case "reload":
                     return reloadConfig(sender);
                 case "save":
                     return saveConfig(sender);
                 case "allow":
-                    return GlobalData.PlayerCommand.allowNewbieToPlayer(sender, args);
+                    return globalData.playerCommand.allowNewbieToPlayer(sender, args);
                 case "ctp":
-                    return GlobalData.CACommand.teleportToCreateArea(sender, args);
+                    return globalData.caCommand.teleportToCreateArea(sender, args);
                 case "cnew":
-                    return GlobalData.CACommand.createCreateArea(sender, args);
+                    return globalData.caCommand.createCreateArea(sender, args);
                 case "genhopper":
-                    return GlobalData.LACommand.genHopperReport();
+                    return globalData.laCommand.genHopperReport();
                 case "list":
                     return listSomething(sender, args);
                 default:
@@ -76,9 +79,9 @@ public class NewNanPlusCommand implements CommandExecutor {
     private boolean nnpMainCommand(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
 
-            GuiHandler h = GlobalData.WolfyInventoryAPI.getGuiHandler((Player) sender);
-            h.setButton(GlobalData.WolfyInventoryAPI.getGuiWindow("none", "main_menu"), 1, "settings");
-            GlobalData.WolfyInventoryAPI.openGui((Player)sender, "none", "main_menu");
+            GuiHandler h = globalData.wolfyInventoryAPI.getGuiHandler((Player) sender);
+            h.setButton(globalData.wolfyInventoryAPI.getGuiWindow("none", "main_menu"), 1, "settings");
+            globalData.wolfyInventoryAPI.openGui((Player)sender, "none", "main_menu");
         }
         return true;
     }
@@ -90,10 +93,10 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     private boolean saveConfig(CommandSender sender) {
         if (!sender.hasPermission("newnanplus.save")) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.no-permission-msg"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
             return false;
         }
-        GlobalData.Plugin.saveConfig();
+        globalData.plugin.saveConfig();
         return true;
     }
 
@@ -104,10 +107,10 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     private boolean reloadConfig(CommandSender sender) {
         if (!sender.hasPermission("newnanplus.reload")) {
-            GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.no-permission-msg"));
+            globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
             return false;
         }
-        GlobalData.Plugin.reloadConfig();
+        globalData.plugin.reloadConfig();
         return true;
     }
 
@@ -119,11 +122,11 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     private boolean listSomething(CommandSender sender, String[] args) {
         if (args.length < 2) {
-            GlobalData.sendMessage(sender, "&c参数不匹配！");
+            globalData.sendMessage(sender, "&c参数不匹配！");
             return false;
         }
         if (args[1].equalsIgnoreCase("fly")) {
-            return GlobalData.FlyCommand.listFlyingPlayers(sender);
+            return globalData.flyCommand.listFlyingPlayers(sender);
         }
         return true;
     }

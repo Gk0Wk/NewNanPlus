@@ -1,24 +1,24 @@
-package city.newnan.NewNanPlus.Fly;
-import city.newnan.NewNanPlus.*;
+package city.newnan.newnanplus.fly;
 
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.command.CommandSender;
 
 public class FlyCommand {
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public FlyCommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
+        this.globalData = globalData;
     }
 
     /**
@@ -34,14 +34,14 @@ public class FlyCommand {
         if (args.length == 1) {
             // 控制台不能给自己开启/关闭
             if (sender instanceof ConsoleCommandSender) {
-                GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.console-selfrun-refuse"));
+                globalData.sendMessage(sender, globalData.config.getString("global-data.console-selfrun-refuse"));
                 return false;
             }
             // 否则就是玩家执行
             Player _player = (Player) sender;
             // 如果他有自己的飞行权限
             if (!_player.hasPermission("newnanplus.fly.self")) {
-                GlobalData.sendPlayerMessage(_player, GlobalData.Config.getString("global-data.no-permission-msg"));
+                globalData.sendPlayerMessage(_player, globalData.config.getString("global-data.no-permission-msg"));
                 return false;
             }
             player = _player;
@@ -49,13 +49,13 @@ public class FlyCommand {
             // 否则就是给别人开启/关闭
             // 检查权限
             if (!sender.hasPermission("newnanplus.fly.other")) {
-                GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.no-permission-msg"));
+                globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
                 return false;
             }
             // 找到要操作的那个玩家
-            player = GlobalData.Plugin.getServer().getPlayer(args[1]);
+            player = globalData.plugin.getServer().getPlayer(args[1]);
             if (player == null) {
-                GlobalData.sendMessage(sender, GlobalData.Config.getString("global-data.player-offline-msg"));
+                globalData.sendMessage(sender, globalData.config.getString("global-data.player-offline-msg"));
                 return true;
             }
         }
@@ -81,20 +81,20 @@ public class FlyCommand {
                 return true;
             }
             // 现金大于零才能飞
-            if (GlobalData.VaultEco.getBalance(player) > 0.0) {
+            if (globalData.vaultEco.getBalance(player) > 0.0) {
                 // 添加玩家
-                GlobalData.FlyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
+                globalData.flyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
                 // 如果玩家在疾跑，应当取消它，否则飞起来之后会快
                 player.setSprinting(false);
                 // 设置飞行和速度
-                player.setFlySpeed((float)GlobalData.Config.getDouble("module-flyfee.fly-speed"));
+                player.setFlySpeed((float) globalData.config.getDouble("module-flyfee.fly-speed"));
                 player.setAllowFlight(true);
                 // 发送消息并播放声音
-                GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("module-flyfee.msg-begin"));
+                globalData.sendPlayerMessage(player, globalData.config.getString("module-flyfee.msg-begin"));
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
             } else {
                 // 不大于零就提示不能飞
-                GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("module-flyfee.msg-nofee"));
+                globalData.sendPlayerMessage(player, globalData.config.getString("module-flyfee.msg-nofee"));
             }
         }
         return true;
@@ -108,20 +108,20 @@ public class FlyCommand {
      */
     public boolean cancelFly(Player player, boolean sound) {
         // 不存在于列表就不取消
-        if (!GlobalData.FlyingPlayers.containsKey(player)) {
+        if (!globalData.flyingPlayers.containsKey(player)) {
             return false;
         }
         // 恢复玩家的状态
         player.setAllowFlight(false);
-        player.setFlySpeed(GlobalData.FlyingPlayers.get(player).PreviousFlyingSpeed);
+        player.setFlySpeed(globalData.flyingPlayers.get(player).previousFlyingSpeed);
         if (sound) {
             player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
         }
         // 删除玩家
-        GlobalData.FlyingPlayers.remove(player);
+        globalData.flyingPlayers.remove(player);
         // 发送飞行结束通知
-        GlobalData.sendPlayerMessage(player, GlobalData.Config.getString("module-flyfee.msg-finish"));
-        GlobalData.sendPlayerActionBar(player, GlobalData.Config.getString("module-flyfee.msg-finish"));
+        globalData.sendPlayerMessage(player, globalData.config.getString("module-flyfee.msg-finish"));
+        globalData.sendPlayerActionBar(player, globalData.config.getString("module-flyfee.msg-finish"));
         return true;
     }
 
@@ -129,12 +129,12 @@ public class FlyCommand {
         // 循环中不推荐使用 String 直接 +=，因为每次都会创建新的实例
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
-        GlobalData.FlyingPlayers.forEach(((player, flyingPlayer) -> {
+        globalData.flyingPlayers.forEach(((player, flyingPlayer) -> {
             list.append(player.getName()).append(" ");
         }));
-        GlobalData.sendMessage(sender, "目前飞行人数：" + GlobalData.FlyingPlayers.size());
-        if (GlobalData.FlyingPlayers.size() > 0) {
-            GlobalData.sendMessage(sender, "飞行中：" + list);
+        globalData.sendMessage(sender, "目前飞行人数：" + globalData.flyingPlayers.size());
+        if (globalData.flyingPlayers.size() > 0) {
+            globalData.sendMessage(sender, "飞行中：" + list);
         }
         return true;
     }

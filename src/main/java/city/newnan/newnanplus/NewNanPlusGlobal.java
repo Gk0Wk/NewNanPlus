@@ -1,21 +1,20 @@
-package city.newnan.NewNanPlus;
-
-import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
+package city.newnan.newnanplus;
 
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.ChatColor;
-
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
@@ -23,33 +22,33 @@ import org.bukkit.entity.Player;
 public class NewNanPlusGlobal {
     /* =============================================================================================== */
     /* 本体 */
-    public NewNanPlusPlugin Plugin;
-    public NewNanPlusCommand Command;
-    public NewNanPlusListener Listener;
+    public NewNanPlusPlugin plugin;
+    public NewNanPlusCommand command;
+    public NewNanPlusListener listener;
     // public NewNanPlusExecute Execute;
 
 
     /* =============================================================================================== */
     /* 全局 */
-    public me.wolfyscript.utilities.api.WolfyUtilities WolfyAPI;
-    public me.wolfyscript.utilities.api.inventory.InventoryAPI WolfyInventoryAPI;
-    public me.wolfyscript.utilities.api.language.LanguageAPI WolfyLanguageAPI;
+    public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
+    public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
+    public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
 
-    public SimpleDateFormat DateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public FileConfiguration Config = null;
+    public FileConfiguration config = null;
     /**
      * 控制台日志实例，会自动带 <code>[NewNanPlus] </code>
      */
-    public java.util.logging.Logger ConsoleLogger;
+    public java.util.logging.Logger consoleLogger;
     /**
      * Vault 经济实例
      */
-    public Economy VaultEco = null;
+    public Economy vaultEco = null;
     /**
      * Vault 权限实例
      */
-    public Permission VaultPerm = null;
+    public Permission vaultPerm = null;
 
 
     /* =============================================================================================== */
@@ -58,40 +57,40 @@ public class NewNanPlusGlobal {
     // public YamlConfiguration BuildingField;
 
     /* NewNanPlus Town */
-    public ConcurrentHashMap<UUID, city.newnan.NewNanPlus.Town.Town> Towns =
-            new ConcurrentHashMap<UUID, city.newnan.NewNanPlus.Town.Town>();
-    public city.newnan.NewNanPlus.Town.TownCommand TownCommand;
+    public ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town> towns =
+            new ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town>();
+    public city.newnan.newnanplus.town.TownCommand townCommand;
 
     /* NewNanPlus CreateArea **/
-    public YamlConfiguration CreateArea;
-    public city.newnan.NewNanPlus.CreateArea.CACommand CACommand;
+    public YamlConfiguration createArea;
+    public city.newnan.newnanplus.createarea.CACommand caCommand;
 
 
     /* NewNanPlus Player **/
-    public YamlConfiguration NewbiesList;
-    public HashMap<String, UUID> ReversePlayerList = new HashMap<String, UUID>();
-    public city.newnan.NewNanPlus.Player.PlayerCommand PlayerCommand;
+    public YamlConfiguration newbiesList;
+    public HashMap<String, UUID> reversePlayerList = new HashMap<String, UUID>();
+    public city.newnan.newnanplus.player.PlayerCommand playerCommand;
 
 
     /* NewNanPlus DeathTrigger **/
-    public city.newnan.NewNanPlus.DeathTrigger.DTCommand DTCommand;
+    public city.newnan.newnanplus.deathtrigger.DTCommand dtCommand;
 
 
     /* NewNanPlus LaggAnalyzer */
-    public HashMap<String, Integer> HopperMap = new HashMap<String, Integer>();
-    public city.newnan.NewNanPlus.LaggAnalyzer.LACommand LACommand;
+    public HashMap<String, Integer> hopperMap = new HashMap<String, Integer>();
+    public city.newnan.newnanplus.lagganalyzer.LACommand laCommand;
 
 
     /* NewNanPlus Corn */
-    public city.newnan.NewNanPlus.Corn.CornCommand CornCommand;
+    public city.newnan.newnanplus.corn.CornCommand cornCommand;
 
 
     /* NewNanPlus Fly **/
     /** 正在飞行中的玩家，ConcurrentHashMap具有高并发性 */
-    public ConcurrentHashMap<Player, city.newnan.NewNanPlus.Fly.FlyingPlayer> FlyingPlayers =
-            new ConcurrentHashMap<Player, city.newnan.NewNanPlus.Fly.FlyingPlayer>();
-    public city.newnan.NewNanPlus.Fly.FlyCommand FlyCommand;
-    public city.newnan.NewNanPlus.Fly.FlySchedule FlySchedule;
+    public ConcurrentHashMap<Player, city.newnan.newnanplus.fly.FlyingPlayer> flyingPlayers =
+            new ConcurrentHashMap<Player, city.newnan.newnanplus.fly.FlyingPlayer>();
+    public city.newnan.newnanplus.fly.FlyCommand flyCommand;
+    public city.newnan.newnanplus.fly.FlySchedule flySchedule;
 
 
     /* =============================================================================================== */
@@ -101,7 +100,7 @@ public class NewNanPlusGlobal {
      * @param msg 要发送的消息
      */
     public void printINFO(String msg) {
-        ConsoleLogger.info(msg);
+        consoleLogger.info(msg);
     }
 
     /**
@@ -109,7 +108,7 @@ public class NewNanPlusGlobal {
      * @param msg 要发送的消息
      */
     public void printWARN(String msg) {
-        ConsoleLogger.warning(msg);
+        consoleLogger.warning(msg);
     }
 
     /**
@@ -117,7 +116,7 @@ public class NewNanPlusGlobal {
      * @param msg 要发送的消息
      */
     public void printERROR(String msg) {
-        ConsoleLogger.severe(msg);
+        consoleLogger.severe(msg);
     }
     /**
      * 给玩家发送有样式码的信息
@@ -128,7 +127,7 @@ public class NewNanPlusGlobal {
     public void sendPlayerMessage(Player player, String msg, boolean prefix) {
         if (prefix) {
             String _msg = ChatColor.translateAlternateColorCodes('&',
-                    Config.getString("global-data.prefix") + msg);
+                    config.getString("global-data.prefix") + msg);
             player.sendMessage(_msg);
         } else {
             String _msg = ChatColor.translateAlternateColorCodes('&', msg);

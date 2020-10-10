@@ -1,4 +1,4 @@
-package city.newnan.NewNanPlus;
+package city.newnan.newnanplus;
 
 /**
  * 只有直接运行这个jar才会跑到这里来
@@ -11,5 +11,6 @@ public class NewNanPlusExecute {
     public static void main(String[] args){
         System.out.println("[NewNanCity] 这不是一个可执行的jar文件，请将其放在plugins文件夹下。");
         System.exit(0);
+        String a;
     }
 }

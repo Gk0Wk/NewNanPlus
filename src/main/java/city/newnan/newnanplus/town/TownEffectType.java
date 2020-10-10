@@ -1,4 +1,4 @@
-package city.newnan.NewNanPlus.Town;
+package city.newnan.newnanplus.town;
 
 /**
  * 小镇效果类型
@@ -19,32 +19,32 @@ public enum TownEffectType {
     ORDINARY_TOWN(1, true, "ordinary_town")
     ;
 
-    private final int ID;
-    private final boolean IfDebuff;
-    private final String Name;
+    private final int id;
+    private final boolean ifDebuff;
+    private final String name;
 
     TownEffectType(int id, boolean ifDebuff, String name) {
-        this.ID = id;
-        this.IfDebuff = ifDebuff;
-        this.Name = name;
+        this.id = id;
+        this.ifDebuff = ifDebuff;
+        this.name = name;
     }
 
     public boolean getIfDebuff() {
-        return this.IfDebuff;
+        return this.ifDebuff;
     }
 
     @Override
     public String toString() {
-        return this.Name;
+        return this.name;
     }
 
     /**
      * 从效果名称获得对应的枚举类型
-     * @param EffectName 效果名称
+     * @param effectName 效果名称
      * @return 相应的TownEffectType枚举，没有则返回TownEffectType.UNKNOWN
      */
-    public static TownEffectType fromString(String EffectName) {
-        switch(EffectName) {
+    public static TownEffectType fromString(String effectName) {
+        switch(effectName) {
             case "ordinary_town":
                 return ORDINARY_TOWN;
             case "beginner":

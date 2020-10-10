@@ -1,6 +1,6 @@
-package city.newnan.NewNanPlus.LaggAnalyzer;
-import city.newnan.NewNanPlus.NewNanPlusGlobal;
+package city.newnan.newnanplus.lagganalyzer;
 
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Chunk;
 import org.bukkit.block.Hopper;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -14,32 +14,32 @@ public class LACommand {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal GlobalData;
+    NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public LACommand(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
+        this.globalData = globalData;
     }
 
     /**
      * 监控漏斗的激活情况
-     * @param e 物品栏中物品移动的事件
+     * @param event 物品栏中物品移动的事件
      */
-    public void onInventoryMoveItem(InventoryMoveItemEvent e) {
-        if (e.getInitiator().getType() == InventoryType.HOPPER) {
-            Hopper hopper = (Hopper) e.getInitiator().getHolder();
+    public void onInventoryMoveItem(InventoryMoveItemEvent event) {
+        if (event.getInitiator().getType() == InventoryType.HOPPER) {
+            Hopper hopper = (Hopper) event.getInitiator().getHolder();
             Chunk chunk = hopper.getChunk();
             String key = chunk.getX()+","+chunk.getZ();
-            Integer x = GlobalData.HopperMap.get(key);
+            Integer x = globalData.hopperMap.get(key);
             if (x == null) {
                 x = 1;
             } else {
                 x++;
             }
-            GlobalData.HopperMap.put(key, x);
+            globalData.hopperMap.put(key, x);
         }
     }
 
@@ -51,7 +51,7 @@ public class LACommand {
         try {
             FileWriter fp = new FileWriter("hopper.csv");
             fp.write("Event_Count,Chunk_X,Chunk_Z\n");
-            GlobalData.HopperMap.forEach((key, value) -> {
+            globalData.hopperMap.forEach((key, value) -> {
                 try{
                     fp.write(value+","+key+"\n");
                 }
@@ -60,9 +60,9 @@ public class LACommand {
                 }
             });
             fp.close();
-            GlobalData.printINFO("漏斗报告已保存至 hopper.csv");
+            globalData.printINFO("漏斗报告已保存至 hopper.csv");
         } catch (IOException e) {
-            GlobalData.printERROR("无法保存报告: " + e.getMessage());
+            globalData.printERROR("无法保存报告: " + e.getMessage());
             return false;
         }
         return true;

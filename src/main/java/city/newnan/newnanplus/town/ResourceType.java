@@ -1,4 +1,4 @@
-package city.newnan.NewNanPlus.Town;
+package city.newnan.newnanplus.town;
 
 /**
  * 小镇资源种类

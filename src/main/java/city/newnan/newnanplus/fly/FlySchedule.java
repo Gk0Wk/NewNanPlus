@@ -1,26 +1,26 @@
-package city.newnan.NewNanPlus.Fly;
-import city.newnan.NewNanPlus.*;
+package city.newnan.newnanplus.fly;
 
-import java.util.Vector;
-import java.text.MessageFormat;
-
+import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
+
+import java.text.MessageFormat;
+import java.util.Vector;
 
 public class FlySchedule extends BukkitRunnable {
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal GlobalData;
+    private final NewNanPlusGlobal globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
     public FlySchedule(NewNanPlusGlobal globalData) {
-        GlobalData = globalData;
-        runTaskTimer(GlobalData.Plugin, 0, GlobalData.Config.getInt("module-flyfee.tick-per-count"));
+        this.globalData = globalData;
+        runTaskTimer(this.globalData.plugin, 0, this.globalData.config.getInt("module-flyfee.tick-per-count"));
     }
 
     /**
@@ -28,37 +28,37 @@ public class FlySchedule extends BukkitRunnable {
      */
     @Override
     public void run() {
-        if (GlobalData.FlyingPlayers.size() > 0) {
-            double cost_per_count = GlobalData.Config.getDouble("module-flyfee.cost-per-count");
-            double tick_per_count = GlobalData.Config.getDouble("module-flyfee.tick-per-count");
+        if (globalData.flyingPlayers.size() > 0) {
+            double cost_per_count = globalData.config.getDouble("module-flyfee.cost-per-count");
+            double tick_per_count = globalData.config.getDouble("module-flyfee.tick-per-count");
             double cost_per_second = (20.0 / tick_per_count) * cost_per_count;
 
             // 不能在遍历的时候删除元组，所以需要暂时记录
             Vector<Player> ToDeleteFlyingPlayer = new Vector<Player>();
 
             // 遍历飞行玩家 - 改用Lambda forEach
-            GlobalData.FlyingPlayers.forEach(((player, flyingPlayer) -> {
+            globalData.flyingPlayers.forEach(((player, flyingPlayer) -> {
                 if (player.hasPermission("newnanplus.fly.free")) {
-                    GlobalData.sendPlayerActionBar(player, MessageFormat.format(
-                            GlobalData.Config.getString("module-flyfee.msg-actionbar-bypass"),
+                    globalData.sendPlayerActionBar(player, MessageFormat.format(
+                            globalData.config.getString("module-flyfee.msg-actionbar-bypass"),
                             player.getName()));
                     // lambda表达式中要用return跳过本次调用，相当于for的continue
                     return;
                 }
                 // 获取玩家现金金额
-                double balance = GlobalData.VaultEco.getBalance(player);
+                double balance = globalData.vaultEco.getBalance(player);
                 // 如果玩家还有现金
                 if (balance > 0.0) {
                     int remain_second = (int)(balance / cost_per_second);
-                    GlobalData.VaultEco.withdrawPlayer(player, (balance < cost_per_count) ? balance : cost_per_count);
-                    GlobalData.sendPlayerActionBar(player, MessageFormat.format(
-                            GlobalData.Config.getString("module-flyfee.msg-actionbar"),
+                    globalData.vaultEco.withdrawPlayer(player, (balance < cost_per_count) ? balance : cost_per_count);
+                    globalData.sendPlayerActionBar(player, MessageFormat.format(
+                            globalData.config.getString("module-flyfee.msg-actionbar"),
                             formatSecond(remain_second), balance));
 
                     // 如果只能飞一分钟以内，就警告
                     if (remain_second <= 60.0) {
                         String _msg = ChatColor.translateAlternateColorCodes('&',
-                                GlobalData.Config.getString("module-flyfee.msg-feewraning"));
+                                globalData.config.getString("module-flyfee.msg-feewraning"));
                         player.sendTitle(_msg, null, 1, 7, 2);
                     }
                 } else {
@@ -70,7 +70,7 @@ public class FlySchedule extends BukkitRunnable {
 
             // 删掉刚才需要踢除的
             ToDeleteFlyingPlayer.forEach((player) -> {
-                GlobalData.FlyCommand.cancelFly(player, true);
+                globalData.flyCommand.cancelFly(player, true);
             });
             ToDeleteFlyingPlayer.clear();
         }
