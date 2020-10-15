@@ -3,18 +3,12 @@ package city.newnan.newnanplus;
 import city.newnan.newnanplus.cron.Cron;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
-import me.wolfyscript.utilities.api.inventory.GuiCluster;
-import me.wolfyscript.utilities.api.inventory.GuiWindow;
-import me.wolfyscript.utilities.api.inventory.button.ButtonState;
-import me.wolfyscript.utilities.api.inventory.button.buttons.DummyButton;
 import me.wolfyscript.utilities.api.language.Language;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
-import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -181,12 +175,12 @@ public class NewNanPlusPlugin extends JavaPlugin {
         this.globalData.wolfyInventoryAPI = this.globalData.wolfyAPI.getInventoryAPI();
 
         // demo
-        GuiCluster cluster = this.globalData.wolfyInventoryAPI.getOrRegisterGuiCluster("none");
-        GuiWindow window = new GuiWindow("main_menu", this.globalData.wolfyInventoryAPI, InventoryType.CHEST);
-        ButtonState bstate = new ButtonState("settings", Material.OAK_LOG);
-        DummyButton button = new DummyButton("settings", bstate);
-        window.registerButton(button);
-        cluster.registerGuiWindow(window);
+//        GuiCluster cluster = this.globalData.wolfyInventoryAPI.getOrRegisterGuiCluster("none");
+//        GuiWindow window = new GuiWindow("main_menu", this.globalData.wolfyInventoryAPI, InventoryType.CHEST);
+//        ButtonState bstate = new ButtonState("settings", Material.OAK_LOG);
+//        DummyButton button = new DummyButton("settings", bstate);
+//        window.registerButton(button);
+//        cluster.registerGuiWindow(window);
 
         return true;
     }

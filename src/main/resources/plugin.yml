@@ -2,7 +2,7 @@ name: ${project.name}
 version: ${project.version}
 author: Sttot
 # 插件的主类，记得带包名
-main: 'city.newnan.NewNanPlus.NewNanPlusPlugin'
+main: 'city.newnan.newnanplus.NewNanPlusPlugin'
 depend: ['Vault'] # 'ProtocolLib', 'BKCommonLib', 'PlaceholderAPI'
 website: 'https://gk0wk.github.io/'
 api-version: '1.14'

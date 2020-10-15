@@ -214,7 +214,7 @@ public class CronExpression {
         // 获取时间戳，考虑时区
         this.nextTime = LocalDateTime.of(
                 this.yearPointer,
-                this.monthListPointer,
+                this.monthList[this.monthListPointer],
                 this.dayPointer,
                 this.hourList[this.hourListPointer],
                 this.minuteList[this.minuteListPointer],
@@ -289,7 +289,8 @@ public class CronExpression {
         if (expressionSplits[3].equals("*") && expressionSplits[5].equals("*")) {
             nextDay = this.dayPointer + 1;
         } else {
-            LocalDateTime theDate = LocalDateTime.of(this.yearPointer, this.monthListPointer, 1, 0, 0);
+            LocalDateTime theDate = LocalDateTime.of(this.yearPointer, this.monthList[this.monthListPointer],
+                    1, 0, 0);
             // Day of Month 部分
             if (!expressionSplits[3].equals("*")) {
                 for (String splits : expressionSplits[3].split(",")) {
@@ -353,7 +354,8 @@ public class CronExpression {
                     // 先从表里面找最近的日期
                     if (this.avaliableRegularDayOfWeek != null) {
                         // 定义第二天而不是第一天，因为第一天可能是非法的(0)
-                        LocalDateTime secondDate = LocalDateTime.of(this.yearPointer, this.monthListPointer,
+                        LocalDateTime secondDate = LocalDateTime.of(this.yearPointer,
+                                this.monthList[this.monthListPointer],
                                 this.dayPointer + 1, 0, 0);
                         int curDayOfWeek = secondDate.getDayOfWeek().getValue();
 
