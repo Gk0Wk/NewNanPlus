@@ -1,10 +1,5 @@
 package city.newnan.newnanplus;
 
-import city.newnan.newnanplus.createarea.CreateArea;
-import city.newnan.newnanplus.deathtrigger.DeathTrigger;
-import city.newnan.newnanplus.feefly.FeeFly;
-import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
-import city.newnan.newnanplus.playermanager.PlayerManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
@@ -17,8 +12,6 @@ import org.bukkit.entity.Player;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
@@ -26,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class NewNanPlusGlobal implements NewNanPlusModule {
     public NewNanPlusGlobal(NewNanPlusPlugin plugin) {
         this.plugin = plugin;
+        reloadConfig();
     }
 
     /**
@@ -34,11 +28,11 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     @Override
     public void reloadConfig() {
         FileConfiguration config =  configManager.get("config.yml");
-        globalMessage.clear();
         globalMessage.put("NO_PERMISSION", config.getString("global-data.no-permission-msg"));
-        globalMessage.put("REFUSE_CONSOLE_SELFRUN", "global-data.console-selfrun-refuse");
-        globalMessage.put("PLAYER_OFFLINE", "global-data.player-offline-msg");
-        globalMessage.put("PARAMETER_NUMBER_NOT_MATCH", "global-data.parameter-number-not-match");
+        globalMessage.put("REFUSE_CONSOLE_SELFRUN", config.getString("global-data.console-selfrun-refuse"));
+        globalMessage.put("PLAYER_OFFLINE", config.getString("global-data.player-offline-msg"));
+        globalMessage.put("PARAMETER_NUMBER_NOT_MATCH", config.getString("global-data.parameter-number-not-match"));
+        globalMessage.put("PREFIX", config.getString("global-data.prefix"));
     }
 
     /* =============================================================================================== */
@@ -56,8 +50,6 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     public city.newnan.newnanplus.utility.ConfigManager configManager;
 
     public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-
-    public FileConfiguration config = null;
     /**
      * 控制台日志实例，会自动带 <code>[NewNanPlus] </code>
      */
@@ -76,29 +68,27 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     /* =============================================================================================== */
     /* 模块 */
     /* NewNanPlus BuildingField*/
-    // public YamlConfiguration BuildingField;
 
     /* NewNanPlus Town */
-    public ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town> towns = new ConcurrentHashMap<>();
-    public city.newnan.newnanplus.town.TownCommand townCommand;
+    public city.newnan.newnanplus.town.TownManager townManager;
 
     /* NewNanPlus CreateArea **/
-    public CreateArea createArea;
+    public city.newnan.newnanplus.createarea.CreateArea createArea;
 
     /* NewNanPlus Player **/
-    public PlayerManager playerManager;
+    public city.newnan.newnanplus.playermanager.PlayerManager playerManager;
 
     /* NewNanPlus DeathTrigger **/
-    public DeathTrigger deathTrigger;
+    public city.newnan.newnanplus.deathtrigger.DeathTrigger deathTrigger;
 
     /* NewNanPlus LagAnalyzer */
-    public LagAnalyzer lagAnalyzer;
+    public city.newnan.newnanplus.laganalyzer.LagAnalyzer lagAnalyzer;
 
     /* NewNanPlus Corn */
     public city.newnan.newnanplus.cron.Cron cron;
 
     /* NewNanPlus FeeFly **/
-    public FeeFly feeFly;
+    public city.newnan.newnanplus.feefly.FeeFly feeFly;
 
 
     /* =============================================================================================== */
@@ -135,7 +125,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     public void sendPlayerMessage(Player player, String msg, boolean prefix) {
         if (prefix) {
             String _msg = ChatColor.translateAlternateColorCodes('&',
-                    config.getString("global-data.prefix") + msg);
+                    globalMessage.get("PREFIX") + msg);
             player.sendMessage(_msg);
         } else {
             String _msg = ChatColor.translateAlternateColorCodes('&', msg);

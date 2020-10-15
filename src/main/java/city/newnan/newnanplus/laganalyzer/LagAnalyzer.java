@@ -18,7 +18,7 @@ public class LagAnalyzer implements NewNanPlusModule {
      */
     NewNanPlusGlobal globalData;
 
-    public final HashMap<String, Integer> hopperMap = new HashMap<>();
+    private final HashMap<String, Integer> hopperMap = new HashMap<>();
 
     /**
      * 构造函数

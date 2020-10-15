@@ -14,6 +14,7 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -64,8 +65,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             }
 
             // 加载插件配置
-            this.globalData.config = this.globalData.configManager.get("config.yml");
-            this.globalData.createArea = this.globalData.configManager.get("create_area.yml");
+            this.globalData.configManager.get("config.yml");
             this.globalData.printINFO("§a配置文件载入完毕。");
 
             bindWolfyUtilities();
@@ -158,11 +158,12 @@ public class NewNanPlusPlugin extends JavaPlugin {
     }
 
     private boolean bindWolfyUtilities() {
+        FileConfiguration config = globalData.configManager.get("config.yml");
         // 创建API实例
         this.globalData.wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
         // 设置前缀
-        this.globalData.wolfyAPI.setCHAT_PREFIX(this.globalData.config.getString("global-data.prefix"));
-        this.globalData.wolfyAPI.setCONSOLE_PREFIX(this.globalData.config.getString("NewNanCity"));
+        this.globalData.wolfyAPI.setCHAT_PREFIX(config.getString("global-data.prefix"));
+        this.globalData.wolfyAPI.setCONSOLE_PREFIX(config.getString("NewNanCity"));
         // 多语言模块
         this.saveResource("lang/zh-CN.json", true);
         this.globalData.wolfyLanguageAPI = this.globalData.wolfyAPI.getLanguageAPI();
@@ -192,7 +193,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
      * 设置世界的Gamerule
      */
     public void changeGamerules() {
-        ConfigurationSection rules = this.globalData.config.getConfigurationSection("module-world-setting");
+        ConfigurationSection rules = globalData.configManager.get("config.yml").
+                getConfigurationSection("module-world-setting");
         for (String rule : rules.getKeys(false)) {
             switch (rule) {
                 case "keepInventoryOnDeath":

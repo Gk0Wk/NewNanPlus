@@ -11,6 +11,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 // Mojang生成玩家UUID的办法：
 // UUID.nameUUIDFromBytes(("OfflinePlayer:" + characterName).getBytes(StandardCharsets.UTF_8))
@@ -18,17 +19,19 @@ import java.util.UUID;
 /**
  * 小镇模块指令模块
  */
-public class TownCommand {
+public class TownManager {
     /**
      * 持久化访问全局数据
      */
     NewNanPlusGlobal globalData;
 
+    private final ConcurrentHashMap<UUID, Town> towns = new ConcurrentHashMap<>();
+
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public TownCommand(NewNanPlusGlobal globalData) {
+    public TownManager(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
         File townDir = new File(this.globalData.plugin.getDataFolder(), "town");
         if (!townDir.exists()) {
@@ -79,18 +82,18 @@ public class TownCommand {
     }
 
     private void resistTown(Town town) {
-        globalData.towns.put(town.uniqueID, town);
+        towns.put(town.uniqueID, town);
     }
 
     public void loadTown(UUID uuid) {
-        if (globalData.towns.containsKey(uuid))
+        if (towns.containsKey(uuid))
             return;
         Town town =  _loadTown((new File(globalData.plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
         resistTown(town);
     }
 
     public void saveTowns() {
-        globalData.towns.forEach((uuid, town) -> {
+        towns.forEach((uuid, town) -> {
             saveTown(town);
         });
     }
@@ -100,7 +103,7 @@ public class TownCommand {
         globalData.configManager.save("town/" + town.uniqueID.toString() + ".yml");
     }
 
-    public boolean checkANDremoveOutdatedTownEffect(Town town, TownEffectType effect) {
+    public boolean checkAndRemoveOutdatedTownEffect(Town town, TownEffectType effect) {
         if (town.effects.get(effect).before(new Date())) {
             detachEffect(town, effect);
             return true;
@@ -112,7 +115,7 @@ public class TownCommand {
     public void detachEffect(Town town, TownEffectType effect) {
         if (!town.effects.containsKey(effect))
             return;
-        // Unregists Something...
+        // Unregisters Something...
 
         // Remove from map
         town.effects.remove(effect);
@@ -124,7 +127,7 @@ public class TownCommand {
             town.effects.put(effect, date);
             return;
         }
-        // Regists Something...
+        // Unregisters Something...
 
         // Add to map
         town.effects.put(effect, date);
