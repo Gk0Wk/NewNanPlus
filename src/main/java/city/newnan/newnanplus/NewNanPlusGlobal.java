@@ -2,6 +2,8 @@ package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
+import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
+import city.newnan.newnanplus.playermanager.PlayerManager;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
@@ -82,21 +84,15 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     public FileConfiguration createArea;
     public city.newnan.newnanplus.createarea.CACommand caCommand;
 
-
     /* NewNanPlus Player **/
-    public FileConfiguration newbiesList;
-    public HashMap<String, UUID> reversePlayerList = new HashMap<>();
-    public city.newnan.newnanplus.player.PlayerCommand playerCommand;
-
+    public PlayerManager playerManager;
 
     /* NewNanPlus DeathTrigger **/
     public DeathTrigger deathTrigger;
 
-
     /* NewNanPlus LaggAnalyzer */
     public HashMap<String, Integer> hopperMap = new HashMap<>();
-    public city.newnan.newnanplus.lagganalyzer.LACommand laCommand;
-
+    public LagAnalyzer lagAnalyzer;
 
     /* NewNanPlus Corn */
     public city.newnan.newnanplus.cron.Cron cron;

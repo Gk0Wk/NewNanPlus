@@ -1,4 +1,4 @@
-package city.newnan.newnanplus.lagganalyzer;
+package city.newnan.newnanplus.laganalyzer;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Chunk;
@@ -10,7 +10,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 
-public class LACommand {
+public class LagAnalyzer {
     /**
      * 持久化访问全局数据
      */
@@ -20,7 +20,7 @@ public class LACommand {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public LACommand(NewNanPlusGlobal globalData) {
+    public LagAnalyzer(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
     }
 

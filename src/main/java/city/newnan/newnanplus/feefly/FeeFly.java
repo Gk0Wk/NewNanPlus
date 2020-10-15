@@ -53,7 +53,9 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     public FeeFly(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
         reloadConfig();
+        // 启动定时任务监控
         runTaskTimer(this.globalData.plugin, 0, tickPerCount);
+        // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
     }
 
@@ -65,18 +67,18 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 获取配置实例
         FileConfiguration config = globalData.configManager.get("config.yml");
         // 加载配置内容
-        flySpeed = (float) config.getDouble("module-flyfee.fly-speed");
-        costPerCount = config.getDouble("module-flyfee.cost-per-count");
-        tickPerCount = config.getLong("module-flyfee.tick-per-count");
+        flySpeed = (float) config.getDouble("module-feefly.fly-speed");
+        costPerCount = config.getDouble("module-feefly.cost-per-count");
+        tickPerCount = config.getLong("module-feefly.tick-per-count");
         costPerSecond = (20.0 / tickPerCount) * costPerCount;
-        flyStartMessage = config.getString("module-flyfee.msg-begin");
-        flyEndMessage = config.getString("module-flyfee.msg-finish");
-        actionbarBypassMessage = config.getString("module-flyfee.msg-actionbar-bypass");
-        actionbarFeeMessage = config.getString("module-flyfee.msg-actionbar");
-        lessFeeWarningMessage = config.getString("module-flyfee.msg-feewraning");
-        noFeeMessage = config.getString("module-flyfee.msg-nofee");
-        countFlyingPlayersMessage = config.getString("msg-count-flying-players");
-        listFlyingPlayersMessage = config.getString("msg-list-flying-players");
+        flyStartMessage = config.getString("module-feefly.msg-begin");
+        flyEndMessage = config.getString("module-feefly.msg-finish");
+        actionbarBypassMessage = config.getString("module-feefly.msg-actionbar-bypass");
+        actionbarFeeMessage = config.getString("module-feefly.msg-actionbar");
+        lessFeeWarningMessage = config.getString("module-feefly.msg-feewraning");
+        noFeeMessage = config.getString("module-feefly.msg-nofee");
+        countFlyingPlayersMessage = config.getString("module-feefly.msg-count-flying-players");
+        listFlyingPlayersMessage = config.getString("module-feefly.msg-list-flying-players");
     }
 
     /**

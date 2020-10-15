@@ -3,6 +3,8 @@ package city.newnan.newnanplus;
 import city.newnan.newnanplus.cron.Cron;
 import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
+import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
+import city.newnan.newnanplus.playermanager.PlayerManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
@@ -62,7 +64,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
 
             // 加载插件配置
             this.globalData.config = this.globalData.configManager.get("config.yml");
-            this.globalData.newbiesList = this.globalData.configManager.get("newbies_list.yml");
             this.globalData.createArea = this.globalData.configManager.get("create_area.yml");
             this.globalData.printINFO("§a配置文件载入完毕。");
 
@@ -85,7 +86,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a创造区模块注册完毕。");
 
             // 新人模块
-            this.globalData.playerCommand = new city.newnan.newnanplus.player.PlayerCommand(globalData);
+            this.globalData.playerManager = new PlayerManager(globalData);
             this.globalData.printINFO("§a新人模块注册完毕。");
 
             // 死亡触发器模块
@@ -93,7 +94,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a死亡触发器模块注册完毕。");
 
             // 卡服分析器模块
-            this.globalData.laCommand = new city.newnan.newnanplus.lagganalyzer.LACommand(globalData);
+            this.globalData.lagAnalyzer = new LagAnalyzer(globalData);
             this.globalData.printINFO("§a卡服分析器模块注册完毕。");
 
             // 定时任务模块

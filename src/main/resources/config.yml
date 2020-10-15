@@ -18,11 +18,14 @@ global-settings: {}
 module-world-setting:
   keepInventoryOnDeath: []
   mobGriefing: []
-module-allownewbies:
+module-playermanager:
   newbies-group: 'Newbie'
   player-group: 'Player'
   world-group: 'world'
-module-flyfee:
+  msg-allow-when-online: '操作成功，玩家未上线，稍后玩家登录后将自动获得权限。'
+  msg-allow-succeed: '操作成功，赋予玩家权限。'
+  msg-not-newbie-already: '该玩家已不是新人。'
+module-feefly:
   tick-per-count: 20
   cost-per-count: 0.3
   fly-speed: 0.05

@@ -61,13 +61,13 @@ public class NewNanPlusCommand implements CommandExecutor {
                 case "save":
                     return saveConfig(sender);
                 case "allow":
-                    return globalData.playerCommand.allowNewbieToPlayer(sender, args);
+                    return globalData.playerManager.allowNewbieToPlayer(sender, args);
                 case "ctp":
                     return globalData.caCommand.teleportToCreateArea(sender, args);
                 case "cnew":
                     return globalData.caCommand.createCreateArea(sender, args);
                 case "genhopper":
-                    return globalData.laCommand.genHopperReport();
+                    return globalData.lagAnalyzer.genHopperReport();
                 case "list":
                     return listSomething(sender, args);
                 default:
