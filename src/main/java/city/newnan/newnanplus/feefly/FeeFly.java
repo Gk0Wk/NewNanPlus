@@ -215,8 +215,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             }
             // 否则就是玩家执行
             Player _player = (Player) sender;
-            // 如果他有自己的飞行权限
-            if (!_player.hasPermission("newnanplus.fly.self")) {
+            // 如果他有自己的飞行权限 或者他已经在飞行(有权取消自己的飞行)
+            if (!_player.hasPermission("newnanplus.fly.self") || flyingPlayers.contains(_player)) {
                 globalData.sendPlayerMessage(_player, globalData.globalMessage.get("NO_PERMISSION"));
                 return false;
             }
@@ -257,7 +257,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 return true;
             }
             // 现金大于零才能飞
-            if (globalData.vaultEco.getBalance(player) > 0.0) {
+            if (globalData.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.fly.free")) {
                 // 添加玩家
                 flyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
                 // 如果玩家在疾跑，应当取消它，否则飞起来之后会快

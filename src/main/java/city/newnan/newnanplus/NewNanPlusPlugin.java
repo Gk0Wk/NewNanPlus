@@ -15,6 +15,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -38,12 +39,9 @@ public class NewNanPlusPlugin extends JavaPlugin {
     @Override
     public void onEnable() {
         try {
-            // 实例化全局存储对象
-            this.globalData = new NewNanPlusGlobal(this);
-            this.globalData.configManager = new ConfigManager(this);
+            // 实例化全局存储对象 + 配置管理器
+            this.globalData = new NewNanPlusGlobal(this, new ConfigManager(this));
             this.globalData.reloadConfig();
-            // 绑定控制台输出
-            this.globalData.consoleLogger = getLogger();
         }
         catch (Exception e) {
             // 打印错误栈
@@ -113,6 +111,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
         }
+
+        globalData.cron.onPluginReady();
     }
 
     /**
@@ -162,8 +162,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
         // 创建API实例
         this.globalData.wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
         // 设置前缀
-        this.globalData.wolfyAPI.setCHAT_PREFIX(config.getString("global-data.prefix"));
-        this.globalData.wolfyAPI.setCONSOLE_PREFIX(config.getString("NewNanCity"));
+        this.globalData.wolfyAPI.setCHAT_PREFIX(globalData.globalMessage.get("PREFIX"));
+        this.globalData.wolfyAPI.setCONSOLE_PREFIX("NewNanCity");
         // 多语言模块
         this.saveResource("lang/zh-CN.json", true);
         this.globalData.wolfyLanguageAPI = this.globalData.wolfyAPI.getLanguageAPI();
@@ -186,6 +186,13 @@ public class NewNanPlusPlugin extends JavaPlugin {
 //        window.registerButton(button);
 //        cluster.registerGuiWindow(window);
 
+        return true;
+    }
+
+    private boolean bindDynmapAPI() {
+        Plugin dynmap = Bukkit.getPluginManager().getPlugin("dynmap");
+        assert dynmap != null;
+        globalData.dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
         return true;
     }
 

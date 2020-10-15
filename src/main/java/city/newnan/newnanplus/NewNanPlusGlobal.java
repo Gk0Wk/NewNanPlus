@@ -17,8 +17,11 @@ import java.util.HashMap;
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
  */
 public class NewNanPlusGlobal implements NewNanPlusModule {
-    public NewNanPlusGlobal(NewNanPlusPlugin plugin) {
+    public NewNanPlusGlobal(NewNanPlusPlugin plugin, city.newnan.newnanplus.utility.ConfigManager manager) {
         this.plugin = plugin;
+        this.configManager = manager;
+        // 绑定控制台输出
+        this.consoleLogger = plugin.getLogger();
         reloadConfig();
     }
 
@@ -46,6 +49,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
     public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
     public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
+    public org.dynmap.DynmapAPI dynmapAPI;
 
     public city.newnan.newnanplus.utility.ConfigManager configManager;
 

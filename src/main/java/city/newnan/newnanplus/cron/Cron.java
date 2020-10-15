@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,6 +71,19 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     }
 
     /**
+     * 执行在插件加载完毕时执行的命令，即on-plugin-ready
+     * 和on-server-ready不同，后者只会在服务器开启时执行
+     */
+    public void onPluginReady() {
+        List<String> commands = globalData.configManager.get("cron.yml").getStringList("on-plugin-ready");
+        CommandSender sender = globalData.plugin.getServer().getConsoleSender();
+        commands.forEach(command -> {
+            globalData.printINFO("§a§lRun Command: §r" + command);
+            globalData.plugin.getServer().dispatchCommand(sender, command);
+        });
+    }
+
+    /**
      * 执行在插件禁用时执行的命令，即on-plugin-disable
      */
     public void onPluginDisable() {
@@ -96,8 +110,13 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * @param commands 任务要执行的指令
      */
     public void addTask(String cronExpression, String[] commands) {
-        CronCommand task = new CronCommand(cronExpression, commands);
-        this.tasks.add(task);
+        try {
+            CronCommand task = new CronCommand(cronExpression, commands);
+            this.tasks.add(task);
+        }
+        catch (Exception e) {
+            globalData.printWARN(MessageFormat.format("无法解析表达式：{0}", cronExpression));
+        }
     }
 
     /**
@@ -367,16 +386,5 @@ class CronCommand {
     public CronCommand(String expression, String[] commands) {
         this.expression = new CronExpression(expression);
         this.commands = commands;
-    }
-}
-
-@Deprecated
-class CronTask {
-    public final CronExpression expression;
-    public final Runnable task;
-
-    public CronTask(String expression, Runnable task) {
-        this.expression = new CronExpression(expression);
-        this.task = task;
     }
 }

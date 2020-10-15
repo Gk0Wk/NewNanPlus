@@ -93,7 +93,7 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     private boolean saveConfig(CommandSender sender) {
         if (!sender.hasPermission("newnanplus.save")) {
-            globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
+            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
             return false;
         }
         globalData.plugin.saveConfig();
@@ -107,7 +107,7 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     private boolean reloadConfig(CommandSender sender) {
         if (!sender.hasPermission("newnanplus.reload")) {
-            globalData.sendMessage(sender, globalData.config.getString("global-data.no-permission-msg"));
+            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
             return false;
         }
         globalData.plugin.reloadConfig();

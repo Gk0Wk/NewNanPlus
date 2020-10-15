@@ -10,6 +10,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
+import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -35,10 +36,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     public PlayerManager(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
+        reloadConfig();
 
         // 创建反射表
         for (OfflinePlayer player : globalData.plugin.getServer().getOfflinePlayers()) {
             reversePlayerList.put(player.getName(), player.getUniqueId());
+            globalData.printINFO(MessageFormat.format("{0} | {1}", player.getName(), player.getUniqueId().toString()));
         }
 
         // 注册监听函数
@@ -67,7 +70,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param event 玩家登录事件
      */
     @EventHandler
-    public void onPlayerJoin(final PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         touchPlayer(event.getPlayer());
         joinCheck(event.getPlayer());
     }
@@ -148,8 +151,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 获取已通过的新人组的List
         List<String> list_yet = (List<String>) newbiesList.getList("yet-passed-newbies");
         // 如果是新人组的话
-        if (globalData.vaultPerm.getPrimaryGroup(player).
-                equalsIgnoreCase(globalData.config.getString("module-allownewbies.newbies-group"))) {
+        if (globalData.vaultPerm.getPrimaryGroup(player).equalsIgnoreCase(newbiesGroup)) {
             assert list_yet != null;
             if (list_yet.contains(player.getName())) {
                 // 查看玩家是否在已通过新人组，将玩家移入玩家权限组，并更新
@@ -194,5 +196,14 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             return true;
         reversePlayerList.put(player.getName(), player.getUniqueId());
         return false;
+    }
+
+    /**
+     * 通过玩家名称反查玩家UUID
+     * @param playerName 玩家名称
+     * @return 玩家UUID，找不到则返回null
+     */
+    public UUID findUserWithName(String playerName) {
+        return reversePlayerList.get(playerName);
     }
 }

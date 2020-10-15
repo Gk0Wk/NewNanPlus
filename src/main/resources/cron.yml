@@ -1,5 +1,7 @@
 version: ${version}
 on-server-ready:
+  - 'broadcast 牛腩菌启动完毕！。'
+on-plugin-ready:
   - 'gamerule keepInventory true'
   - 'gamerule sendCommandFeedback false'
   - 'gamerule commandBlockOutput false'
@@ -24,7 +26,6 @@ on-server-ready:
   - 'mv gamerule mobGriefing true world'
   - 'mv gamerule mobGriefing true world_nether'
   - 'mv gamerule mobGriefing true world_the_end'
-  - 'broadcast 牛腩菌启动完毕！。'
 on-plugin-disable: []
 schedule-tasks:
   '0 30 23 * * *':

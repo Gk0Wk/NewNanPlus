@@ -62,7 +62,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
                     config.getBoolean("module-deathcost.simple-mode.if-percent")));
         } else {
             // 复杂扣费模式
-            List<Map<?,?>> list_map = globalData.config.getMapList("module-deathcost.complex-mode");
+            List<Map<?,?>> list_map = config.getMapList("module-deathcost.complex-mode");
             for (Map<?,?> map : list_map) {
                 costStages.add(new CostStage(
                         (Double) map.get("max"),

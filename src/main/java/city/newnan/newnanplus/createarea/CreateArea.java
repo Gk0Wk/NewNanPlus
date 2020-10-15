@@ -9,6 +9,8 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.dynmap.markers.AreaMarker;
+import org.dynmap.markers.MarkerSet;
 
 import java.util.Objects;
 
@@ -19,6 +21,7 @@ public class CreateArea implements NewNanPlusModule {
     NewNanPlusGlobal globalData;
 
     private World createWorld;
+    private MarkerSet markerSet;
 
     /**
      * 构造函数
@@ -26,6 +29,13 @@ public class CreateArea implements NewNanPlusModule {
      */
     public CreateArea(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
+
+        markerSet = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.CreateArea");
+        if (markerSet == null) {
+            markerSet =  globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
+                    "NewNanPlus.CreateArea", "CreateArea", null, false);
+        }
+
         reloadConfig();
     }
 
@@ -36,6 +46,24 @@ public class CreateArea implements NewNanPlusModule {
     public void reloadConfig() {
         FileConfiguration createArea = globalData.configManager.reload("create_area.yml");
         createWorld = globalData.plugin.getServer().getWorld(Objects.requireNonNull(createArea.getString("world")));
+
+        // 检查有无没有在图中画出的创造区域
+        ConfigurationSection areas = createArea.getConfigurationSection("areas");
+        assert areas != null;
+        for (String areaID : areas.getKeys(false)) {
+            if (markerSet.findAreaMarker(areaID) == null) {
+                ConfigurationSection area = areas.getConfigurationSection(areaID);
+                assert area != null;
+                int x1 = area.getInt("x1");
+                int x2 = area.getInt("x2");
+                int z1 = area.getInt("z1");
+                int z2 = area.getInt("z2");
+                String name = area.getString("name");
+                // 地图上绘制区域
+                markerSet.createAreaMarker(areaID, name+"的创造区", false,
+                        createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
+            }
+        }
     }
 
     /**
@@ -163,23 +191,15 @@ public class CreateArea implements NewNanPlusModule {
 
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
 
-        // 看看玩家原来有没有创造区，有的话需要重新设置dynmap
-        if (createArea.getString("areas."+player.getUniqueId()+".name") != null) {
-            globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                    "dmarker deletearea id:" + player.getUniqueId());
+        // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
+        AreaMarker marker = markerSet.findAreaMarker(player.getUniqueId().toString());
+        if (marker != null) {
+            marker.deleteMarker();
         }
 
         // 地图上绘制区域
-        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                "dmarker addcorner " + x1 + " 70 " + z1 + " " + createWorld.getName());
-        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                "dmarker addcorner " + x1 + " 70 " + z2 + " " + createWorld.getName());
-        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                "dmarker addcorner " + x2 + " 70 " + z2 + " " + createWorld.getName());
-        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                "dmarker addcorner " + x2 + " 70 " + z1 + " " + createWorld.getName());
-        globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                "dmarker addarea id:" + player.getUniqueId() + " " + player.getName()+"的创造区");
+        markerSet.createAreaMarker(player.getUniqueId().toString(), player.getName()+"的创造区", false,
+                createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
 
         // 存储玩家数据
         ConfigurationSection section = createArea.createSection("areas."+player.getUniqueId());
