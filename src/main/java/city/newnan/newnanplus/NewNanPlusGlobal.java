@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -89,7 +90,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
 
 
     /* NewNanPlus DeathTrigger **/
-    public city.newnan.newnanplus.deathtrigger.DTCommand dtCommand;
+    public DeathTrigger deathTrigger;
 
 
     /* NewNanPlus LaggAnalyzer */
@@ -99,7 +100,6 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
 
     /* NewNanPlus Corn */
     public city.newnan.newnanplus.cron.Cron cron;
-
 
     /* NewNanPlus FeeFly **/
     public FeeFly feeFly;

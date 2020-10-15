@@ -27,6 +27,22 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      */
     private final NewNanPlusGlobal globalData;
 
+    /**
+     * 模块设置
+     */
+    private float flySpeed;
+    private double costPerCount;
+    private long tickPerCount;
+    private double costPerSecond;
+    private String flyStartMessage;
+    private String flyEndMessage;
+    private String actionbarBypassMessage;
+    private String actionbarFeeMessage;
+    private String lessFeeWarningMessage;
+    private String noFeeMessage;
+    private String countFlyingPlayersMessage;
+    private String listFlyingPlayersMessage;
+
     /** 正在飞行中的玩家，ConcurrentHashMap具有高并发性 */
     public final ConcurrentHashMap<Player, FlyingPlayer> flyingPlayers = new ConcurrentHashMap<>();
 
@@ -40,19 +56,6 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         runTaskTimer(this.globalData.plugin, 0, tickPerCount);
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
     }
-
-    private float flySpeed;
-    private double costPerCount;
-    private long tickPerCount;
-    private double costPerSecond;
-    private String flyStartMessage;
-    private String flyEndMessage;
-    private String actionbarBypassMessage;
-    private String actionbarFeeMessage;
-    private String lessFeeWarningMessage;
-    private String noFeeMessage;
-    private String countFlyingPlayersMessage;
-    private String listFlyingPlayersMessage;
 
     /**
      * 重新加载模块的配置

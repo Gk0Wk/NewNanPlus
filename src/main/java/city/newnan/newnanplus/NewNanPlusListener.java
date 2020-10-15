@@ -3,7 +3,6 @@ package city.newnan.newnanplus;
 import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.inventory.Inventory;
@@ -26,13 +25,6 @@ public class NewNanPlusListener implements Listener {
         this.globalData = globalData;
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
     }
-
-    @EventHandler
-    public void onPlayerDeath(PlayerDeathEvent event) {
-        // 触发死亡惩罚
-        globalData.dtCommand.onDeath(event);
-    }
-
 
 
     @EventHandler

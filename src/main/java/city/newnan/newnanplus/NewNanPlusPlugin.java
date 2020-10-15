@@ -1,6 +1,7 @@
 package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.cron.Cron;
+import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
@@ -88,7 +89,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a新人模块注册完毕。");
 
             // 死亡触发器模块
-            this.globalData.dtCommand = new city.newnan.newnanplus.deathtrigger.DTCommand(globalData);
+            this.globalData.deathTrigger = new DeathTrigger(globalData);
             this.globalData.printINFO("§a死亡触发器模块注册完毕。");
 
             // 卡服分析器模块
