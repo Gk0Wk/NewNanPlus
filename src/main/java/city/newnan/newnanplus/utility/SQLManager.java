@@ -13,7 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * NewNanCity 通用库 MySQL
  * 提供MySQL数据库连接、表操作、查询和更新功能。
  */
-public class NewNanSQL {
+public class SQLManager {
     /**
      * 数据库连接
      */
@@ -61,7 +61,7 @@ public class NewNanSQL {
      * @param password 登录密码
      * @param parameters 数据库连接参数
      */
-    public NewNanSQL(Plugin plugin, String host, int port, String database, String username, String password, Map<String, String> parameters) {
+    public SQLManager(Plugin plugin, String host, int port, String database, String username, String password, Map<String, String> parameters) {
         this.plugin = plugin;
         this.host = host;
         this.port = port;
@@ -88,7 +88,7 @@ public class NewNanSQL {
      * @param password 登录密码
      * @param parameters 数据库连接参数
      */
-    public NewNanSQL(Plugin plugin, String host, String database, String username, String password, Map<String, String> parameters) {
+    public SQLManager(Plugin plugin, String host, String database, String username, String password, Map<String, String> parameters) {
         this(plugin, host, 3306, database, username, password, parameters);
     }
 
@@ -101,7 +101,7 @@ public class NewNanSQL {
      * @param username 登录用户名
      * @param password 登录密码
      */
-    public NewNanSQL(Plugin plugin, String host, int port, String database, String username, String password) {
+    public SQLManager(Plugin plugin, String host, int port, String database, String username, String password) {
         this(plugin, host, port, database, username, password, new TreeMap<>());
     }
 
@@ -113,7 +113,7 @@ public class NewNanSQL {
      * @param username 登录用户名
      * @param password 登录密码
      */
-    public NewNanSQL(Plugin plugin, String host, String database, String username, String password) {
+    public SQLManager(Plugin plugin, String host, String database, String username, String password) {
         this(plugin, host, 3306, database, username, password, new TreeMap<>());
     }
 

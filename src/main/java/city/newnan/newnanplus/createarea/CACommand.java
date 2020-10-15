@@ -20,7 +20,7 @@ public class CACommand {
      */
     public CACommand(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
-        this.globalData.createArea = this.globalData.plugin.loadConf("create_area.yml");
+        this.globalData.createArea = this.globalData.configManager.get("create_area.yml");
     }
 
     /**
@@ -178,6 +178,6 @@ public class CACommand {
         section.set("x2", x2);
         section.set("z2", z2);
         // 存储设置
-        globalData.plugin.saveConf("create_area.yml", globalData.createArea);
+        globalData.configManager.save("create_area.yml");
     }
 }

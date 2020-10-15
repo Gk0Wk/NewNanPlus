@@ -3,7 +3,7 @@ package city.newnan.newnanplus.town;
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
 import java.text.ParseException;
@@ -41,7 +41,7 @@ public class TownCommand {
     }
 
     private Town _loadTown(String configPath) {
-        YamlConfiguration config = globalData.plugin.loadConf(configPath);
+        FileConfiguration config = globalData.configManager.get(configPath);
         Town town = new Town();
         town.townConfig = config;
         town.uniqueID = UUID.fromString(config.getString("uuid"));
@@ -97,7 +97,7 @@ public class TownCommand {
 
     public void saveTown(Town town) {
         town.saveCacheToConfig(globalData.dateFormatter);
-        globalData.plugin.saveConf("town/" + town.uniqueID.toString() + ".yml", town.townConfig);
+        globalData.configManager.save("town/" + town.uniqueID.toString() + ".yml");
     }
 
     public boolean checkANDremoveOutdatedTownEffect(Town town, TownEffectType effect) {

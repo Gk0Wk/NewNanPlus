@@ -8,7 +8,6 @@ import org.bukkit.ChatColor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 
 import java.text.SimpleDateFormat;
@@ -25,14 +24,14 @@ public class NewNanPlusGlobal {
     public NewNanPlusPlugin plugin;
     public NewNanPlusCommand command;
     public NewNanPlusListener listener;
-    // public NewNanPlusExecute Execute;
-
 
     /* =============================================================================================== */
     /* 全局 */
     public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
     public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
     public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
+
+    public city.newnan.newnanplus.utility.ConfigManager configManager;
 
     public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
@@ -57,18 +56,17 @@ public class NewNanPlusGlobal {
     // public YamlConfiguration BuildingField;
 
     /* NewNanPlus Town */
-    public ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town> towns =
-            new ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town>();
+    public ConcurrentHashMap<UUID, city.newnan.newnanplus.town.Town> towns = new ConcurrentHashMap<>();
     public city.newnan.newnanplus.town.TownCommand townCommand;
 
     /* NewNanPlus CreateArea **/
-    public YamlConfiguration createArea;
+    public FileConfiguration createArea;
     public city.newnan.newnanplus.createarea.CACommand caCommand;
 
 
     /* NewNanPlus Player **/
-    public YamlConfiguration newbiesList;
-    public HashMap<String, UUID> reversePlayerList = new HashMap<String, UUID>();
+    public FileConfiguration newbiesList;
+    public HashMap<String, UUID> reversePlayerList = new HashMap<>();
     public city.newnan.newnanplus.player.PlayerCommand playerCommand;
 
 
@@ -77,12 +75,12 @@ public class NewNanPlusGlobal {
 
 
     /* NewNanPlus LaggAnalyzer */
-    public HashMap<String, Integer> hopperMap = new HashMap<String, Integer>();
+    public HashMap<String, Integer> hopperMap = new HashMap<>();
     public city.newnan.newnanplus.lagganalyzer.LACommand laCommand;
 
 
     /* NewNanPlus Corn */
-    public city.newnan.newnanplus.corn.CornCommand cornCommand;
+    public city.newnan.newnanplus.cron.Cron cron;
 
 
     /* NewNanPlus Fly **/

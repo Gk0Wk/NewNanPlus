@@ -1,0 +1,39 @@
+version: ${version}
+on-server-ready:
+  - 'gamerule keepInventory true'
+  - 'gamerule sendCommandFeedback false'
+  - 'gamerule commandBlockOutput false'
+  - 'mv gamerule sendCommandFeedback false world'
+  - 'mv gamerule sendCommandFeedback false world_the_end'
+  - 'mv gamerule sendCommandFeedback false world_nether'
+  - 'mv gamerule sendCommandFeedback false LandOfCloud'
+  - 'mv gamerule sendCommandFeedback false resource_world'
+  - 'mv gamerule sendCommandFeedback false create_world'
+  - 'mv gamerule keepInventory true world'
+  - 'mv gamerule keepInventory true world_the_end'
+  - 'mv gamerule keepInventory true world_nether'
+  - 'mv gamerule keepInventory true LandOfCloud'
+  - 'mv gamerule keepInventory true resource_world'
+  - 'mv gamerule keepInventory true create_world'
+  - 'mv gamerule commandBlockOutput false world'
+  - 'mv gamerule commandBlockOutput false world_nether'
+  - 'mv gamerule commandBlockOutput false world_the_end'
+  - 'mv gamerule commandBlockOutput false LandOfCloud'
+  - 'mv gamerule commandBlockOutput false resource_world'
+  - 'mv gamerule commandBlockOutput false create_world'
+  - 'mv gamerule mobGriefing true world'
+  - 'mv gamerule mobGriefing true world_nether'
+  - 'mv gamerule mobGriefing true world_the_end'
+  - 'broadcast 牛腩菌启动完毕！。'
+on-plugin-disable: []
+schedule-tasks:
+  '0 30 23 * * *':
+    - 'broadcast 养成良好作息，玩耍也不要熬夜哦。'
+  '0 30 8 * * mon-fri':
+    - 'broadcast 各位玩家早上好呀！'
+  '0 30 8 * * sat,sun':
+    - 'broadcast 各位玩家，周末快乐！'
+  '0 0 0 1 1 *':
+    - 'broadcast 新的一年祝各位玩家万事如意！'
+  '0 0 0 2 2 *':
+    - 'broadcast 牛腩菌又大了一岁呢！'

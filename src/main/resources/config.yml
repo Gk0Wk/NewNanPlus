@@ -18,34 +18,6 @@ global-settings: {}
 module-world-setting:
   keepInventoryOnDeath: []
   mobGriefing: []
-module-corn:
-  on-server-ready:
-    - 'gamerule keepInventory true'
-    - 'gamerule sendCommandFeedback false'
-    - 'gamerule commandBlockOutput false'
-    - 'mv gamerule sendCommandFeedback false world'
-    - 'mv gamerule sendCommandFeedback false world_the_end'
-    - 'mv gamerule sendCommandFeedback false world_nether'
-    - 'mv gamerule sendCommandFeedback false LandOfCloud'
-    - 'mv gamerule sendCommandFeedback false resource_world'
-    - 'mv gamerule sendCommandFeedback false create_world'
-    - 'mv gamerule keepInventory true world'
-    - 'mv gamerule keepInventory true world_the_end'
-    - 'mv gamerule keepInventory true world_nether'
-    - 'mv gamerule keepInventory true LandOfCloud'
-    - 'mv gamerule keepInventory true resource_world'
-    - 'mv gamerule keepInventory true create_world'
-    - 'mv gamerule commandBlockOutput false world'
-    - 'mv gamerule commandBlockOutput false world_nether'
-    - 'mv gamerule commandBlockOutput false world_the_end'
-    - 'mv gamerule commandBlockOutput false LandOfCloud'
-    - 'mv gamerule commandBlockOutput false resource_world'
-    - 'mv gamerule commandBlockOutput false create_world'
-    - 'mv gamerule mobGriefing true world'
-    - 'mv gamerule mobGriefing true world_nether'
-    - 'mv gamerule mobGriefing true world_the_end'
-    - 'broadcast 牛腩菌已启动，早上好。'
-  on-plugin-disable: []
 module-allownewbies:
   newbies-group: 'Newbie'
   player-group: 'Player'

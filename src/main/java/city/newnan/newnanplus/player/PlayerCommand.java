@@ -19,7 +19,7 @@ public class PlayerCommand {
      */
     public PlayerCommand(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
-        this.globalData.newbiesList = this.globalData.plugin.loadConf("newbies_list.yml");
+        this.globalData.newbiesList = this.globalData.configManager.get("newbies_list.yml");
 
         // 创建反射表
         for (OfflinePlayer player : this.globalData.plugin.getServer().getOfflinePlayers()) {
@@ -86,7 +86,7 @@ public class PlayerCommand {
             }
         }
         if (need_refresh) {
-            globalData.plugin.saveConf("newbies_list.yml", globalData.newbiesList);
+            globalData.configManager.save("newbies_list.yml");
         }
         return true;
     }
@@ -129,7 +129,7 @@ public class PlayerCommand {
             need_refresh = true;
         }
         if (need_refresh) {
-            globalData.plugin.saveConf("newbies_list.yml", globalData.newbiesList);
+            globalData.configManager.save("newbies_list.yml");
         }
     }
 

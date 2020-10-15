@@ -1,5 +1,7 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.cron.Cron;
+import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.inventory.GuiCluster;
 import me.wolfyscript.utilities.api.inventory.GuiWindow;
@@ -12,12 +14,10 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.event.inventory.InventoryType;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
@@ -41,6 +41,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 实例化全局存储对象
             this.globalData = new NewNanPlusGlobal();
             this.globalData.plugin = this;
+            this.globalData.configManager = new ConfigManager(this);
             // 绑定控制台输出
             this.globalData.consoleLogger = getLogger();
         }
@@ -64,11 +65,9 @@ public class NewNanPlusPlugin extends JavaPlugin {
             }
 
             // 加载插件配置
-            // 如果不存在config.yml就创建默认的，存在就不会覆盖
-            saveDefaultConfig();
-            this.globalData.config = getConfig();
-            this.globalData.newbiesList = loadConf("newbies_list.yml");
-            this.globalData.createArea = loadConf("create_area.yml");
+            this.globalData.config = this.globalData.configManager.get("config.yml");
+            this.globalData.newbiesList = this.globalData.configManager.get("newbies_list.yml");
+            this.globalData.createArea = this.globalData.configManager.get("create_area.yml");
             this.globalData.printINFO("§a配置文件载入完毕。");
 
             bindWolfyUtilities();
@@ -103,7 +102,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a卡服分析器模块注册完毕。");
 
             // 定时任务模块
-            this.globalData.cornCommand = new city.newnan.newnanplus.corn.CornCommand(globalData);
+            this.globalData.cron = new Cron(globalData);
             this.globalData.printINFO("§a定时任务模块注册完毕。");
 
             changeGamerules();
@@ -125,21 +124,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
     @Override
     public void onDisable(){
         if (this.globalData != null) {
-            this.globalData.cornCommand.runOnPluginDisable();
+            if (this.globalData.cron != null)
+                this.globalData.cron.onPluginDisable();
             this.globalData.printINFO("§a正在保存配置文件");
         }
         saveConfig();
-    }
-
-    /**
-     * 重新加载配置，如果配置文件不存在就创建，存在就读取
-     */
-    @Override
-    public void reloadConfig() {
-        // 如果不存在config.yml就创建默认的，存在就不会覆盖
-        saveDefaultConfig();
-        super.reloadConfig();
-        this.globalData.config = getConfig();
     }
 
     /**
@@ -200,34 +189,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
         cluster.registerGuiWindow(window);
 
         return true;
-    }
-
-    /**
-     * 从插件文件夹下面读取对应的配置文件
-     * @param file 文件名
-     * @return 配置实例
-     */
-    public YamlConfiguration loadConf(String file) {
-        File fp = new File(this.getDataFolder(), file);
-        if (!fp.exists()) {
-            this.saveResource(file, true);
-        }
-        return YamlConfiguration.loadConfiguration(fp);
-    }
-
-    /**
-     * 保存配置到插件文件夹下的某个文件
-     * @param file 文件名
-     * @param conf 配置实例
-     */
-    public void saveConf(String file, YamlConfiguration conf) {
-        try{
-            File fp = new File(this.getDataFolder(), file);
-            conf.save(fp);
-        }
-        catch (IOException e) {
-            this.globalData.printERROR("无法保存配置文件: " + e.getMessage());
-        }
     }
 
     /**

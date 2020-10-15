@@ -3,7 +3,7 @@ package city.newnan.newnanplus.town;
 import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.configuration.file.FileConfiguration;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -19,7 +19,7 @@ public class Town {
     /**
      * 小镇配置文件
      */
-    YamlConfiguration townConfig;
+    FileConfiguration townConfig;
     /**
      * 镇统一标识
      */

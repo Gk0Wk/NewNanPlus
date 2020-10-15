@@ -11,7 +11,6 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.inventory.Inventory;
 
 /**
@@ -90,11 +89,6 @@ public class NewNanPlusListener implements Listener {
         if (inv.contains(Material.BEDROCK)) {
             globalData.printINFO(event.getPlayer().getName() + " has Bedrock!");
         }
-    }
-
-    @EventHandler
-    public void onServerLoadEvent(ServerLoadEvent event) {
-        globalData.cornCommand.runOnServerReady();
     }
 
 //    @EventHandler(ignoreCancelled = true)
