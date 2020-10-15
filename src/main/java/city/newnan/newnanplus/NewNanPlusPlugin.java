@@ -67,6 +67,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a配置文件载入完毕。");
 
             bindWolfyUtilities();
+            bindDynmapAPI();
 
             // 初始化监听实例
             this.globalData.listener = new NewNanPlusListener(globalData);

@@ -21,7 +21,7 @@ public class CreateArea implements NewNanPlusModule {
     NewNanPlusGlobal globalData;
 
     private World createWorld;
-    private MarkerSet markerSet;
+    private MarkerSet createAreaMarkers;
 
     /**
      * 构造函数
@@ -30,9 +30,9 @@ public class CreateArea implements NewNanPlusModule {
     public CreateArea(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
 
-        markerSet = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.CreateArea");
-        if (markerSet == null) {
-            markerSet =  globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
+        createAreaMarkers = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.CreateArea");
+        if (createAreaMarkers == null) {
+            createAreaMarkers = globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
                     "NewNanPlus.CreateArea", "CreateArea", null, false);
         }
 
@@ -51,7 +51,7 @@ public class CreateArea implements NewNanPlusModule {
         ConfigurationSection areas = createArea.getConfigurationSection("areas");
         assert areas != null;
         for (String areaID : areas.getKeys(false)) {
-            if (markerSet.findAreaMarker(areaID) == null) {
+            if (createAreaMarkers.findAreaMarker(areaID) == null) {
                 ConfigurationSection area = areas.getConfigurationSection(areaID);
                 assert area != null;
                 int x1 = area.getInt("x1");
@@ -60,7 +60,7 @@ public class CreateArea implements NewNanPlusModule {
                 int z2 = area.getInt("z2");
                 String name = area.getString("name");
                 // 地图上绘制区域
-                markerSet.createAreaMarker(areaID, name+"的创造区", false,
+                createAreaMarkers.createAreaMarker(areaID, name+"的创造区", false,
                         createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
             }
         }
@@ -192,13 +192,13 @@ public class CreateArea implements NewNanPlusModule {
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
 
         // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
-        AreaMarker marker = markerSet.findAreaMarker(player.getUniqueId().toString());
+        AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());
         if (marker != null) {
             marker.deleteMarker();
         }
 
         // 地图上绘制区域
-        markerSet.createAreaMarker(player.getUniqueId().toString(), player.getName()+"的创造区", false,
+        createAreaMarkers.createAreaMarker(player.getUniqueId().toString(), player.getName()+"的创造区", false,
                 createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
 
         // 存储玩家数据

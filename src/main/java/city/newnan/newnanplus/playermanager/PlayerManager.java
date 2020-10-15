@@ -10,7 +10,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
@@ -41,7 +40,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 创建反射表
         for (OfflinePlayer player : globalData.plugin.getServer().getOfflinePlayers()) {
             reversePlayerList.put(player.getName(), player.getUniqueId());
-            globalData.printINFO(MessageFormat.format("{0} | {1}", player.getName(), player.getUniqueId().toString()));
         }
 
         // 注册监听函数

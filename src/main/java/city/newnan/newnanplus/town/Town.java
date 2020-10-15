@@ -51,17 +51,17 @@ public class Town {
     /**
      * 小镇 Buff / Debuff
      */
-    public ConcurrentHashMap<TownEffectType, Date> effects = new ConcurrentHashMap<TownEffectType, Date>();
+    public ConcurrentHashMap<TownEffectType, Date> effects = new ConcurrentHashMap<>();
     /**
      * 小镇资源
      */
-    public ConcurrentHashMap<ResourceType, Double> resources = new ConcurrentHashMap<ResourceType, Double>();
+    public ConcurrentHashMap<ResourceType, Double> resources = new ConcurrentHashMap<>();
     /**
      * 小镇镇长(负责人)
      */
     public OfflinePlayer leader;
 
-    public void saveCacheToConfig(SimpleDateFormat dateFromatter) {
+    public void saveCacheToConfig(SimpleDateFormat dateFormatter) {
         this.townConfig.set("name", this.name);
         this.townConfig.set("location.world", this.location.getWorld().getName());
         this.townConfig.set("location.x", this.location.getX());
@@ -78,11 +78,11 @@ public class Town {
             resource.set(resourceType.toString(), amount);
         });
 
-        ArrayList<HashMap<String,String>> effects = new ArrayList<HashMap<String,String>>();
+        ArrayList<HashMap<String,String>> effects = new ArrayList<>();
         this.effects.forEach((townEffectType, date) -> {
-            HashMap<String, String> effect = new HashMap<String, String>();
+            HashMap<String, String> effect = new HashMap<>();
             effect.put("name", townEffectType.toString());
-            effect.put("expirydate", dateFromatter.format(date));
+            effect.put("expiry-date", dateFormatter.format(date));
             effects.add(effect);
         });
         resource.set("effect", effects);

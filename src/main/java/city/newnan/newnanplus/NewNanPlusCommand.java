@@ -145,7 +145,7 @@ public class NewNanPlusCommand implements CommandExecutor {
             // Set the amount of the ItemStack
             bricks.setAmount(20);
 
-            // Give the player our items (comma-seperated list of all ItemStack)
+            // Give the player our items (comma-separated list of all ItemStack)
             player.getInventory().addItem(bricks, diamond);
         }
         return true;

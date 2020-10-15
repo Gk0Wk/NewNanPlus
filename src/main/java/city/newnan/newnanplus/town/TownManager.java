@@ -4,6 +4,7 @@ import city.newnan.newnanplus.NewNanPlusGlobal;
 import org.bukkit.Location;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.dynmap.markers.MarkerSet;
 
 import java.io.File;
 import java.text.ParseException;
@@ -27,6 +28,8 @@ public class TownManager {
 
     private final ConcurrentHashMap<UUID, Town> towns = new ConcurrentHashMap<>();
 
+    private MarkerSet townMarkers;
+
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
@@ -40,6 +43,12 @@ public class TownManager {
         for (File file : townDir.listFiles()) {
             Town town = _loadTown(file.getPath());
             resistTown(town);
+        }
+
+        townMarkers = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.Towns");
+        if (townMarkers == null) {
+            townMarkers = globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
+                    "NewNanPlus.Towns", "Towns", null, false);
         }
     }
 

@@ -29,4 +29,4 @@ resource:
   tool: 0.0
 effect:
   - name: "beginner"
-    expirydate: "2020-09-31 00:00:00"
+    expiry-date: "2020-09-31 00:00:00"
