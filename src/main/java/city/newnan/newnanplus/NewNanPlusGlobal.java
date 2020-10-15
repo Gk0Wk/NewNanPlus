@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.createarea.CreateArea;
 import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
 import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
@@ -37,6 +38,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
         globalMessage.put("NO_PERMISSION", config.getString("global-data.no-permission-msg"));
         globalMessage.put("REFUSE_CONSOLE_SELFRUN", "global-data.console-selfrun-refuse");
         globalMessage.put("PLAYER_OFFLINE", "global-data.player-offline-msg");
+        globalMessage.put("PARAMETER_NUMBER_NOT_MATCH", "global-data.parameter-number-not-match");
     }
 
     /* =============================================================================================== */
@@ -81,8 +83,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     public city.newnan.newnanplus.town.TownCommand townCommand;
 
     /* NewNanPlus CreateArea **/
-    public FileConfiguration createArea;
-    public city.newnan.newnanplus.createarea.CACommand caCommand;
+    public CreateArea createArea;
 
     /* NewNanPlus Player **/
     public PlayerManager playerManager;
@@ -90,8 +91,7 @@ public class NewNanPlusGlobal implements NewNanPlusModule {
     /* NewNanPlus DeathTrigger **/
     public DeathTrigger deathTrigger;
 
-    /* NewNanPlus LaggAnalyzer */
-    public HashMap<String, Integer> hopperMap = new HashMap<>();
+    /* NewNanPlus LagAnalyzer */
     public LagAnalyzer lagAnalyzer;
 
     /* NewNanPlus Corn */

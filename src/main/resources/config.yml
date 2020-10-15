@@ -12,7 +12,7 @@ global-data:
   prefix: '&f&l[&b牛腩小助手&f&l] &r'
   no-permission-msg: '&c你没有这样做的权限！'
   player-offline-msg: '&c用户不在线或不存在！'
-  parameter-count-not-match: '&c参数数量不匹配！'
+  parameter-number-not-match: '&c参数数量不匹配！'
   console-selfrun-refuse: '&c控制台无法为自己执行这条指令！'
 global-settings: {}
 module-world-setting:

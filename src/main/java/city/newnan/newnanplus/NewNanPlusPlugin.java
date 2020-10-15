@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.createarea.CreateArea;
 import city.newnan.newnanplus.cron.Cron;
 import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
@@ -82,7 +83,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a付费飞行模块注册完毕。");
 
             // 创造区模块
-            this.globalData.caCommand = new city.newnan.newnanplus.createarea.CACommand(globalData);
+            this.globalData.createArea = new CreateArea(globalData);
             this.globalData.printINFO("§a创造区模块注册完毕。");
 
             // 新人模块

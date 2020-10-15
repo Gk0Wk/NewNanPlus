@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.laganalyzer;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusModule;
 import org.bukkit.Chunk;
 import org.bukkit.block.Hopper;
 import org.bukkit.event.inventory.InventoryMoveItemEvent;
@@ -8,13 +9,16 @@ import org.bukkit.event.inventory.InventoryType;
 
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
 
 
-public class LagAnalyzer {
+public class LagAnalyzer implements NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
     NewNanPlusGlobal globalData;
+
+    public final HashMap<String, Integer> hopperMap = new HashMap<>();
 
     /**
      * 构造函数
@@ -25,21 +29,30 @@ public class LagAnalyzer {
     }
 
     /**
+     * 重新加载模块的配置
+     */
+    @Override
+    public void reloadConfig() {
+
+    }
+
+    /**
      * 监控漏斗的激活情况
      * @param event 物品栏中物品移动的事件
      */
     public void onInventoryMoveItem(InventoryMoveItemEvent event) {
         if (event.getInitiator().getType() == InventoryType.HOPPER) {
             Hopper hopper = (Hopper) event.getInitiator().getHolder();
+            assert hopper != null;
             Chunk chunk = hopper.getChunk();
             String key = chunk.getX()+","+chunk.getZ();
-            Integer x = globalData.hopperMap.get(key);
+            Integer x = hopperMap.get(key);
             if (x == null) {
                 x = 1;
             } else {
                 x++;
             }
-            globalData.hopperMap.put(key, x);
+            hopperMap.put(key, x);
         }
     }
 
@@ -51,7 +64,7 @@ public class LagAnalyzer {
         try {
             FileWriter fp = new FileWriter("hopper.csv");
             fp.write("Event_Count,Chunk_X,Chunk_Z\n");
-            globalData.hopperMap.forEach((key, value) -> {
+            hopperMap.forEach((key, value) -> {
                 try{
                     fp.write(value+","+key+"\n");
                 }

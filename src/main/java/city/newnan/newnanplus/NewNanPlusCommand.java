@@ -63,9 +63,9 @@ public class NewNanPlusCommand implements CommandExecutor {
                 case "allow":
                     return globalData.playerManager.allowNewbieToPlayer(sender, args);
                 case "ctp":
-                    return globalData.caCommand.teleportToCreateArea(sender, args);
+                    return globalData.createArea.teleportToCreateArea(sender, args);
                 case "cnew":
-                    return globalData.caCommand.createCreateArea(sender, args);
+                    return globalData.createArea.createCreateArea(sender, args);
                 case "genhopper":
                     return globalData.lagAnalyzer.genHopperReport();
                 case "list":
