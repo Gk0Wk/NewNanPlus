@@ -1,16 +1,11 @@
 package city.newnan.newnanplus;
 
-import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
-import org.bukkit.event.player.PlayerChangedWorldEvent;
-import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.Inventory;
 
 /**
@@ -34,44 +29,16 @@ public class NewNanPlusListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
-        // 获得玩家对象
-        Player player = event.getEntity();
-
-        // 别飞了，给我下来
-        globalData.flyCommand.cancelFly(player, false);
-
         // 触发死亡惩罚
         globalData.dtCommand.onDeath(event);
     }
 
-//    @EventHandler
-//    public void onTeleport(PlayerTeleportEvent event) {
-//    }
 
-    @EventHandler
-    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
-        // 如果新的世界没有该权限，就取消玩家的飞行
-        if (!event.getPlayer().hasPermission("newnanplus.fly.self"))
-            globalData.flyCommand.cancelFly(event.getPlayer(), true);
-    }
-
-    @EventHandler
-    public void onPlayerGameModeChange(PlayerGameModeChangeEvent event) {
-        // 如果玩家切换成创造或者旁观者模式，就取消玩家的飞行
-        if (event.getNewGameMode().equals(GameMode.CREATIVE) || event.getNewGameMode().equals(GameMode.SPECTATOR))
-            globalData.flyCommand.cancelFly(event.getPlayer(), true);
-    }
 
     @EventHandler
     public void onPlayerJoin(final PlayerJoinEvent event) {
         globalData.playerCommand.touchPlayer(event.getPlayer());
         globalData.playerCommand.joinCheck(event.getPlayer());
-    }
-
-    @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) {
-        // 取消飞行
-        globalData.flyCommand.cancelFly(event.getPlayer(), false);
     }
 
     @EventHandler

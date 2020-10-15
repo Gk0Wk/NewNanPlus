@@ -55,7 +55,7 @@ public class NewNanPlusCommand implements CommandExecutor {
         } else {
             switch(args[0].toLowerCase()) {
                 case "fly":
-                    return globalData.flyCommand.applyFly(sender, args);
+                    return globalData.feeFly.applyFly(sender, args);
                 case "reload":
                     return reloadConfig(sender);
                 case "save":
@@ -126,7 +126,7 @@ public class NewNanPlusCommand implements CommandExecutor {
             return false;
         }
         if (args[1].equalsIgnoreCase("fly")) {
-            return globalData.flyCommand.listFlyingPlayers(sender);
+            return globalData.feeFly.listFlyingPlayers(sender);
         }
         return true;
     }

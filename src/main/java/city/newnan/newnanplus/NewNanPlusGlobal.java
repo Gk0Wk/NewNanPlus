@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.feefly.FeeFly;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.milkbowl.vault.economy.Economy;
@@ -18,7 +19,23 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
  */
-public class NewNanPlusGlobal {
+public class NewNanPlusGlobal implements NewNanPlusModule {
+    public NewNanPlusGlobal(NewNanPlusPlugin plugin) {
+        this.plugin = plugin;
+    }
+
+    /**
+     * 重新加载模块的配置
+     */
+    @Override
+    public void reloadConfig() {
+        FileConfiguration config =  configManager.get("config.yml");
+        globalMessage.clear();
+        globalMessage.put("NO_PERMISSION", config.getString("global-data.no-permission-msg"));
+        globalMessage.put("REFUSE_CONSOLE_SELFRUN", "global-data.console-selfrun-refuse");
+        globalMessage.put("PLAYER_OFFLINE", "global-data.player-offline-msg");
+    }
+
     /* =============================================================================================== */
     /* 本体 */
     public NewNanPlusPlugin plugin;
@@ -49,6 +66,7 @@ public class NewNanPlusGlobal {
      */
     public Permission vaultPerm = null;
 
+    public HashMap<String, String> globalMessage = new HashMap<>();
 
     /* =============================================================================================== */
     /* 模块 */
@@ -83,12 +101,8 @@ public class NewNanPlusGlobal {
     public city.newnan.newnanplus.cron.Cron cron;
 
 
-    /* NewNanPlus Fly **/
-    /** 正在飞行中的玩家，ConcurrentHashMap具有高并发性 */
-    public ConcurrentHashMap<Player, city.newnan.newnanplus.fly.FlyingPlayer> flyingPlayers =
-            new ConcurrentHashMap<Player, city.newnan.newnanplus.fly.FlyingPlayer>();
-    public city.newnan.newnanplus.fly.FlyCommand flyCommand;
-    public city.newnan.newnanplus.fly.FlySchedule flySchedule;
+    /* NewNanPlus FeeFly **/
+    public FeeFly feeFly;
 
 
     /* =============================================================================================== */

@@ -1,6 +1,7 @@
 package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.cron.Cron;
+import city.newnan.newnanplus.feefly.FeeFly;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
@@ -33,9 +34,9 @@ public class NewNanPlusPlugin extends JavaPlugin {
     public void onEnable() {
         try {
             // 实例化全局存储对象
-            this.globalData = new NewNanPlusGlobal();
-            this.globalData.plugin = this;
+            this.globalData = new NewNanPlusGlobal(this);
             this.globalData.configManager = new ConfigManager(this);
+            this.globalData.reloadConfig();
             // 绑定控制台输出
             this.globalData.consoleLogger = getLogger();
         }
@@ -75,8 +76,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§a命令模块注册完毕。");
 
             // 飞行模块
-            this.globalData.flySchedule = new city.newnan.newnanplus.fly.FlySchedule(globalData);
-            this.globalData.flyCommand = new city.newnan.newnanplus.fly.FlyCommand(globalData);
+            this.globalData.feeFly = new FeeFly(globalData);
             this.globalData.printINFO("§a付费飞行模块注册完毕。");
 
             // 创造区模块
