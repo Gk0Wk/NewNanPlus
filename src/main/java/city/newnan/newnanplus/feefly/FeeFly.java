@@ -51,6 +51,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     private String actionbarFeeMessage;
     private String lessFeeWarningMessage;
     private String noFeeMessage;
+    private String countFlyingPlayersMessage;
+    private String listFlyingPlayersMessage;
 
     /**
      * 重新加载模块的配置
@@ -70,6 +72,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         actionbarFeeMessage = config.getString("module-flyfee.msg-actionbar");
         lessFeeWarningMessage = config.getString("module-flyfee.msg-feewraning");
         noFeeMessage = config.getString("module-flyfee.msg-nofee");
+        countFlyingPlayersMessage = config.getString("msg-count-flying-players");
+        listFlyingPlayersMessage = config.getString("msg-list-flying-players");
     }
 
     /**
@@ -297,9 +301,9 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
         flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(" ")));
-        globalData.sendMessage(sender, "目前飞行人数：" + flyingPlayers.size());
+        globalData.sendMessage(sender, MessageFormat.format(countFlyingPlayersMessage, flyingPlayers.size()));
         if (flyingPlayers.size() > 0) {
-            globalData.sendMessage(sender, "飞行中：" + list);
+            globalData.sendMessage(sender, MessageFormat.format(listFlyingPlayersMessage, list));
         }
         return true;
     }

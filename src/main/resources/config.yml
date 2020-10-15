@@ -32,6 +32,8 @@ module-flyfee:
   msg-begin: '已允许飞行，双击空格键开启飞行模式！'
   msg-finish: '飞行结束！'
   msg-feewraning: '&c余额即将耗尽，请尽快结束飞行！'
+  msg-count-flying-players: '目前飞行人数：{0}'
+  msg-list-flying-players: '飞行中：{0}'
 module-deathcost:
   use-simple-mode: false
   simple-mode:
