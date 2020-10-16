@@ -2,6 +2,7 @@ package city.newnan.newnanplus.createarea;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.CommandExecuteException;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
@@ -16,6 +17,7 @@ import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.List;
 import java.util.Objects;
 
 public class CreateArea implements NewNanPlusModule {
@@ -44,6 +46,7 @@ public class CreateArea implements NewNanPlusModule {
 
         globalData.commandManager.register("ctp", this);
         globalData.commandManager.register("cnew", this);
+        globalData.commandManager.register("cdel", this);
     }
 
     /**
@@ -83,16 +86,18 @@ public class CreateArea implements NewNanPlusModule {
      */
     @Override
     public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-        if (token.equals("cnew"))
-            createCreateArea(sender, args);
         if (token.equals("ctp"))
             teleportToCreateArea(sender, args);
+        if (token.equals("cnew"))
+            createCreateArea(sender, args);
+        if (token.equals("cdel"))
+            removeCreateArea(sender, args);
     }
 
     /**
-     * /nnp ct指令实现，将玩家传送到自己/某人的创造区域
+     * /nnp ctp指令实现，将玩家传送到自己/某人的创造区域
      * @param sender 指令发送方
-     * @param args 指令参数，包括fly
+     * @param args 指令参数
      */
     public void teleportToCreateArea(CommandSender sender, String args[]) throws Exception {
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
@@ -147,25 +152,29 @@ public class CreateArea implements NewNanPlusModule {
     /**
      * /nnp cnew指令实现，创建某个玩家的创造区
      * @param sender 指令发送方
-     * @param args 命令参数，包括cnew
-     * @return 成功执行，返回true，反之
+     * @param args 命令参数
      */
-    public boolean createCreateArea(CommandSender sender, String args[]) throws Exception {
+    public void createCreateArea(CommandSender sender, String args[]) throws Exception {
         // 检查参数
         if (args.length < 5) {
-            return false;
+            throw new BadUsageException();
         }
 
         // 查找对应的玩家
-        Player _player = globalData.plugin.getServer().getPlayer(args[0]);
+        Player _player;
+        _player = globalData.plugin.getServer().getPlayer(args[0]);
         // 如果找不到
         if (_player == null) {
-            throw new PlayerOfflineException();
+            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
+            if (players.size() == 0) {
+                throw new CommandExecuteException("找不到玩家！");
+            } else if (players.size() > 1)
+                throw new CommandExecuteException("找到多个玩家！");
+            _player = players.get(0);
         }
 
         // 创建创造区域
         newCreateArea(args, _player);
-        return true;
     }
 
     /**
@@ -209,6 +218,43 @@ public class CreateArea implements NewNanPlusModule {
         section.set("z1", z1);
         section.set("x2", x2);
         section.set("z2", z2);
+        // 存储设置
+        globalData.configManager.save("create_area.yml");
+    }
+
+    /**
+     * /nnp cdel指令实现，删除某个玩家的创造区
+     * @param sender 指令发送方
+     * @param args 命令参数
+     */
+    public void removeCreateArea(CommandSender sender, String args[]) throws Exception {
+        // 检查参数
+        if (args.length < 1) {
+            throw new BadUsageException();
+        }
+
+        // 查找对应的玩家
+        Player player;
+        player = globalData.plugin.getServer().getPlayer(args[0]);
+        // 如果找不到
+        if (player == null) {
+            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
+            if (players.size() == 0) {
+                throw new CommandExecuteException("找不到玩家！");
+            } else if (players.size() > 1)
+                throw new CommandExecuteException("找到多个玩家！");
+            player = players.get(0);
+        }
+
+        // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
+        AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());
+        if (marker != null) {
+            marker.deleteMarker();
+        }
+
+        // 删除配置文件对应的设置
+        FileConfiguration createArea = globalData.configManager.get("create_area.yml");
+        createArea.set("areas."+player.getUniqueId(), null);
         // 存储设置
         globalData.configManager.save("create_area.yml");
     }

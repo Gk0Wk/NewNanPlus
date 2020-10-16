@@ -79,8 +79,13 @@ commands:
   'nnp cnew':
     description: '为某玩家设置创造区域'
     usage: '/nnp cnew <player> <x1> <z1> <x2> <z2>'
-    aliases: 'cnew'
+    aliases: ['cnew', 'ccreate']
     permission-node: 'newnanplus.createarea.create'
+  'nnp cdel':
+    description: '删除某玩家的创造区域'
+    usage: '/nnp cdel <player>'
+    aliases: ['cdel', 'cremove', 'cdelete']
+    permission-node: 'newnanplus.createarea.remove'
 
 # 权限节点，可选
 permissions:
