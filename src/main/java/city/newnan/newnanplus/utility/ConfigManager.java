@@ -57,13 +57,9 @@ public class ConfigManager {
 
         // 未缓存则加载
         touch(configFile);
-        FileConfiguration config = null;
         // config.yml要特殊处理一下
-        if (configFile.equals("config.yml")) {
-            config = plugin.getConfig();
-        } else {
-            config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), configFile));
-        }
+        FileConfiguration config = configFile.equals("config.yml") ? plugin.getConfig() :
+                YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), configFile));
         this.configMap.put(configFile, config);
         return config;
     }
@@ -73,7 +69,7 @@ public class ConfigManager {
      * @param configFile 资源文件路径
      * @throws IOException IO异常
      */
-    public void save(String configFile) {
+    public void save(String configFile) throws IOException {
         // 不存在就保存默认
         if (!this.configMap.containsKey(configFile)) {
             touch(configFile);
@@ -100,7 +96,7 @@ public class ConfigManager {
         }
         // 已加载，则需要重新加载
         touch(configFile);
-        FileConfiguration config = null;
+        FileConfiguration config;
         // config.yml要特殊处理一下
         if (configFile.equals("config.yml")) {
             plugin.reloadConfig();

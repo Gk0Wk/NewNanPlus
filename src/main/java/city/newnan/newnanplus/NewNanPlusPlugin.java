@@ -15,7 +15,6 @@ import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -60,17 +59,24 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.printINFO("§6=================================");
             this.globalData.printINFO("§a插件启动中...");
 
-            // 绑定Vault的经济模块
-            if (!bindVault()) {
-                throw new Exception("Vault模块绑定失败。");
-            }
-
             // 加载插件配置
             this.globalData.configManager.get("config.yml");
             this.globalData.printINFO("§a配置文件载入完毕。");
 
-            bindWolfyUtilities();
-            bindDynmapAPI();
+            // 绑定Vault
+            if (!bindVault()) {
+                throw new Exception("Vault绑定失败。");
+            }
+
+            // 绑定WolfyUtilities
+            if (!bindWolfyUtilities()) {
+                throw new Exception("WolfyUtilities绑定失败。");
+            }
+
+            // 绑定Dynmap
+            if (!bindDynmapAPI()) {
+                throw new Exception("Dynmap绑定失败。");
+            }
 
             this.globalData.commandManager = new CommandManager(this, globalData, "nnp",
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))),
@@ -160,12 +166,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
         // 绑定
         this.globalData.vaultPerm = rsp2.getProvider();
 
-        // 空值检查
-        return this.globalData.vaultEco != null && this.globalData.vaultPerm != null;
+        return true;
     }
 
     private boolean bindWolfyUtilities() {
-        FileConfiguration config = globalData.configManager.get("config.yml");
+        // FileConfiguration config = globalData.configManager.get("config.yml");
         // 创建API实例
         this.globalData.wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
         // 设置前缀
@@ -209,11 +214,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
     public void changeGamerules() {
         ConfigurationSection rules = globalData.configManager.get("config.yml").
                 getConfigurationSection("module-world-setting");
+        assert rules != null;
         for (String rule : rules.getKeys(false)) {
-            switch (rule) {
-                case "keepInventoryOnDeath":
-                    changeWorldsGamerules((List<String>) rules.getList(rule), GameRule.KEEP_INVENTORY, true);
-                    break;
+            if ("keepInventoryOnDeath".equals(rule)) {
+                changeWorldsGamerules(Objects.requireNonNull(rules.getStringList(rule)),
+                        GameRule.KEEP_INVENTORY, true);
             }
         }
     }
@@ -226,7 +231,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     private void changeWorldsGamerules(List<String> worlds, GameRule rule, boolean value) {
         for (String world : worlds) {
-            this.getServer().getWorld(world).setGameRule(rule, value);
+            Objects.requireNonNull(this.getServer().getWorld(world)).setGameRule(rule, value);
         }
     }
 }

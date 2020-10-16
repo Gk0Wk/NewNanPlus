@@ -8,7 +8,7 @@ public interface NewNanPlusModule {
     /**
      * 重新加载模块的配置
      */
-    public void reloadConfig();
+    void reloadConfig();
 
     /**
      * 执行某个命令
@@ -17,6 +17,6 @@ public interface NewNanPlusModule {
      * @param token   指令的标识字符串
      * @param args    指令的参数
      */
-    public void onCommand(@NotNull CommandSender sender, @NotNull Command command,
+    void onCommand(@NotNull CommandSender sender, @NotNull Command command,
                              @NotNull String token, @NotNull String[] args) throws Exception;
 }

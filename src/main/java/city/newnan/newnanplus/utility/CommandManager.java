@@ -69,7 +69,7 @@ public class CommandManager implements CommandExecutor {
         boolean hidden = section.getBoolean("hidden", false);
         String permission = section.getString("permission-node");
 
-        List<String> aliases = null;
+        List<String> aliases;
         if (section.isList("aliases")) {
             aliases = section.getStringList("aliases");
         } else {
@@ -145,9 +145,7 @@ public class CommandManager implements CommandExecutor {
         }
 
         String[] newArgs = (args.length == 0) ? args : new String[args.length - 1];
-        for (int i = 1; i < args.length; i++) {
-            newArgs[i - 1] = args[i];
-        }
+        if (args.length >= 1) System.arraycopy(args, 1, newArgs, 0, args.length - 1);
 
         try {
             container.module.onCommand(sender, command, token, newArgs);
@@ -155,19 +153,20 @@ public class CommandManager implements CommandExecutor {
         catch (Exception e) {
             if (e instanceof NoPermissionException)
                 messageManager.sendMessage(sender, noPermissionMessage);
-            if (e instanceof BadUsageException)
+            else if (e instanceof BadUsageException)
                 messageManager.sendMessage(sender, MessageFormat.format(badUsageMessage, container.usageSuggestion));
-            if (e instanceof NoSuchCommandException)
+            else if (e instanceof NoSuchCommandException)
                 messageManager.sendMessage(sender, noSuchCommandMessage);
-            if (e instanceof OnlyConsoleException)
+            else if (e instanceof OnlyConsoleException)
                 messageManager.sendMessage(sender, onlyConsoleMessage);
-            if (e instanceof PlayerOfflineException)
+            else if (e instanceof PlayerOfflineException)
                 messageManager.sendMessage(sender, playerOfflineMessage);
-            if (e instanceof RefuseConsoleException)
+            else if (e instanceof RefuseConsoleException)
                 messageManager.sendMessage(sender, consoleNotAllowMessage);
-            if (e instanceof CommandExecuteException)
+            else if (e instanceof CommandExecuteException)
                 messageManager.sendMessage(sender, MessageFormat.format(commandExecuteErrorMessage,
                         ((CommandExecuteException) e).reason));
+            else e.printStackTrace();
         }
 
         return true;

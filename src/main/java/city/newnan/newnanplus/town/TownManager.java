@@ -7,11 +7,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.dynmap.markers.MarkerSet;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 // Mojang生成玩家UUID的办法：
@@ -56,10 +54,10 @@ public class TownManager {
         FileConfiguration config = globalData.configManager.get(configPath);
         Town town = new Town();
         town.townConfig = config;
-        town.uniqueID = UUID.fromString(config.getString("uuid"));
+        town.uniqueID = UUID.fromString(Objects.requireNonNull(config.getString("uuid")));
         town.name = config.getString("name");
         town.location = new Location(
-                globalData.plugin.getServer().getWorld(config.getString("location.world")),
+                globalData.plugin.getServer().getWorld(Objects.requireNonNull(config.getString("location.world"))),
                 config.getDouble("location.x"),
                 config.getDouble("location.y"),
                 config.getDouble("location.z")
@@ -67,13 +65,14 @@ public class TownManager {
         town.balance = config.getDouble("balance");
         town.exp = config.getInt("exp");
         town.level = config.getInt("level");
-        town.leader = globalData.plugin.getServer().getOfflinePlayer(UUID.fromString(config.getString("town-leader")));
+        town.leader = globalData.plugin.getServer().getOfflinePlayer(
+                UUID.fromString(Objects.requireNonNull(config.getString("town-leader"))));
         town.website = config.getString("intro-website");
 
         ConfigurationSection resource = config.getConfigurationSection("resource");
-        resource.getKeys(false).forEach(key -> {
-            town.resources.put(ResourceType.fromString(key), resource.getDouble(key));
-        });
+        assert resource != null;
+        resource.getKeys(false).forEach(key ->
+                town.resources.put(ResourceType.fromString(key), resource.getDouble(key)));
 
         List<Map<?,?>> effects = config.getMapList("effect");
         effects.forEach(map -> {
@@ -103,11 +102,15 @@ public class TownManager {
 
     public void saveTowns() {
         towns.forEach((uuid, town) -> {
-            saveTown(town);
+            try {
+                saveTown(town);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         });
     }
 
-    public void saveTown(Town town) {
+    public void saveTown(Town town) throws IOException {
         town.saveCacheToConfig(globalData.dateFormatter);
         globalData.configManager.save("town/" + town.uniqueID.toString() + ".yml");
     }
@@ -131,11 +134,6 @@ public class TownManager {
     }
 
     public void attachEffect(Town town, TownEffectType effect, Date date) {
-        // 如果已经有了，就更新日期
-        if (town.effects.containsKey(effect)) {
-            town.effects.put(effect, date);
-            return;
-        }
         // Unregisters Something...
 
         // Add to map

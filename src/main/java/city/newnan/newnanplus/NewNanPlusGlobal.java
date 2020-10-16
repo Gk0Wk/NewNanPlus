@@ -74,11 +74,11 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     /**
      * Vault 经济实例
      */
-    public net.milkbowl.vault.economy.Economy vaultEco = null;
+    public net.milkbowl.vault.economy.Economy vaultEco;
     /**
      * Vault 权限实例
      */
-    public net.milkbowl.vault.permission.Permission vaultPerm = null;
+    public net.milkbowl.vault.permission.Permission vaultPerm;
 
     public HashMap<String, String> globalMessage = new HashMap<>();
 
@@ -87,7 +87,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     /* NewNanPlus BuildingField*/
 
     /* NewNanPlus Town */
-    public city.newnan.newnanplus.town.TownManager townManager;
+    // public city.newnan.newnanplus.town.TownManager townManager;
 
     /* NewNanPlus CreateArea **/
     public city.newnan.newnanplus.createarea.CreateArea createArea;

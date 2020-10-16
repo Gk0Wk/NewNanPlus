@@ -11,6 +11,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
@@ -76,7 +77,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param event 玩家登录事件
      */
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) throws IOException {
         joinCheck(event.getPlayer());
     }
 
@@ -85,7 +86,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param sender 命令的发送者
      * @param args 命令的参数，包括allow
      */
-    public void allowNewbieToPlayer(CommandSender sender, String[] args){
+    public void allowNewbieToPlayer(CommandSender sender, String[] args) throws IOException {
         // 寻找目标玩家
         Player player = globalData.plugin.getServer().getPlayer(args[0]);
         // 是否需要刷新新人名单
@@ -96,18 +97,14 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 如果玩家不在线或不存在，就存到配置里
         if (player == null) {
             // 获取未通过的新人组的List
-            List<String> list_not = (List<String>) newbiesList.getList("not-passed-newbies");
-            // 如果未通过里有这个玩家，那就去掉
-            assert list_not != null;
+            List<String> list_not = newbiesList.getStringList("not-passed-newbies");
             if (list_not.contains(args[0])) {
                 list_not.remove(args[0]);
                 newbiesList.set("not-passed-newbies", list_not);
                 need_refresh = true;
             }
             // 获取已通过的新人组的List
-            List<String> list_yet = (List<String>) newbiesList.getList("yet-passed-newbies");
-            // 如果通过里没有这个玩家，就加入
-            assert list_yet != null;
+            List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
             if (!list_yet.contains(args[0])) {
                 list_yet.add(args[0]);
                 newbiesList.set("yet-passed-newbies", list_yet);
@@ -121,9 +118,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
                         "manuadd " + player.getName() + " " + playersGroup + " " + workWorldsGroup);
                 // 获取未通过的新人组的List
-                List<String> list_not = (List<String>) newbiesList.getList("not-passed-newbies");
+                List<String> list_not = newbiesList.getStringList("not-passed-newbies");
                 // 如果未通过里有这个玩家，那就去掉
-                assert list_not != null;
                 if (list_not.contains(player.getName())) {
                     list_not.remove(player.getName());
                     newbiesList.set("not-passed-newbies", list_not);
@@ -143,14 +139,13 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组
      * @param player 待检测的玩家实例
      */
-    public void joinCheck(Player player) {
+    public void joinCheck(Player player) throws IOException {
         FileConfiguration newbiesList = globalData.configManager.get("newbies_list.yml");
         boolean need_refresh = false;
         // 获取已通过的新人组的List
-        List<String> list_yet = (List<String>) newbiesList.getList("yet-passed-newbies");
+        List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
         // 如果是新人组的话
         if (globalData.vaultPerm.getPrimaryGroup(player).equalsIgnoreCase(newbiesGroup)) {
-            assert list_yet != null;
             if (list_yet.contains(player.getName())) {
                 // 查看玩家是否在已通过新人组，将玩家移入玩家权限组，并更新
                 globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
@@ -161,8 +156,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             } else {
                 globalData.sendPlayerMessage(player, "&c你还没有获得游玩权限，请在官网完成新人试卷后向管理索要权限。");
                 // 获取未通过的新人组的List
-                List<String> list_not = (List<String>) newbiesList.getList("not-passed-newbies");
-                assert list_not != null;
+                List<String> list_not = newbiesList.getStringList("not-passed-newbies");
                 if (!list_not.contains(player.getName())) {
                     // 查看玩家是否在未通过新人组，没加入就加入，并更新
                     list_not.add(player.getName());
@@ -171,7 +165,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 }
             }
         } else {
-            assert list_yet != null;
             if (list_yet.contains(player.getName())){
                 // 看看是不是已经成为玩家但是还在名单里
                 list_yet.remove(player.getName());

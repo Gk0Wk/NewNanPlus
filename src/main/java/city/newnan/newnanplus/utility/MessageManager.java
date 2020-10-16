@@ -49,13 +49,10 @@ public class MessageManager {
      * @param prefix 是否带有前缀
      */
     public void sendPlayerMessage(Player player, String msg, boolean prefix) {
-        if (prefix) {
-            String _msg = ChatColor.translateAlternateColorCodes('&', prefixString + msg);
-            player.sendMessage(_msg);
-        } else {
-            String _msg = ChatColor.translateAlternateColorCodes('&', msg);
-            player.sendMessage(_msg);
-        }
+        String _msg = prefix ?
+                ChatColor.translateAlternateColorCodes('&', prefixString + msg) :
+                ChatColor.translateAlternateColorCodes('&', msg);
+        player.sendMessage(_msg);
     }
 
     /**

@@ -6,10 +6,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -63,7 +60,7 @@ public class Town {
 
     public void saveCacheToConfig(SimpleDateFormat dateFormatter) {
         this.townConfig.set("name", this.name);
-        this.townConfig.set("location.world", this.location.getWorld().getName());
+        this.townConfig.set("location.world", Objects.requireNonNull(this.location.getWorld()).getName());
         this.townConfig.set("location.x", this.location.getX());
         this.townConfig.set("location.y", this.location.getY());
         this.townConfig.set("location.z", this.location.getZ());
@@ -74,9 +71,8 @@ public class Town {
         this.townConfig.set("intro-website", this.website);
 
         ConfigurationSection resource = this.townConfig.getConfigurationSection("resource");
-        this.resources.forEach((resourceType, amount) -> {
-            resource.set(resourceType.toString(), amount);
-        });
+        assert resource != null;
+        this.resources.forEach((resourceType, amount) -> resource.set(resourceType.toString(), amount));
 
         ArrayList<HashMap<String,String>> effects = new ArrayList<>();
         this.effects.forEach((townEffectType, date) -> {

@@ -175,9 +175,7 @@ public class SQLManager {
      * @param preparedStatement 预构造的更新语句
      */
     public void executeUpdateAsync(PreparedStatement preparedStatement) {
-        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> {
-            executeUpdateSync(preparedStatement);
-        });
+        Bukkit.getScheduler().runTaskAsynchronously(this.plugin, () -> executeUpdateSync(preparedStatement));
     }
 
     /**
