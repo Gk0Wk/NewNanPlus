@@ -76,15 +76,12 @@ public class NewNanPlusPlugin extends JavaPlugin {
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))),
                     globalData.globalMessage.get("NO_PERMISSION"), globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"),
                     globalData.globalMessage.get("ONLY_CONSOLE"), globalData.globalMessage.get("NO_SUCH_COMMAND"),
-                    globalData.globalMessage.get("BAD_USAGE"), globalData.globalMessage.get("PLAYER_OFFLINE"));
+                    globalData.globalMessage.get("BAD_USAGE"), globalData.globalMessage.get("PLAYER_OFFLINE"),
+                    globalData.globalMessage.get("EXECUTE_ERROR"));
 
             // 初始化监听实例
             this.globalData.listener = new NewNanPlusListener(globalData);
             this.globalData.printINFO("§a事件监听模块注册完毕。");
-
-            // 注册命令
-            this.globalData.command = new NewNanPlusCommand(globalData);
-            this.globalData.printINFO("§a命令模块注册完毕。");
 
             // 飞行模块
             this.globalData.feeFly = new FeeFly(globalData);

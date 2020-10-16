@@ -2,6 +2,9 @@ package city.newnan.newnanplus.feefly;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
+import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
+import city.newnan.newnanplus.exception.CommandExceptions.RefuseConsoleException;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
@@ -59,6 +62,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         runTaskTimer(this.globalData.plugin, 0, tickPerCount);
         // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
+
+        globalData.commandManager.register("fly", this);
     }
 
     /**
@@ -93,7 +98,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      */
     @Override
     public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-
+        if (token.equals("fly"))
+            applyFly(sender, args);
     }
 
     /**
@@ -107,7 +113,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
 
             // 遍历飞行玩家 - 改用Lambda forEach
             flyingPlayers.forEach(((player, flyingPlayer) -> {
-                if (player.hasPermission("newnanplus.fly.free")) {
+                if (player.hasPermission("newnanplus.feefly.free")) {
                     globalData.sendPlayerActionBar(
                             player, MessageFormat.format(actionbarBypassMessage, player.getName()));
                     // lambda表达式中要用return跳过本次调用，相当于for的continue
@@ -216,42 +222,37 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      * /nnp fly 启动付费飞行模式
      * @param sender 发送者实例
      * @param args 参数
-     * @return 正确使用了命令，返回true，反之
      */
-    public boolean applyFly(CommandSender sender, String[] args) {
+    public void applyFly(CommandSender sender, String[] args) throws Exception {
         // 开启/关闭飞行的对象
         Player player;
         // 只有一个参数，说明是给自己开启/关闭
-        if (args.length == 1) {
+        if (args.length == 0) {
             // 控制台不能给自己开启/关闭
             if (sender instanceof ConsoleCommandSender) {
-                globalData.sendMessage(sender, globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"));
-                return false;
+                throw new RefuseConsoleException();
             }
             // 否则就是玩家执行
             Player _player = (Player) sender;
             // 如果他有自己的飞行权限 或者他已经在飞行(有权取消自己的飞行)
-            if (!_player.hasPermission("newnanplus.fly.self") || flyingPlayers.contains(_player)) {
-                globalData.sendPlayerMessage(_player, globalData.globalMessage.get("NO_PERMISSION"));
-                return false;
+            if (!_player.hasPermission("newnanplus.feefly.self") || flyingPlayers.contains(_player)) {
+                throw new NoPermissionException();
             }
             player = _player;
         } else {
             // 否则就是给别人开启/关闭
             // 检查权限
-            if (!sender.hasPermission("newnanplus.fly.other")) {
-                globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
-                return false;
+            if (!sender.hasPermission("newnanplus.feefly.other")) {
+                throw new NoPermissionException();
             }
             // 找到要操作的那个玩家
-            player = globalData.plugin.getServer().getPlayer(args[1]);
+            player = globalData.plugin.getServer().getPlayer(args[0]);
             if (player == null) {
-                globalData.sendMessage(sender, globalData.globalMessage.get("PLAYER_OFFLINE"));
-                return true;
+                throw new PlayerOfflineException();
             }
         }
         // 开启/关闭
-        return makeFly(player);
+        makeFly(player);
     }
 
     /**
@@ -272,7 +273,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 return true;
             }
             // 现金大于零才能飞
-            if (globalData.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.fly.free")) {
+            if (globalData.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.feefly.free")) {
                 // 添加玩家
                 flyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
                 // 如果玩家在疾跑，应当取消它，否则飞起来之后会快

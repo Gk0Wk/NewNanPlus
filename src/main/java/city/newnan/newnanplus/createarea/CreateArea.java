@@ -2,7 +2,9 @@ package city.newnan.newnanplus.createarea;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions;
+import city.newnan.newnanplus.exception.CommandExceptions.CommandExecuteException;
+import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
+import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -40,7 +42,8 @@ public class CreateArea implements NewNanPlusModule {
 
         reloadConfig();
 
-        globalData.commandManager.register("test", this);
+        globalData.commandManager.register("ctp", this);
+        globalData.commandManager.register("cnew", this);
     }
 
     /**
@@ -90,9 +93,8 @@ public class CreateArea implements NewNanPlusModule {
      * /nnp ct指令实现，将玩家传送到自己/某人的创造区域
      * @param sender 指令发送方
      * @param args 指令参数，包括fly
-     * @return 成功执行，返回true，反之
      */
-    public boolean teleportToCreateArea(CommandSender sender, String args[]) {
+    public void teleportToCreateArea(CommandSender sender, String args[]) throws Exception {
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
 
         Player player = (Player) sender;
@@ -100,20 +102,17 @@ public class CreateArea implements NewNanPlusModule {
         if (args.length != 0) {
             // 检查权限
             if (!player.hasPermission("newnanplus.createarea.teleport.other")) {
-                globalData.sendPlayerMessage(player, globalData.globalMessage.get("NO_PERMISSION"));
-                return false;
+                throw new NoPermissionException();
             }
             // 查找对应的玩家
             Player _player = globalData.plugin.getServer().getPlayer(args[0]);
             // 如果找不到
             if (_player == null) {
-                globalData.sendPlayerMessage(player, globalData.globalMessage.get("PLAYER_OFFLINE"));
-                return false;
+                throw new PlayerOfflineException();
             }
             // 看看对应的玩家有没有创造区
             if (createArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
-                globalData.sendPlayerMessage(player, "&c玩家还有没创造区！");
-                return false;
+                throw new CommandExecuteException("玩家没有创造区！");
             }
             _teleportTo(Objects.requireNonNull(
                     createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
@@ -122,19 +121,16 @@ public class CreateArea implements NewNanPlusModule {
             // 不带参数，传送到自己的创造区
             // 检查权限
             if (!player.hasPermission("newnanplus.createarea.teleport.self")) {
-                globalData.sendPlayerMessage(player, globalData.globalMessage.get("NO_PERMISSION"));
-                return false;
+                throw new NoPermissionException();
             }
             // 看看玩家有没有创造区
             if (!createArea.isConfigurationSection("areas."+player.getUniqueId())) {
-                globalData.sendPlayerMessage(player, "&c你还有没创造区！");
-                return false;
+                throw new CommandExecuteException("你还没有创造区！");
             }
             _teleportTo(Objects.requireNonNull(
                     createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
             globalData.sendPlayerActionBar(player, "已到达你的创造区");
         }
-        return true;
     }
 
     private void _teleportTo(ConfigurationSection areaSection, Player player) {
@@ -164,7 +160,7 @@ public class CreateArea implements NewNanPlusModule {
         Player _player = globalData.plugin.getServer().getPlayer(args[0]);
         // 如果找不到
         if (_player == null) {
-            throw new CommandExceptions.PlayerOfflineException();
+            throw new PlayerOfflineException();
         }
 
         // 创建创造区域

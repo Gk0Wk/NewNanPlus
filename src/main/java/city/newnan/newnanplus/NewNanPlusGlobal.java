@@ -36,6 +36,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
         globalMessage.put("NO_SUCH_COMMAND", config.getString("global-data.no-such-command-msg"));
         globalMessage.put("BAD_USAGE", config.getString("global-data.bad-usage-msg"));
         globalMessage.put("ONLY_CONSOLE", config.getString("global-data.only-console-msg"));
+        globalMessage.put("EXECUTE_ERROR", config.getString("global-data.command-execute-error-msg"));
 
         globalMessage.put("PREFIX", config.getString("global-data.prefix"));
         prefixString = config.getString("global-data.prefix");
@@ -57,7 +58,6 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     /* =============================================================================================== */
     /* 本体 */
     public NewNanPlusPlugin plugin;
-    public NewNanPlusCommand command;
     public NewNanPlusListener listener;
 
     /* =============================================================================================== */

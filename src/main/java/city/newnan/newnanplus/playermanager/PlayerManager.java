@@ -53,6 +53,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         allowLaterMessage = config.getString("module-playermanager.msg-allow-when-online");
         allowSucceedMessage = config.getString("module-playermanager.msg-allow-succeed");
         notNewbieAlreadyMessage = config.getString("module-playermanager.msg-not-newbie-already");
+
+        globalData.commandManager.register("allow", this);
     }
 
     /**
@@ -65,7 +67,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @Override
     public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-
+        if (token.equals("allow"))
+            allowNewbieToPlayer(sender, args);
     }
 
     /**
@@ -81,16 +84,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * /nnp allow指令的实现，将一个玩家纳入已验证新人名单中，如果玩家已经在线，那么就直接赋予玩家权限
      * @param sender 命令的发送者
      * @param args 命令的参数，包括allow
-     * @return
      */
-    public boolean allowNewbieToPlayer(CommandSender sender, String args[]) {
-        // 检查权限
-        if (!sender.hasPermission("nnp.newbies.allow")) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
-        }
-
+    public void allowNewbieToPlayer(CommandSender sender, String[] args){
         // 寻找目标玩家
-        Player player = globalData.plugin.getServer().getPlayer(args[1]);
+        Player player = globalData.plugin.getServer().getPlayer(args[0]);
         // 是否需要刷新新人名单
         boolean need_refresh = false;
 
@@ -102,8 +99,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             List<String> list_not = (List<String>) newbiesList.getList("not-passed-newbies");
             // 如果未通过里有这个玩家，那就去掉
             assert list_not != null;
-            if (list_not.contains(args[1])) {
-                list_not.remove(args[1]);
+            if (list_not.contains(args[0])) {
+                list_not.remove(args[0]);
                 newbiesList.set("not-passed-newbies", list_not);
                 need_refresh = true;
             }
@@ -111,8 +108,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             List<String> list_yet = (List<String>) newbiesList.getList("yet-passed-newbies");
             // 如果通过里没有这个玩家，就加入
             assert list_yet != null;
-            if (!list_yet.contains(args[1])) {
-                list_yet.add(args[1]);
+            if (!list_yet.contains(args[0])) {
+                list_yet.add(args[0]);
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
             }
@@ -140,7 +137,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         if (need_refresh) {
             globalData.configManager.save("newbies_list.yml");
         }
-        return true;
     }
 
     /**

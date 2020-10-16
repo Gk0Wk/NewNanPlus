@@ -70,6 +70,7 @@ commands:
     description: '允许某玩家正式进入游戏(获得玩家权限)'
     usage: '/nnp allow <player>'
     aliases: 'allow'
+    permission-node: 'newnanplus.playermanager.allow'
   'nnp ctp':
     description: '进入自己的或者别人的创造区域'
     usage: '/nnp ctp [player]'
@@ -89,6 +90,27 @@ permissions:
   #  default: 玩家权限节点的默认值，true、false、op和not op
   #  children: #子节点(仅名字)
   #    'Example2': true会继承父节点的权限，false会与父节点相反
-
-  'newnanplus.*':
-    description: 'NewNanPlus所有权限'
+  'newnanplus.feefly.self':
+    description: '可以为自己开启付费飞行'
+    default: 'op'
+  'newnanplus.feefly.other':
+    description: '可以为别人开启付费飞行'
+    default: 'op'
+  'newnanplus.feefly.free':
+    description: '可以白嫖付费飞行'
+    default: 'op'
+  'newnanplus.playermanager.allow':
+    description: '可以赋予玩家游玩权限'
+    default: 'op'
+  'newnanplus.createarea.create':
+    description: '可以创建/修改玩家的创造区'
+    default: 'op'
+  'newnanplus.createarea.remove':
+    description: '可以删除玩家的创造区'
+    default: 'op'
+  'newnanplus.createarea.teleport.self':
+    description: '可以传送到自己的创造区'
+    default: 'op'
+  'newnanplus.createarea.teleport.other':
+    description: '可以传送到别人的创造区'
+    default: 'op'

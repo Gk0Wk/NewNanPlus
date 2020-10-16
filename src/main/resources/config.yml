@@ -16,6 +16,7 @@ global-data:
   console-selfrun-refuse-msg: '&c控制台无法为自己执行这条指令！'
   bad-usage-msg: '&c命令使用不正确！(使用方法：{0})'
   no-such-command-msg: '&c指令不存在！'
+  command-execute-error-msg: '&c指令执行出错：{0}'
 global-settings: {}
 module-world-setting:
   keepInventoryOnDeath: []

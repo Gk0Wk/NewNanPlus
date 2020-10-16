@@ -7,4 +7,10 @@ public class CommandExceptions {
     public static class BadUsageException extends Exception { }
     public static class NoSuchCommandException extends Exception { }
     public static class OnlyConsoleException extends Exception { }
+    public static class CommandExecuteException extends Exception {
+        public String reason;
+        public CommandExecuteException(String reason) {
+            this.reason = reason;
+        }
+    }
 }

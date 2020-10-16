@@ -1,7 +1,7 @@
 package city.newnan.newnanplus.utility;
 
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions;
+import city.newnan.newnanplus.exception.CommandExceptions.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -31,13 +31,15 @@ public class CommandManager implements CommandExecutor {
     private final String badUsageMessage;
     private final String onlyConsoleMessage;
     private final String playerOfflineMessage;
+    private final String commandExecuteErrorMessage;
     private final ConfigurationSection commandsConfig;
     private final HashMap<String, CommandContainer> commandContainerHashMap = new HashMap<>();
     private final HashMap<String, CommandContainer> aliasCommandContainerHashMap = new HashMap<>();
 
     public CommandManager(JavaPlugin plugin, MessageManager messageManager,  String prefix, FileConfiguration config,
                           String noPermissionMessage, String consoleNotAllowMessage, String onlyConsoleMessage,
-                          String noSuchCommandMessage, String badUsageMessage, String playerOfflineMessage) {
+                          String noSuchCommandMessage, String badUsageMessage, String playerOfflineMessage,
+                          String commandExecuteErrorMessage) {
         this.plugin = plugin;
         this.messageManager = messageManager;
         this.prefix = prefix;
@@ -47,6 +49,7 @@ public class CommandManager implements CommandExecutor {
         this.badUsageMessage = badUsageMessage;
         this.onlyConsoleMessage = onlyConsoleMessage;
         this.playerOfflineMessage = playerOfflineMessage;
+        this.commandExecuteErrorMessage = commandExecuteErrorMessage;
         this.commandsConfig = config.getConfigurationSection("commands");
 
         Objects.requireNonNull(plugin.getCommand(prefix)).setExecutor(this);
@@ -150,18 +153,21 @@ public class CommandManager implements CommandExecutor {
             container.module.onCommand(sender, command, token, newArgs);
         }
         catch (Exception e) {
-            if (e instanceof  CommandExceptions.NoPermissionException)
+            if (e instanceof NoPermissionException)
                 messageManager.sendMessage(sender, noPermissionMessage);
-            if (e instanceof CommandExceptions.BadUsageException)
+            if (e instanceof BadUsageException)
                 messageManager.sendMessage(sender, MessageFormat.format(badUsageMessage, container.usageSuggestion));
-            if (e instanceof  CommandExceptions.NoSuchCommandException)
+            if (e instanceof NoSuchCommandException)
                 messageManager.sendMessage(sender, noSuchCommandMessage);
-            if (e instanceof  CommandExceptions.OnlyConsoleException)
+            if (e instanceof OnlyConsoleException)
                 messageManager.sendMessage(sender, onlyConsoleMessage);
-            if (e instanceof  CommandExceptions.PlayerOfflineException)
+            if (e instanceof PlayerOfflineException)
                 messageManager.sendMessage(sender, playerOfflineMessage);
-            if (e instanceof  CommandExceptions.RefuseConsoleException)
+            if (e instanceof RefuseConsoleException)
                 messageManager.sendMessage(sender, consoleNotAllowMessage);
+            if (e instanceof CommandExecuteException)
+                messageManager.sendMessage(sender, MessageFormat.format(commandExecuteErrorMessage,
+                        ((CommandExecuteException) e).reason));
         }
 
         return true;
