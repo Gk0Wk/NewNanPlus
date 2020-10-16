@@ -56,16 +56,8 @@ public class NewNanPlusCommand implements CommandExecutor {
             switch(args[0].toLowerCase()) {
                 case "fly":
                     return globalData.feeFly.applyFly(sender, args);
-                case "reload":
-                    return reloadConfig(sender);
-                case "save":
-                    return saveConfig(sender);
                 case "allow":
                     return globalData.playerManager.allowNewbieToPlayer(sender, args);
-                case "ctp":
-                    return globalData.createArea.teleportToCreateArea(sender, args);
-                case "cnew":
-                    return globalData.createArea.createCreateArea(sender, args);
                 case "genhopper":
                     return globalData.lagAnalyzer.genHopperReport();
                 case "list":
@@ -78,39 +70,10 @@ public class NewNanPlusCommand implements CommandExecutor {
 
     private boolean nnpMainCommand(CommandSender sender, String[] args) {
         if (sender instanceof Player) {
-
             GuiHandler h = globalData.wolfyInventoryAPI.getGuiHandler((Player) sender);
             h.setButton(globalData.wolfyInventoryAPI.getGuiWindow("none", "main_menu"), 1, "settings");
             globalData.wolfyInventoryAPI.openGui((Player)sender, "none", "main_menu");
         }
-        return true;
-    }
-
-    /**
-     * 保存配置
-     * @param sender 命令发送者实例
-     * @return 正确使用了命令，返回true，反之
-     */
-    private boolean saveConfig(CommandSender sender) {
-        if (!sender.hasPermission("newnanplus.save")) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
-            return false;
-        }
-        globalData.plugin.saveConfig();
-        return true;
-    }
-
-    /**
-     * 重载配置
-     * @param sender 命令发送者实例
-     * @return 正确使用了命令，返回true，反之
-     */
-    private boolean reloadConfig(CommandSender sender) {
-        if (!sender.hasPermission("newnanplus.reload")) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
-            return false;
-        }
-        globalData.plugin.reloadConfig();
         return true;
     }
 

@@ -1,5 +1,7 @@
 package city.newnan.newnanplus.utility;
 
+import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -27,13 +29,15 @@ public class CommandManager implements CommandExecutor {
     private final String consoleNotAllowMessage;
     private final String noSuchCommandMessage;
     private final String badUsageMessage;
+    private final String onlyConsoleMessage;
+    private final String playerOfflineMessage;
     private final ConfigurationSection commandsConfig;
     private final HashMap<String, CommandContainer> commandContainerHashMap = new HashMap<>();
     private final HashMap<String, CommandContainer> aliasCommandContainerHashMap = new HashMap<>();
 
     public CommandManager(JavaPlugin plugin, MessageManager messageManager,  String prefix, FileConfiguration config,
-                          String noPermissionMessage, String consoleNotAllowMessage,
-                          String noSuchCommandMessage, String badUsageMessage) {
+                          String noPermissionMessage, String consoleNotAllowMessage, String onlyConsoleMessage,
+                          String noSuchCommandMessage, String badUsageMessage, String playerOfflineMessage) {
         this.plugin = plugin;
         this.messageManager = messageManager;
         this.prefix = prefix;
@@ -41,12 +45,14 @@ public class CommandManager implements CommandExecutor {
         this.consoleNotAllowMessage = consoleNotAllowMessage;
         this.noSuchCommandMessage = noSuchCommandMessage;
         this.badUsageMessage = badUsageMessage;
+        this.onlyConsoleMessage = onlyConsoleMessage;
+        this.playerOfflineMessage = playerOfflineMessage;
         this.commandsConfig = config.getConfigurationSection("commands");
 
         Objects.requireNonNull(plugin.getCommand(prefix)).setExecutor(this);
     }
 
-    public void register(String token, CommandExecutor module) {
+    public void register(String token, NewNanPlusModule module) {
         ConfigurationSection section = commandsConfig.getConfigurationSection(
                 token.isEmpty() ? (prefix) : prefix + " " + token);
         assert section != null;
@@ -140,8 +146,22 @@ public class CommandManager implements CommandExecutor {
             newArgs[i - 1] = args[i];
         }
 
-        if (!container.module.onCommand(sender, command, token, newArgs)) {
-            messageManager.sendMessage(sender, MessageFormat.format(badUsageMessage, container.usageSuggestion));
+        try {
+            container.module.onCommand(sender, command, token, newArgs);
+        }
+        catch (Exception e) {
+            if (e instanceof  CommandExceptions.NoPermissionException)
+                messageManager.sendMessage(sender, noPermissionMessage);
+            if (e instanceof CommandExceptions.BadUsageException)
+                messageManager.sendMessage(sender, MessageFormat.format(badUsageMessage, container.usageSuggestion));
+            if (e instanceof  CommandExceptions.NoSuchCommandException)
+                messageManager.sendMessage(sender, noSuchCommandMessage);
+            if (e instanceof  CommandExceptions.OnlyConsoleException)
+                messageManager.sendMessage(sender, onlyConsoleMessage);
+            if (e instanceof  CommandExceptions.PlayerOfflineException)
+                messageManager.sendMessage(sender, playerOfflineMessage);
+            if (e instanceof  CommandExceptions.RefuseConsoleException)
+                messageManager.sendMessage(sender, consoleNotAllowMessage);
         }
 
         return true;
@@ -160,11 +180,11 @@ class CommandContainer {
     public final String[] aliases;
     public final boolean hidden;
     public final boolean consoleAllowable;
-    public final CommandExecutor module;
+    public final NewNanPlusModule module;
 
     public CommandContainer(@NotNull String token, @Nullable String permission, @NotNull String usageSuggestion,
                             @NotNull String description, @Nullable String permissionMessage,  boolean hidden,
-                            boolean consoleAllowable, @Nullable String[] aliases, @Nullable CommandExecutor module) {
+                            boolean consoleAllowable, @Nullable String[] aliases, @Nullable NewNanPlusModule module) {
         this.token = token;
         this.permission = permission;
         this.usageSuggestion = usageSuggestion;

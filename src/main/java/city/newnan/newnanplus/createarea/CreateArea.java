@@ -2,12 +2,11 @@ package city.newnan.newnanplus.createarea;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
-import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
-import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -17,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
 
-public class CreateArea implements NewNanPlusModule, CommandExecutor {
+public class CreateArea implements NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
@@ -72,30 +71,40 @@ public class CreateArea implements NewNanPlusModule, CommandExecutor {
     }
 
     /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+        if (token.equals("cnew"))
+            createCreateArea(sender, args);
+        if (token.equals("ctp"))
+            teleportToCreateArea(sender, args);
+    }
+
+    /**
      * /nnp ct指令实现，将玩家传送到自己/某人的创造区域
      * @param sender 指令发送方
      * @param args 指令参数，包括fly
      * @return 成功执行，返回true，反之
      */
     public boolean teleportToCreateArea(CommandSender sender, String args[]) {
-        // 控制台无法执行该命令
-        if (sender instanceof ConsoleCommandSender) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"));
-            return false;
-        }
-
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
 
         Player player = (Player) sender;
         // 输入了其他玩家的名字，传送到其他玩家所在的创造区
-        if (args.length > 1) {
+        if (args.length != 0) {
             // 检查权限
-            if (!player.hasPermission("newnanplus.ctp.other")) {
+            if (!player.hasPermission("newnanplus.createarea.teleport.other")) {
                 globalData.sendPlayerMessage(player, globalData.globalMessage.get("NO_PERMISSION"));
                 return false;
             }
             // 查找对应的玩家
-            Player _player = globalData.plugin.getServer().getPlayer(args[1]);
+            Player _player = globalData.plugin.getServer().getPlayer(args[0]);
             // 如果找不到
             if (_player == null) {
                 globalData.sendPlayerMessage(player, globalData.globalMessage.get("PLAYER_OFFLINE"));
@@ -112,7 +121,7 @@ public class CreateArea implements NewNanPlusModule, CommandExecutor {
         } else {
             // 不带参数，传送到自己的创造区
             // 检查权限
-            if (!player.hasPermission("newnanplus.ctp.self")) {
+            if (!player.hasPermission("newnanplus.createarea.teleport.self")) {
                 globalData.sendPlayerMessage(player, globalData.globalMessage.get("NO_PERMISSION"));
                 return false;
             }
@@ -140,72 +149,45 @@ public class CreateArea implements NewNanPlusModule, CommandExecutor {
     }
 
     /**
-     * Executes the given command, returning its success.
-     * <br>
-     * If false is returned, then the "usage" plugin.yml entry for this command
-     * (if defined) will be sent to the player.
-     *
-     * @param sender  Source of the command
-     * @param command Command which was executed
-     * @param label   Alias of the command which was used
-     * @param args    Passed command arguments
-     * @return true if a valid command, otherwise false
-     */
-    @Override
-    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
-
-        return true;
-    }
-
-    /**
      * /nnp cnew指令实现，创建某个玩家的创造区
      * @param sender 指令发送方
      * @param args 命令参数，包括cnew
      * @return 成功执行，返回true，反之
      */
-    public boolean createCreateArea(CommandSender sender, String args[]) {
-        // 检查权限
-        if (!sender.hasPermission("newnanplus.cnew")) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("NO_PERMISSION"));
-            return false;
-        }
-
+    public boolean createCreateArea(CommandSender sender, String args[]) throws Exception {
         // 检查参数
-        if (args.length < 6) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("PARAMETER_NUMBER_NOT_MATCH"));
+        if (args.length < 5) {
             return false;
         }
 
         // 查找对应的玩家
-        Player _player = globalData.plugin.getServer().getPlayer(args[1]);
+        Player _player = globalData.plugin.getServer().getPlayer(args[0]);
         // 如果找不到
         if (_player == null) {
-            globalData.sendMessage(sender, globalData.globalMessage.get("PLAYER_OFFLINE"));
-            return false;
+            throw new CommandExceptions.PlayerOfflineException();
         }
 
         // 创建创造区域
         newCreateArea(args, _player);
-
         return true;
     }
 
     /**
      * 创造/更新创造区
-     * @param args 命令行参数，cnew [PlayerName] [X1] [Z1] [X2] [Z2]
+     * @param args 命令行参数，[PlayerName] [X1] [Z1] [X2] [Z2]
      * @param player 创造区所属玩家
      */
     public void newCreateArea(String args[], Player player) {
         // 坐标解析
-        int x1 = Integer.parseInt(args[2]);
-        int x2 = Integer.parseInt(args[4]);
+        int x1 = Integer.parseInt(args[1]);
+        int x2 = Integer.parseInt(args[3]);
         if (x1 > x2) {
             x1 ^= x2;
             x2 ^= x1;
             x1 ^= x2;
         }
-        int z1 = Integer.parseInt(args[3]);
-        int z2 = Integer.parseInt(args[5]);
+        int z1 = Integer.parseInt(args[2]);
+        int z2 = Integer.parseInt(args[4]);
         if (z1 > z2) {
             z1 ^= z2;
             z2 ^= z1;

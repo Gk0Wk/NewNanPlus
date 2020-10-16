@@ -26,13 +26,15 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     @Override
     public void reloadConfig() {
         FileConfiguration config =  configManager.get("config.yml");
+
         globalMessage.put("NO_PERMISSION", config.getString("global-data.no-permission-msg"));
         globalMessage.put("REFUSE_CONSOLE_SELFRUN", config.getString("global-data.console-selfrun-refuse-msg"));
         globalMessage.put("PLAYER_OFFLINE", config.getString("global-data.player-offline-msg"));
-        globalMessage.put("PARAMETER_NUMBER_NOT_MATCH", config.getString("global-data.parameter-number-not-match-msg"));
-        globalMessage.put("PREFIX", config.getString("global-data.prefix"));
         globalMessage.put("NO_SUCH_COMMAND", config.getString("global-data.no-such-command-msg"));
         globalMessage.put("BAD_USAGE", config.getString("global-data.bad-usage-msg"));
+        globalMessage.put("ONLY_CONSOLE", config.getString("global-data.only-console-msg"));
+
+        globalMessage.put("PREFIX", config.getString("global-data.prefix"));
         prefixString = config.getString("global-data.prefix");
     }
 

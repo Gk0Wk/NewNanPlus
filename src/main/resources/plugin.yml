@@ -10,8 +10,8 @@ description: 'An utility plugin for NewNanCity server.'
 api-version: '1.14'
 # 加载时机。STARTUP是在服务器启动的一开始，POSTWORLD更晚一些
 load: POSTWORLD
-# 作者，六个Email，用于问题反馈
-author: Sttot(nmg_wk@yeah.net)
+# 作者，留个Email，用于问题反馈
+author: 'Sttot(nmg_wk@yeah.net)'
 # 如果有多个作者的话用这个
 # authors: []
 # 网站
@@ -21,7 +21,11 @@ prefix: 'NewNanPlus'
 # 是否会用bukkit提供的数据库服务
 database: false
 # 硬依赖，没有就无法启动
-depend: ['Vault', 'dynmap', 'WolfyUtilities', 'QuickShop']
+depend:
+  - 'Vault'
+  - 'dynmap'
+  - 'WolfyUtilities'
+  - 'QuickShop'
 # 软依赖，插件会在这些依赖加载后再加载
 softdepend:
   - 'BKCommonLib'
@@ -54,22 +58,28 @@ commands:
     usage: ''
   'nnp fly':
     description: '用它飞起来或者取消飞行模式，记得着落再取消'
-    usage: 'nnp fly'
+    usage: '/nnp fly [player]'
+    aliases: 'nfly'
   'nnp save':
     description: '保存配置'
-    usage: 'nnp save'
+    usage: '/nnp save'
   'nnp reload':
     description: '重新载入配置'
-    usage: 'nnp reload'
+    usage: '/nnp reload'
   'nnp allow':
     description: '允许某玩家正式进入游戏(获得玩家权限)'
-    usage: 'nnp allow [PlayerID]'
+    usage: '/nnp allow <player>'
+    aliases: 'allow'
   'nnp ctp':
-    description: '允许某玩家正式进入游戏(获得玩家权限)'
-    usage: 'nnp ctp [PlayerID]'
+    description: '进入自己的或者别人的创造区域'
+    usage: '/nnp ctp [player]'
+    aliases: 'ctp'
+    console: false
   'nnp cnew':
-    description: '允许某玩家正式进入游戏(获得玩家权限)'
-    usage: 'nnp cnew [PlayerID] x1 z1 x2 z2'
+    description: '为某玩家设置创造区域'
+    usage: '/nnp cnew <player> <x1> <z1> <x2> <z2>'
+    aliases: 'cnew'
+    permission-node: 'newnanplus.createarea.create'
 
 # 权限节点，可选
 permissions:

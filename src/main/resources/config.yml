@@ -12,7 +12,7 @@ global-data:
   prefix: '&f&l[&b牛腩小助手&f&l] &r'
   no-permission-msg: '&c你没有这样做的权限！'
   player-offline-msg: '&c用户不在线或不存在！'
-  parameter-number-not-match-msg: '&c参数数量不匹配！'
+  only-console-msg: '&c该指令只允许控制台输入！'
   console-selfrun-refuse-msg: '&c控制台无法为自己执行这条指令！'
   bad-usage-msg: '&c命令使用不正确！(使用方法：{0})'
   no-such-command-msg: '&c指令不存在！'

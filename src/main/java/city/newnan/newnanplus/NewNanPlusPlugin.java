@@ -75,7 +75,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
             this.globalData.commandManager = new CommandManager(this, globalData, "nnp",
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))),
                     globalData.globalMessage.get("NO_PERMISSION"), globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"),
-                    globalData.globalMessage.get("NO_SUCH_COMMAND"), globalData.globalMessage.get("BAD_USAGE"));
+                    globalData.globalMessage.get("ONLY_CONSOLE"), globalData.globalMessage.get("NO_SUCH_COMMAND"),
+                    globalData.globalMessage.get("BAD_USAGE"), globalData.globalMessage.get("PLAYER_OFFLINE"));
 
             // 初始化监听实例
             this.globalData.listener = new NewNanPlusListener(globalData);
