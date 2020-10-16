@@ -2,12 +2,14 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
@@ -51,6 +53,19 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         allowLaterMessage = config.getString("module-playermanager.msg-allow-when-online");
         allowSucceedMessage = config.getString("module-playermanager.msg-allow-succeed");
         notNewbieAlreadyMessage = config.getString("module-playermanager.msg-not-newbie-already");
+    }
+
+    /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+
     }
 
     /**

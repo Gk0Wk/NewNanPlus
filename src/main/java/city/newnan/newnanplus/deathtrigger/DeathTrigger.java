@@ -3,11 +3,14 @@ package city.newnan.newnanplus.deathtrigger;
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
 import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
@@ -70,6 +73,19 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
                         (Boolean) map.get("if-percent")));
             }
         }
+    }
+
+    /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+
     }
 
     /**

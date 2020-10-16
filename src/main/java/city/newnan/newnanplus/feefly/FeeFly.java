@@ -5,6 +5,7 @@ import city.newnan.newnanplus.NewNanPlusModule;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
+import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -16,6 +17,7 @@ import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.Vector;
@@ -79,6 +81,19 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         noFeeMessage = config.getString("module-feefly.msg-nofee");
         countFlyingPlayersMessage = config.getString("module-feefly.msg-count-flying-players");
         listFlyingPlayersMessage = config.getString("module-feefly.msg-list-flying-players");
+    }
+
+    /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+
     }
 
     /**

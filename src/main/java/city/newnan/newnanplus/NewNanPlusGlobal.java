@@ -1,7 +1,10 @@
 package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.utility.MessageManager;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -36,6 +39,19 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
 
         globalMessage.put("PREFIX", config.getString("global-data.prefix"));
         prefixString = config.getString("global-data.prefix");
+    }
+
+    /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+
     }
 
     /* =============================================================================================== */
