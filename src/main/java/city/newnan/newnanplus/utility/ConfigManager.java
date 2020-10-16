@@ -9,7 +9,7 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * 配置文件管理器，不要用它管理config.yml
+ * 配置文件管理器，管理包括config.yml、plugin.yml等在内的配置文件
  */
 public class ConfigManager {
     /**

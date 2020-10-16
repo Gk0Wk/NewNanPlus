@@ -2,7 +2,6 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
@@ -10,17 +9,13 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.UUID;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
     private final NewNanPlusGlobal globalData;
-
-    private final HashMap<String, UUID> reversePlayerList = new HashMap<>();
 
     private String newbiesGroup;
     private String playersGroup;
@@ -36,11 +31,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     public PlayerManager(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
         reloadConfig();
-
-        // 创建反射表
-        for (OfflinePlayer player : globalData.plugin.getServer().getOfflinePlayers()) {
-            reversePlayerList.put(player.getName(), player.getUniqueId());
-        }
 
         // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
@@ -69,7 +59,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
-        touchPlayer(event.getPlayer());
         joinCheck(event.getPlayer());
     }
 
@@ -182,26 +171,5 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         if (need_refresh) {
             globalData.configManager.save("newbies_list.yml");
         }
-    }
-
-    /**
-     * 检测这个玩家是否不在反射表中(是否第一次加入游戏)，并将其加入反射表
-     * @param player 玩家实例
-     * @return 如果玩家已经在反射表中则返回true，反之
-     */
-    public boolean touchPlayer(Player player) {
-        if (reversePlayerList.containsKey(player.getName()))
-            return true;
-        reversePlayerList.put(player.getName(), player.getUniqueId());
-        return false;
-    }
-
-    /**
-     * 通过玩家名称反查玩家UUID
-     * @param playerName 玩家名称
-     * @return 玩家UUID，找不到则返回null
-     */
-    public UUID findUserWithName(String playerName) {
-        return reversePlayerList.get(playerName);
     }
 }

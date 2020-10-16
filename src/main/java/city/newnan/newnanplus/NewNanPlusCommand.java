@@ -26,7 +26,7 @@ public class NewNanPlusCommand implements CommandExecutor {
      */
     public NewNanPlusCommand(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
-        this.globalData.plugin.getCommand("nnp").setExecutor(this);
+        // this.globalData.plugin.getCommand("nnp").setExecutor(this);
     }
 
     /**

@@ -6,6 +6,7 @@ import city.newnan.newnanplus.deathtrigger.DeathTrigger;
 import city.newnan.newnanplus.feefly.FeeFly;
 import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
 import city.newnan.newnanplus.playermanager.PlayerManager;
+import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
@@ -15,12 +16,14 @@ import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * NewNanPlus 主类
@@ -41,7 +44,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
         try {
             // 实例化全局存储对象 + 配置管理器
             this.globalData = new NewNanPlusGlobal(this, new ConfigManager(this));
-            this.globalData.reloadConfig();
         }
         catch (Exception e) {
             // 打印错误栈
@@ -53,6 +55,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
         try {
             this.globalData.printINFO("§6=================================");
             this.globalData.printINFO("§6牛腩插件组   -   Powered by Sttot");
+            this.globalData.printINFO("§6Version: " + getDescription().getVersion());
             this.globalData.printINFO("§6# 更多精彩，请见 www.newnan.city #");
             this.globalData.printINFO("§6=================================");
             this.globalData.printINFO("§a插件启动中...");
@@ -68,6 +71,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
 
             bindWolfyUtilities();
             bindDynmapAPI();
+
+            this.globalData.commandManager = new CommandManager(this, globalData, "nnp",
+                    YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))),
+                    globalData.globalMessage.get("NO_PERMISSION"), globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"),
+                    globalData.globalMessage.get("NO_SUCH_COMMAND"), globalData.globalMessage.get("BAD_USAGE"));
 
             // 初始化监听实例
             this.globalData.listener = new NewNanPlusListener(globalData);

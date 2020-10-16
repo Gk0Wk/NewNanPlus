@@ -1,18 +1,56 @@
-name: ${project.name}
-version: ${project.version}
-author: Sttot
-# 插件的主类，记得带包名
+# 插件的入口，记得带包名
 main: 'city.newnan.newnanplus.NewNanPlusPlugin'
-depend: ['Vault'] # 'ProtocolLib', 'BKCommonLib', 'PlaceholderAPI'
-website: 'https://gk0wk.github.io/'
+# 插件名，决定了插件资源文件夹的名字
+name: ${project.name}
+# 版本号，MAJOR.MINOR.PATCH
+version: ${project.version}
+# 插件描述
+description: 'An utility plugin for NewNanCity server.'
+# API版本号(服务端)
 api-version: '1.14'
+# 加载时机。STARTUP是在服务器启动的一开始，POSTWORLD更晚一些
+load: POSTWORLD
+# 作者，六个Email，用于问题反馈
+author: Sttot(nmg_wk@yeah.net)
+# 如果有多个作者的话用这个
+# authors: []
+# 网站
+website: 'https://gk0wk.github.io/'
+# 自定义的Logger前缀，默认是插件名
+prefix: 'NewNanPlus'
+# 是否会用bukkit提供的数据库服务
+database: false
+# 硬依赖，没有就无法启动
+depend: ['Vault', 'dynmap', 'WolfyUtilities', 'QuickShop']
+# 软依赖，插件会在这些依赖加载后再加载
+softdepend:
+  - 'BKCommonLib'
+  - 'Essentials'
+  - 'GroupManager'
+  - 'Multiverse-Core'
+  - 'ProtocolLib'
+  - 'PlaceholderAPI'
+  - 'Stats'
+  - 'WorldEdit'
+  - 'WorldGuard'
+# 插件会在这些插件之前被加载
+loadbefore: []
 # 插件的命令（没有可以不写）
 commands:
+  # 模板
+  #'example':
+  #  description: '命令的解释，/help 时可以查看'
+  #  aliases: ['命令的别名'] 或 '命令的别名'
+  #  permission: '权限节点'，这个是会被bukkit检查的
+  #  permission-message: '自定义的权限提醒通知'
+  #  usage: 使用说明，在返回false时会提醒，模板 /<command> [test|stop]"
+  #  console: 控制台能否执行，默认是true - 这个是我自己加的属性 : ) 用于CommandManager
+  #  hidden: 是否在帮助中隐藏，默认是false
+  #  permission-node: 权限节点，用于CommandManager，就不要写上面的permission
+
   # 命令名称，不带'/'
-  nnp:
-    # 命令描述，/help 时可以查看
+  'nnp':
     description: ''
-    # 命令在控制台中的使用方式，带'/'
     usage: ''
   'nnp fly':
     description: '用它飞起来或者取消飞行模式，记得着落再取消'
@@ -32,3 +70,15 @@ commands:
   'nnp cnew':
     description: '允许某玩家正式进入游戏(获得玩家权限)'
     usage: 'nnp cnew [PlayerID] x1 z1 x2 z2'
+
+# 权限节点，可选
+permissions:
+  # 模板
+  # 'Example':
+  #  description: '权限的解释'
+  #  default: 玩家权限节点的默认值，true、false、op和not op
+  #  children: #子节点(仅名字)
+  #    'Example2': true会继承父节点的权限，false会与父节点相反
+
+  'newnanplus.*':
+    description: 'NewNanPlus所有权限'
