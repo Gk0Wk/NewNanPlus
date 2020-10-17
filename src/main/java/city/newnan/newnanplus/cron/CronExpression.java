@@ -51,12 +51,12 @@ public class CronExpression {
 
     // 虚拟转轮算法
     // 很简单，秒→分→时→天→月→年
-    private int secondListPointer = -1;
-    private int minuteListPointer = -1;
-    private int hourListPointer = -1;
-    private int dayPointer = -1;
-    private int monthListPointer = -1;
-    private int yearPointer = -1;
+    private int secondListPointer;
+    private int minuteListPointer;
+    private int hourListPointer;
+    private int dayPointer;
+    private int monthListPointer;
+    private int yearPointer;
 
     /**
      * Cron表达式
@@ -96,7 +96,7 @@ public class CronExpression {
         this.expressionString = expressionString;
 
         // 初始化工作
-        getNextTime();
+        tickNext(true);
     }
 
     /**
@@ -506,7 +506,7 @@ public class CronExpression {
      * @return int[]实例
      */
     private int[] parseToArray(String subExpression, int valueLimit, List<Integer> legalIntervalList, Map<String, Integer> optionalMap) {
-        ArrayList<Integer> tmpList = new ArrayList<Integer>();
+        ArrayList<Integer> tmpList = new ArrayList<>();
         // 按 ',' 分割
         for (String splits : subExpression.split(",")) {
             // 识别 '*' 通配符
@@ -561,7 +561,7 @@ public class CronExpression {
      * @return 周可用情况List
      */
     private List<Boolean> parseRegularDayOfWeekList(String weekExpression) {
-        List<Boolean> list = new ArrayList<Boolean>(8);
+        List<Boolean> list = new ArrayList<>(8);
         list.add(false);
 
         if (weekExpression.equals("*")) {

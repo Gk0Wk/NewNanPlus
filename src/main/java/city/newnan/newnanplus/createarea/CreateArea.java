@@ -17,6 +17,7 @@ import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -89,9 +90,9 @@ public class CreateArea implements NewNanPlusModule {
         if (token.equals("ctp"))
             teleportToCreateArea(sender, args);
         if (token.equals("cnew"))
-            createCreateArea(sender, args);
+            createCreateArea(args);
         if (token.equals("cdel"))
-            removeCreateArea(sender, args);
+            removeCreateArea(args);
     }
 
     /**
@@ -99,7 +100,7 @@ public class CreateArea implements NewNanPlusModule {
      * @param sender 指令发送方
      * @param args 指令参数
      */
-    public void teleportToCreateArea(CommandSender sender, String args[]) throws Exception {
+    public void teleportToCreateArea(CommandSender sender, String[] args) throws Exception {
         FileConfiguration createArea = globalData.configManager.get("create_area.yml");
 
         Player player = (Player) sender;
@@ -151,10 +152,9 @@ public class CreateArea implements NewNanPlusModule {
 
     /**
      * /nnp cnew指令实现，创建某个玩家的创造区
-     * @param sender 指令发送方
      * @param args 命令参数
      */
-    public void createCreateArea(CommandSender sender, String args[]) throws Exception {
+    public void createCreateArea(String[] args) throws Exception {
         // 检查参数
         if (args.length < 5) {
             throw new BadUsageException();
@@ -182,7 +182,7 @@ public class CreateArea implements NewNanPlusModule {
      * @param args 命令行参数，[PlayerName] [X1] [Z1] [X2] [Z2]
      * @param player 创造区所属玩家
      */
-    public void newCreateArea(String args[], Player player) {
+    public void newCreateArea(String[] args, Player player) throws IOException {
         // 坐标解析
         int x1 = Integer.parseInt(args[1]);
         int x2 = Integer.parseInt(args[3]);
@@ -224,10 +224,9 @@ public class CreateArea implements NewNanPlusModule {
 
     /**
      * /nnp cdel指令实现，删除某个玩家的创造区
-     * @param sender 指令发送方
      * @param args 命令参数
      */
-    public void removeCreateArea(CommandSender sender, String args[]) throws Exception {
+    public void removeCreateArea(String[] args) throws Exception {
         // 检查参数
         if (args.length < 1) {
             throw new BadUsageException();

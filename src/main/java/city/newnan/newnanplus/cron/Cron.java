@@ -52,8 +52,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         ConfigurationSection map = config.getConfigurationSection("schedule-tasks");
         assert map != null;
         for (String name : map.getKeys(false)) {
-            List<?> commands = map.getList(name);
-            assert commands != null;
+            List<String> commands = map.getStringList(name);
             addTask(name, commands.toArray(new String[0]));
         }
     }

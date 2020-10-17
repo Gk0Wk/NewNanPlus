@@ -12,6 +12,5 @@ public class NewNanPlusExecute {
         System.out.println("[NewNanCity] 这不是一个可执行的jar文件，请将其放在plugins文件夹下。");
         System.out.println("[NewNanCity] This is not an executable jar file, please put it in the plugins folder.");
         System.exit(0);
-        String a;
     }
 }
