@@ -1,6 +1,17 @@
 {
     "author": "Sttot",
     "version": "${version}",
+    "chat-prefix": "&f&l[&b牛腩小助手&f&l] &r",
+    "console-prefix": "${project.name}",
+    "global-message": {
+        "no-permission": "&c你没有这样做的权限！",
+        "console-selfrun-refuse": "&c控制台无法为自己执行这条指令！",
+        "player-offline": "&c用户不在线或不存在！",
+        "no-such-command": "&c指令不存在！",
+        "bad-usage": "&c命令使用不正确！(使用方法：{0})",
+        "only-console": "&c该指令只允许控制台输入！",
+        "command-execute-error": "&c指令执行出错：{0}"
+    },
     "inventories": {
         "none": {
             "global_items": {

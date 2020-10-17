@@ -10,6 +10,7 @@ import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
+import me.wolfyscript.utilities.api.language.LanguageAPI;
 import net.milkbowl.vault.economy.Economy;
 import net.milkbowl.vault.permission.Permission;
 import org.bukkit.Bukkit;
@@ -20,7 +21,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 
@@ -42,7 +42,12 @@ public class NewNanPlusPlugin extends JavaPlugin {
     public void onEnable() {
         try {
             // 实例化全局存储对象 + 配置管理器
-            this.globalData = new NewNanPlusGlobal(this, new ConfigManager(this));
+            this.globalData = new NewNanPlusGlobal(this);
+            globalData.configManager = new ConfigManager(this);
+            globalData.wolfyAPI = bindWolfyUtilities();
+            globalData.wolfyLanguageAPI = globalData.wolfyAPI.getLanguageAPI();
+            globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
+            globalData.reloadConfig();
         }
         catch (Exception e) {
             // 打印错误栈
@@ -66,11 +71,6 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 绑定Vault
             if (!bindVault()) {
                 throw new Exception("Vault绑定失败。");
-            }
-
-            // 绑定WolfyUtilities
-            if (!bindWolfyUtilities()) {
-                throw new Exception("WolfyUtilities绑定失败。");
             }
 
             // 绑定Dynmap
@@ -169,26 +169,33 @@ public class NewNanPlusPlugin extends JavaPlugin {
         return true;
     }
 
-    private boolean bindWolfyUtilities() {
-        // FileConfiguration config = globalData.configManager.get("config.yml");
+    private WolfyUtilities bindWolfyUtilities() throws Exception {
         // 创建API实例
-        this.globalData.wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
-        // 设置前缀
-        this.globalData.wolfyAPI.setCHAT_PREFIX(globalData.globalMessage.get("PREFIX"));
-        this.globalData.wolfyAPI.setCONSOLE_PREFIX("NewNanCity");
+        WolfyUtilities wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
+
         // 多语言模块
-        this.saveResource("lang/zh-CN.json", true);
-        this.globalData.wolfyLanguageAPI = this.globalData.wolfyAPI.getLanguageAPI();
-        try{
-            this.globalData.wolfyLanguageAPI.registerLanguage(new Language(this, "zh-CN"));
+        LanguageAPI wolfyLanguageAPI = this.globalData.wolfyAPI.getLanguageAPI();
+        // 设置主要语言
+        String majorLanguageName = globalData.configManager.get("config.yml").
+                getString("global-settings.major-language");
+        globalData.configManager.touch("lang/" + majorLanguageName + ".json");
+        wolfyLanguageAPI.registerLanguage(new Language(this, majorLanguageName));
+        // 设置次要语言
+        String fallbackLanguageName = globalData.configManager.get("config.yml").
+                getString("global-settings.fallback-language");
+        if (fallbackLanguageName != null && !fallbackLanguageName.equals(majorLanguageName)) {
+            globalData.configManager.touch("lang/" + fallbackLanguageName + ".json");
+            Language fallbackLanguage = new Language(this, fallbackLanguageName);
+            wolfyLanguageAPI.registerLanguage(fallbackLanguage);
+            wolfyLanguageAPI.setFallbackLanguage(fallbackLanguage);
         }
-        catch (IOException e) {
-            this.globalData.printERROR("无法打开语言文件！");
-            e.printStackTrace();
-            Bukkit.getPluginManager().disablePlugin(this);
-        }
+
+        // 设置前缀
+        this.globalData.wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceKeys("$chat-prefix$"));
+        this.globalData.wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceKeys("$console-prefix$"));
+
         // 创建背包界面API实例
-        this.globalData.wolfyInventoryAPI = this.globalData.wolfyAPI.getInventoryAPI();
+        // this.globalData.wolfyInventoryAPI = this.globalData.wolfyAPI.getInventoryAPI();
 
         // demo
 //        GuiCluster cluster = this.globalData.wolfyInventoryAPI.getOrRegisterGuiCluster("none");
@@ -198,7 +205,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
 //        window.registerButton(button);
 //        cluster.registerGuiWindow(window);
 
-        return true;
+        return wolfyAPI;
     }
 
     private boolean bindDynmapAPI() {

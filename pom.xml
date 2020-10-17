@@ -37,6 +37,7 @@
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
+            <!--https://github.com/webbukkit/dynmap/wiki-->
             <id>dynmap-repo</id>
             <url>http://repo.mikeprimm.com/</url>
         </repository>
