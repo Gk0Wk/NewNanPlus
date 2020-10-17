@@ -42,7 +42,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
     public void onEnable() {
         try {
             // 实例化全局存储对象 + 配置管理器
-            this.globalData = new NewNanPlusGlobal(this);
+            globalData = new NewNanPlusGlobal(this);
             globalData.configManager = new ConfigManager(this);
             globalData.wolfyAPI = bindWolfyUtilities();
             globalData.wolfyLanguageAPI = globalData.wolfyAPI.getLanguageAPI();
@@ -174,12 +174,13 @@ public class NewNanPlusPlugin extends JavaPlugin {
         WolfyUtilities wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
 
         // 多语言模块
-        LanguageAPI wolfyLanguageAPI = this.globalData.wolfyAPI.getLanguageAPI();
+        LanguageAPI wolfyLanguageAPI = wolfyAPI.getLanguageAPI();
         // 设置主要语言
         String majorLanguageName = globalData.configManager.get("config.yml").
                 getString("global-settings.major-language");
         globalData.configManager.touch("lang/" + majorLanguageName + ".json");
-        wolfyLanguageAPI.registerLanguage(new Language(this, majorLanguageName));
+        Language majorLanguage = new Language(this, majorLanguageName);
+        wolfyLanguageAPI.registerLanguage(majorLanguage);
         // 设置次要语言
         String fallbackLanguageName = globalData.configManager.get("config.yml").
                 getString("global-settings.fallback-language");
@@ -191,8 +192,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
         }
 
         // 设置前缀
-        this.globalData.wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceKeys("$chat-prefix$"));
-        this.globalData.wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceKeys("$console-prefix$"));
+        wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceKeys("$chat_prefix$"));
+        wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceKeys("$console_prefix$"));
 
         // 创建背包界面API实例
         // this.globalData.wolfyInventoryAPI = this.globalData.wolfyAPI.getInventoryAPI();

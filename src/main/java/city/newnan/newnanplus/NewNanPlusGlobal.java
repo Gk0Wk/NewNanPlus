@@ -23,15 +23,15 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
      */
     @Override
     public void reloadConfig() {
-        globalMessage.put("NO_PERMISSION", wolfyLanguageAPI.replaceColoredKeys("$global-message.no-permission$"));
-        globalMessage.put("REFUSE_CONSOLE_SELFRUN", wolfyLanguageAPI.replaceColoredKeys("$global-message.console-selfrun-refuse$"));
-        globalMessage.put("PLAYER_OFFLINE", wolfyLanguageAPI.replaceColoredKeys("$global-message.player-offline$"));
-        globalMessage.put("NO_SUCH_COMMAND", wolfyLanguageAPI.replaceColoredKeys("$global-message.no-such-command$"));
-        globalMessage.put("BAD_USAGE", wolfyLanguageAPI.replaceColoredKeys("$global-message.bad-usage$"));
-        globalMessage.put("ONLY_CONSOLE", wolfyLanguageAPI.replaceColoredKeys("$global-message.only-console$"));
-        globalMessage.put("EXECUTE_ERROR", wolfyLanguageAPI.replaceColoredKeys("$global-message.command-execute-error$"));
+        globalMessage.put("NO_PERMISSION", wolfyLanguageAPI.replaceColoredKeys("$global_message.no_permission$"));
+        globalMessage.put("REFUSE_CONSOLE_SELFRUN", wolfyLanguageAPI.replaceColoredKeys("$global_message.console_selfrun_refuse$"));
+        globalMessage.put("PLAYER_OFFLINE", wolfyLanguageAPI.replaceColoredKeys("$global_message.player_offline$"));
+        globalMessage.put("NO_SUCH_COMMAND", wolfyLanguageAPI.replaceColoredKeys("$global_message.no_such_command$"));
+        globalMessage.put("BAD_USAGE", wolfyLanguageAPI.replaceColoredKeys("$global_message.bad_usage$"));
+        globalMessage.put("ONLY_CONSOLE", wolfyLanguageAPI.replaceColoredKeys("$global_message.only_console$"));
+        globalMessage.put("EXECUTE_ERROR", wolfyLanguageAPI.replaceColoredKeys("$global_message.command_execute_error$"));
 
-        prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat-prefix$");
+        prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$");
         globalMessage.put("PREFIX",prefixString);
     }
 

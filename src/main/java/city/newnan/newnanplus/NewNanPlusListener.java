@@ -22,7 +22,7 @@ public class NewNanPlusListener implements Listener {
      */
     public NewNanPlusListener(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
-        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
+        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, globalData.plugin);
     }
 
     @EventHandler

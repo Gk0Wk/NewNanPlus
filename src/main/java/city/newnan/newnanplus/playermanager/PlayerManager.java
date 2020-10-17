@@ -2,6 +2,7 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -86,7 +87,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param sender 命令的发送者
      * @param args 命令的参数，包括allow
      */
-    public void allowNewbieToPlayer(CommandSender sender, String[] args) throws IOException {
+    public void allowNewbieToPlayer(CommandSender sender, String[] args) throws Exception {
+        // 检查参数
+        if (args.length < 1) {
+            throw new CommandExceptions.BadUsageException();
+        }
+
         // 寻找目标玩家
         Player player = globalData.plugin.getServer().getPlayer(args[0]);
         // 是否需要刷新新人名单
@@ -131,7 +137,11 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             }
         }
         if (need_refresh) {
-            globalData.configManager.save("newbies_list.yml");
+            try {
+                globalData.configManager.save("newbies_list.yml");
+            } catch (IOException e) {
+                throw new CommandExceptions.CommandExecuteException("配置文件保存失败！");
+            }
         }
     }
 
