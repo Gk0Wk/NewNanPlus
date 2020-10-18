@@ -1,9 +1,7 @@
-package city.newnan.newnanplus;
-
 /**
  * 只有直接运行这个jar才会跑到这里来
  */
-public class NewNanPlusExecute {
+public class Main {
     /**
      * 只有直接运行这个jar才会跑到这里来
      * @param args 命令行参数

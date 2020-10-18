@@ -83,7 +83,7 @@ public class MessageManager {
         if (sender instanceof Player) {
             sendPlayerMessage((Player) sender, msg);
         } else if (sender instanceof ConsoleCommandSender) {
-            printINFO(msg);
+            printINFO(ChatColor.translateAlternateColorCodes('&', msg));
         }
     }
 }

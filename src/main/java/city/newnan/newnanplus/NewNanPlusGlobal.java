@@ -7,7 +7,6 @@ import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
 
 /**
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
@@ -24,6 +23,8 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
      */
     @Override
     public void reloadConfig() {
+        prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$");
+
         NoPermissionException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_permission$");
         RefuseConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.console_selfrun_refuse$");
         PlayerOfflineException.message =  wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_offline$");
@@ -33,9 +34,6 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
         BadUsageException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.bad_usage$");
         OnlyConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.only_console$");
         CustomCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.custom_command_error$");
-
-        prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$");
-        globalMessage.put("PREFIX",prefixString);
     }
 
     /**
@@ -52,19 +50,16 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     }
 
     /* =============================================================================================== */
-    /* 本体 */
-
-
-    /* =============================================================================================== */
-    /* 全局 */
-    public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
-    public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
-    public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
-    public org.dynmap.DynmapAPI dynmapAPI;
-
+    /* 核心 */
+    public city.newnan.newnanplus.NewNanPlusPlugin plugin;
     public city.newnan.newnanplus.utility.ConfigManager configManager;
     public city.newnan.newnanplus.utility.CommandManager commandManager;
 
+    public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
+    public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
+    // public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
+
+    public org.dynmap.DynmapAPI dynmapAPI;
     /**
      * Vault 经济实例
      */
@@ -74,25 +69,23 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
      */
     public net.milkbowl.vault.permission.Permission vaultPerm;
 
-    public HashMap<String, String> globalMessage = new HashMap<>();
+    /* =============================================================================================== */
+    /* 全局 */
     public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /* =============================================================================================== */
     /* 模块 */
-    public city.newnan.newnanplus.NewNanPlusPlugin plugin;
-
-    /* NewNanPlus BuildingField*/
 
     /* NewNanPlus Town */
     // public city.newnan.newnanplus.town.TownManager townManager;
 
-    /* NewNanPlus CreateArea **/
+    /* NewNanPlus CreateArea */
     public city.newnan.newnanplus.createarea.CreateArea createArea;
 
-    /* NewNanPlus Player **/
+    /* NewNanPlus Player */
     public city.newnan.newnanplus.playermanager.PlayerManager playerManager;
 
-    /* NewNanPlus DeathTrigger **/
+    /* NewNanPlus DeathTrigger */
     public city.newnan.newnanplus.deathtrigger.DeathTrigger deathTrigger;
 
     /* NewNanPlus LagAnalyzer */
@@ -101,6 +94,6 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     /* NewNanPlus Corn */
     public city.newnan.newnanplus.cron.Cron cron;
 
-    /* NewNanPlus FeeFly **/
+    /* NewNanPlus FeeFly */
     public city.newnan.newnanplus.feefly.FeeFly feeFly;
 }
