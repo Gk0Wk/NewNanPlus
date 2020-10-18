@@ -6,11 +6,21 @@
     "global_message": {
         "no_permission": "&c你没有这样做的权限！",
         "console_selfrun_refuse": "&c控制台无法为自己执行这条指令！",
-        "player_offline": "&c用户不在线或不存在！",
+        "player_offline": "&c用户不在线！",
+        "player_not_found": "&c用户不存在！",
+        "find_more_than_one_player": "找到多个玩家！",
         "no_such_command": "&c指令不存在！",
         "bad_usage": "&c命令使用不正确！(使用方法：{0})",
         "only_console": "&c该指令只允许控制台输入！",
-        "command_execute_error": "&c指令执行出错：{0}"
+        "custom_command_error": "&c指令执行出错：{0}"
+    },
+    "module_message": {
+        "create_area": {
+            "title_on_dynmap": "{0}的创造区",
+            "player_have_no_area": "玩家没有创造区！",
+            "you_have_no_area": "你还没有创造区！",
+            "teleported_to_ones_area": "已到达[{0}]的创造区"
+        }
     },
     "inventories": {
         "none": {

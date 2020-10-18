@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.exception.CommandExceptions.*;
 import city.newnan.newnanplus.utility.MessageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -23,13 +24,15 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
      */
     @Override
     public void reloadConfig() {
-        globalMessage.put("NO_PERMISSION", wolfyLanguageAPI.replaceColoredKeys("$global_message.no_permission$"));
-        globalMessage.put("REFUSE_CONSOLE_SELFRUN", wolfyLanguageAPI.replaceColoredKeys("$global_message.console_selfrun_refuse$"));
-        globalMessage.put("PLAYER_OFFLINE", wolfyLanguageAPI.replaceColoredKeys("$global_message.player_offline$"));
-        globalMessage.put("NO_SUCH_COMMAND", wolfyLanguageAPI.replaceColoredKeys("$global_message.no_such_command$"));
-        globalMessage.put("BAD_USAGE", wolfyLanguageAPI.replaceColoredKeys("$global_message.bad_usage$"));
-        globalMessage.put("ONLY_CONSOLE", wolfyLanguageAPI.replaceColoredKeys("$global_message.only_console$"));
-        globalMessage.put("EXECUTE_ERROR", wolfyLanguageAPI.replaceColoredKeys("$global_message.command_execute_error$"));
+        NoPermissionException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_permission$");
+        RefuseConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.console_selfrun_refuse$");
+        PlayerOfflineException.message =  wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_offline$");
+        PlayerNotFountException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_not_found$");
+        PlayerMoreThanOneException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.find_more_than_one_player$");
+        NoSuchCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_such_command$");
+        BadUsageException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.bad_usage$");
+        OnlyConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.only_console$");
+        CustomCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.custom_command_error$");
 
         prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$");
         globalMessage.put("PREFIX",prefixString);

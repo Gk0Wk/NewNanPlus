@@ -2,10 +2,7 @@ package city.newnan.newnanplus.createarea;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
-import city.newnan.newnanplus.exception.CommandExceptions.CommandExecuteException;
-import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
-import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
+import city.newnan.newnanplus.exception.CommandExceptions.*;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -18,6 +15,7 @@ import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.List;
 import java.util.Objects;
 
@@ -71,8 +69,10 @@ public class CreateArea implements NewNanPlusModule {
                 int z2 = area.getInt("z2");
                 String name = area.getString("name");
                 // 地图上绘制区域
-                createAreaMarkers.createAreaMarker(areaID, name+"的创造区", false,
-                        createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
+                createAreaMarkers.createAreaMarker(areaID, MessageFormat.format(
+                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.create_area.title_on_dynmap$"),
+                        name), false, createWorld.getName(),
+                        new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
             }
         }
     }
@@ -111,18 +111,24 @@ public class CreateArea implements NewNanPlusModule {
                 throw new NoPermissionException();
             }
             // 查找对应的玩家
-            Player _player = globalData.plugin.getServer().getPlayer(args[0]);
-            // 如果找不到
-            if (_player == null) {
-                throw new PlayerOfflineException();
+            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
+            // 检查玩家数量
+            if (players.size() == 0) {
+                throw new PlayerNotFountException();
+            } else if (players.size() > 1) {
+                throw new PlayerMoreThanOneException();
             }
+            Player _player = players.get(0);
+
             // 看看对应的玩家有没有创造区
             if (createArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
-                throw new CommandExecuteException("玩家没有创造区！");
+                throw new CustomCommandException(globalData.wolfyLanguageAPI.replaceColoredKeys(
+                        "$module_message.create_area.player_have_no_area$"));
             }
             _teleportTo(Objects.requireNonNull(
                     createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
-            globalData.sendPlayerActionBar(player, "已到达["+_player.getName()+"]的创造区");
+            globalData.sendPlayerActionBar(player,MessageFormat.format( globalData.wolfyLanguageAPI.replaceColoredKeys(
+                    "$module_message.create_area.teleported_to_ones_area$"), _player.getName()));
         } else {
             // 不带参数，传送到自己的创造区
             // 检查权限
@@ -131,11 +137,13 @@ public class CreateArea implements NewNanPlusModule {
             }
             // 看看玩家有没有创造区
             if (!createArea.isConfigurationSection("areas."+player.getUniqueId())) {
-                throw new CommandExecuteException("你还没有创造区！");
+                throw new CustomCommandException(globalData.wolfyLanguageAPI.replaceColoredKeys(
+                        "$module_message.create_area.you_have_no_area$"));
             }
             _teleportTo(Objects.requireNonNull(
                     createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
-            globalData.sendPlayerActionBar(player, "已到达你的创造区");
+            globalData.sendPlayerActionBar(player,MessageFormat.format( globalData.wolfyLanguageAPI.replaceColoredKeys(
+                    "$module_message.create_area.teleported_to_ones_area$"), player.getName()));
         }
     }
 
@@ -161,17 +169,14 @@ public class CreateArea implements NewNanPlusModule {
         }
 
         // 查找对应的玩家
-        Player _player;
-        _player = globalData.plugin.getServer().getPlayer(args[0]);
-        // 如果找不到
-        if (_player == null) {
-            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
-            if (players.size() == 0) {
-                throw new CommandExecuteException("找不到玩家！");
-            } else if (players.size() > 1)
-                throw new CommandExecuteException("找到多个玩家！");
-            _player = players.get(0);
+        List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
+        // 检查玩家数量
+        if (players.size() == 0) {
+            throw new PlayerNotFountException();
+        } else if (players.size() > 1) {
+            throw new PlayerMoreThanOneException();
         }
+        Player _player = players.get(0);
 
         // 创建创造区域
         newCreateArea(args, _player);
@@ -208,8 +213,10 @@ public class CreateArea implements NewNanPlusModule {
         }
 
         // 地图上绘制区域
-        createAreaMarkers.createAreaMarker(player.getUniqueId().toString(), player.getName()+"的创造区", false,
-                createWorld.getName(), new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
+        createAreaMarkers.createAreaMarker(player.getUniqueId().toString(), MessageFormat.format(
+                globalData.wolfyLanguageAPI.replaceKeys("$module_message.create_area.title_on_dynmap$"),
+                player.getName()), false, createWorld.getName(),
+                new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
 
         // 存储玩家数据
         ConfigurationSection section = createArea.createSection("areas."+player.getUniqueId());
@@ -233,17 +240,14 @@ public class CreateArea implements NewNanPlusModule {
         }
 
         // 查找对应的玩家
-        Player player;
-        player = globalData.plugin.getServer().getPlayer(args[0]);
-        // 如果找不到
-        if (player == null) {
-            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
-            if (players.size() == 0) {
-                throw new CommandExecuteException("找不到玩家！");
-            } else if (players.size() > 1)
-                throw new CommandExecuteException("找到多个玩家！");
-            player = players.get(0);
+        List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
+        // 检查玩家数量
+        if (players.size() == 0) {
+            throw new PlayerNotFountException();
+        } else if (players.size() > 1) {
+            throw new PlayerMoreThanOneException();
         }
+        Player player = players.get(0);
 
         // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
         AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());

@@ -140,7 +140,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             try {
                 globalData.configManager.save("newbies_list.yml");
             } catch (IOException e) {
-                throw new CommandExceptions.CommandExecuteException("配置文件保存失败！");
+                throw new CommandExceptions.CustomCommandException("配置文件保存失败！");
             }
         }
     }

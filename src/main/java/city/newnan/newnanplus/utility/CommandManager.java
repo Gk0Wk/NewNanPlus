@@ -114,6 +114,7 @@ public class CommandManager implements CommandExecutor {
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
         String token;
         CommandContainer container;
+        boolean isAlias;
 
         //是否是别名
         if (label.equals(prefix)) {
@@ -121,9 +122,11 @@ public class CommandManager implements CommandExecutor {
             token = (args.length == 0) ? "" : args[0];
             // 寻找对应的指令
             container = commandContainerHashMap.get(token);
+            isAlias = true;
         } else {
             container = aliasCommandContainerHashMap.get(label);
             token = container.token;
+            isAlias = false;
         }
 
         // 如果没有找到指令
@@ -144,7 +147,7 @@ public class CommandManager implements CommandExecutor {
             return false;
         }
 
-        String[] newArgs = (args.length == 0) ? args : new String[args.length - 1];
+        String[] newArgs = (args.length == 0 || isAlias) ? args : new String[args.length - 1];
         if (args.length >= 1) System.arraycopy(args, 1, newArgs, 0, args.length - 1);
 
         try {
@@ -152,20 +155,25 @@ public class CommandManager implements CommandExecutor {
         }
         catch (Exception e) {
             if (e instanceof NoPermissionException)
-                messageManager.sendMessage(sender, noPermissionMessage);
+                messageManager.sendMessage(sender, NoPermissionException.message);
             else if (e instanceof BadUsageException)
-                messageManager.sendMessage(sender, MessageFormat.format(badUsageMessage, container.usageSuggestion));
+                messageManager.sendMessage(sender,
+                        MessageFormat.format(BadUsageException.message, container.usageSuggestion));
             else if (e instanceof NoSuchCommandException)
-                messageManager.sendMessage(sender, noSuchCommandMessage);
+                messageManager.sendMessage(sender, NoSuchCommandException.message);
             else if (e instanceof OnlyConsoleException)
-                messageManager.sendMessage(sender, onlyConsoleMessage);
+                messageManager.sendMessage(sender, OnlyConsoleException.message);
             else if (e instanceof PlayerOfflineException)
-                messageManager.sendMessage(sender, playerOfflineMessage);
+                messageManager.sendMessage(sender, PlayerOfflineException.message);
+            else if (e instanceof PlayerNotFountException)
+                messageManager.sendMessage(sender, PlayerNotFountException.message);
+            else if (e instanceof PlayerMoreThanOneException)
+                messageManager.sendMessage(sender, PlayerMoreThanOneException.message);
             else if (e instanceof RefuseConsoleException)
-                messageManager.sendMessage(sender, consoleNotAllowMessage);
-            else if (e instanceof CommandExecuteException)
-                messageManager.sendMessage(sender, MessageFormat.format(commandExecuteErrorMessage,
-                        ((CommandExecuteException) e).reason));
+                messageManager.sendMessage(sender, RefuseConsoleException.message);
+            else if (e instanceof CustomCommandException)
+                messageManager.sendMessage(sender, MessageFormat.format(CustomCommandException.message,
+                        ((CustomCommandException) e).reason));
             else e.printStackTrace();
         }
 
