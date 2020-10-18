@@ -53,8 +53,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
 
     /* =============================================================================================== */
     /* 本体 */
-    public NewNanPlusPlugin plugin;
-    public NewNanPlusListener listener;
+
 
     /* =============================================================================================== */
     /* 全局 */
@@ -66,7 +65,6 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     public city.newnan.newnanplus.utility.ConfigManager configManager;
     public city.newnan.newnanplus.utility.CommandManager commandManager;
 
-    public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * Vault 经济实例
      */
@@ -77,9 +75,12 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     public net.milkbowl.vault.permission.Permission vaultPerm;
 
     public HashMap<String, String> globalMessage = new HashMap<>();
+    public SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
     /* =============================================================================================== */
     /* 模块 */
+    public city.newnan.newnanplus.NewNanPlusPlugin plugin;
+
     /* NewNanPlus BuildingField*/
 
     /* NewNanPlus Town */

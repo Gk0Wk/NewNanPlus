@@ -20,6 +20,9 @@
             "player_have_no_area": "玩家没有创造区！",
             "you_have_no_area": "你还没有创造区！",
             "teleported_to_ones_area": "已到达[{0}]的创造区"
+        },
+        "cron": {
+            "invalid_expression": "无法解析表达式：{0}"
         }
     },
     "inventories": {

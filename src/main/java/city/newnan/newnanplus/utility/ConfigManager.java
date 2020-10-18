@@ -28,6 +28,7 @@ public class ConfigManager {
      */
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
+        get("config.yml");
     }
 
     /**
@@ -77,7 +78,11 @@ public class ConfigManager {
         else {
             // 存在就保存
             try {
-                this.configMap.get(configFile).save(new File(plugin.getDataFolder(), configFile));
+                if (configFile.equals("config.yml")) {
+                    plugin.saveConfig();
+                } else {
+                    this.configMap.get(configFile).save(new File(plugin.getDataFolder(), configFile));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -116,5 +121,18 @@ public class ConfigManager {
     public FileConfiguration reset(String configFile) {
         plugin.saveResource(configFile, true);
         return reload(configFile);
+    }
+
+    /**
+     * 保存所有配置文件
+     */
+    public void saveAll() {
+        configMap.forEach((name, config) -> {
+            try {
+                save(name);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
     }
 }

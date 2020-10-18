@@ -40,14 +40,21 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     @Override
     public void onEnable() {
+        // 核心初始化
         try {
-            // 实例化全局存储对象 + 配置管理器
+            // 初始化全局存储对象
             globalData = new NewNanPlusGlobal(this);
+            // 初始化配置管理器
             globalData.configManager = new ConfigManager(this);
+            // 初始化WolfyAPI
             globalData.wolfyAPI = bindWolfyUtilities();
             globalData.wolfyLanguageAPI = globalData.wolfyAPI.getLanguageAPI();
             globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
+            // 加载配置
             globalData.reloadConfig();
+            // 初始化命令管理器
+            globalData.commandManager = new CommandManager(this, globalData, "nnp",
+                    YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
         }
         catch (Exception e) {
             // 打印错误栈
@@ -56,18 +63,15 @@ public class NewNanPlusPlugin extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
+        globalData.printINFO("§6=================================");
+        globalData.printINFO("§6牛腩插件组   -   Powered by Sttot");
+        globalData.printINFO("§6Version: " + getDescription().getVersion());
+        globalData.printINFO("§6# 更多精彩，请见 www.newnan.city #");
+        globalData.printINFO("§6=================================");
+        globalData.printINFO("§a插件启动中...");
+
+        // 模块初始化
         try {
-            this.globalData.printINFO("§6=================================");
-            this.globalData.printINFO("§6牛腩插件组   -   Powered by Sttot");
-            this.globalData.printINFO("§6Version: " + getDescription().getVersion());
-            this.globalData.printINFO("§6# 更多精彩，请见 www.newnan.city #");
-            this.globalData.printINFO("§6=================================");
-            this.globalData.printINFO("§a插件启动中...");
-
-            // 加载插件配置
-            this.globalData.configManager.get("config.yml");
-            this.globalData.printINFO("§a配置文件载入完毕。");
-
             // 绑定Vault
             if (!bindVault()) {
                 throw new Exception("Vault绑定失败。");
@@ -78,48 +82,37 @@ public class NewNanPlusPlugin extends JavaPlugin {
                 throw new Exception("Dynmap绑定失败。");
             }
 
-            this.globalData.commandManager = new CommandManager(this, globalData, "nnp",
-                    YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))),
-                    globalData.globalMessage.get("NO_PERMISSION"), globalData.globalMessage.get("REFUSE_CONSOLE_SELFRUN"),
-                    globalData.globalMessage.get("ONLY_CONSOLE"), globalData.globalMessage.get("NO_SUCH_COMMAND"),
-                    globalData.globalMessage.get("BAD_USAGE"), globalData.globalMessage.get("PLAYER_OFFLINE"),
-                    globalData.globalMessage.get("EXECUTE_ERROR"));
-
-            // 初始化监听实例
-            this.globalData.listener = new NewNanPlusListener(globalData);
-            this.globalData.printINFO("§a事件监听模块注册完毕。");
-
             // 飞行模块
-            this.globalData.feeFly = new FeeFly(globalData);
-            this.globalData.printINFO("§a付费飞行模块注册完毕。");
+            globalData.feeFly = new FeeFly(globalData);
+            globalData.printINFO("§a付费飞行模块注册完毕。");
 
             // 创造区模块
-            this.globalData.createArea = new CreateArea(globalData);
-            this.globalData.printINFO("§a创造区模块注册完毕。");
+            globalData.createArea = new CreateArea(globalData);
+            globalData.printINFO("§a创造区模块注册完毕。");
 
             // 新人模块
-            this.globalData.playerManager = new PlayerManager(globalData);
-            this.globalData.printINFO("§a新人模块注册完毕。");
+            globalData.playerManager = new PlayerManager(globalData);
+            globalData.printINFO("§a新人模块注册完毕。");
 
             // 死亡触发器模块
-            this.globalData.deathTrigger = new DeathTrigger(globalData);
-            this.globalData.printINFO("§a死亡触发器模块注册完毕。");
+            globalData.deathTrigger = new DeathTrigger(globalData);
+            globalData.printINFO("§a死亡触发器模块注册完毕。");
 
             // 卡服分析器模块
-            this.globalData.lagAnalyzer = new LagAnalyzer(globalData);
-            this.globalData.printINFO("§a卡服分析器模块注册完毕。");
+            globalData.lagAnalyzer = new LagAnalyzer(globalData);
+            globalData.printINFO("§a卡服分析器模块注册完毕。");
 
             // 定时任务模块
-            this.globalData.cron = new Cron(globalData);
-            this.globalData.printINFO("§a定时任务模块注册完毕。");
+            globalData.cron = new Cron(globalData);
+            globalData.printINFO("§a定时任务模块注册完毕。");
 
             changeGamerules();
 
-            this.globalData.printINFO("§a插件启动完毕。");
+            globalData.printINFO("§a插件启动完毕。");
         }
         catch (Exception e) {
             // 报个错
-            this.globalData.printERROR("§c插件启动失败：");
+            globalData.printERROR("§c插件启动失败：");
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
@@ -133,12 +126,14 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     @Override
     public void onDisable(){
-        if (this.globalData != null) {
-            if (this.globalData.cron != null)
-                this.globalData.cron.onPluginDisable();
-            this.globalData.printINFO("§a正在保存配置文件");
+        if (globalData != null) {
+            if (globalData.cron != null)
+                globalData.cron.onPluginDisable();
+            globalData.printINFO("§a正在保存配置文件...");
+            if (globalData.configManager != null) {
+                globalData.configManager.saveAll();
+            }
         }
-        saveConfig();
     }
 
     /**
@@ -169,6 +164,11 @@ public class NewNanPlusPlugin extends JavaPlugin {
         return true;
     }
 
+    /**
+     * 绑定WolfyAPI
+     * @return WolfyAPI实例
+     * @throws Exception 各种可能遇到的异常
+     */
     private WolfyUtilities bindWolfyUtilities() throws Exception {
         // 创建API实例
         WolfyUtilities wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
@@ -209,6 +209,10 @@ public class NewNanPlusPlugin extends JavaPlugin {
         return wolfyAPI;
     }
 
+    /**
+     * 绑定Dynmap API
+     * @return 绑定成功则返回true，反之
+     */
     private boolean bindDynmapAPI() {
         Plugin dynmap = Bukkit.getPluginManager().getPlugin("dynmap");
         assert dynmap != null;

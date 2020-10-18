@@ -25,31 +25,14 @@ public class CommandManager implements CommandExecutor {
     private final JavaPlugin plugin;
     private final MessageManager messageManager;
     private final String prefix;
-    private final String noPermissionMessage;
-    private final String consoleNotAllowMessage;
-    private final String noSuchCommandMessage;
-    private final String badUsageMessage;
-    private final String onlyConsoleMessage;
-    private final String playerOfflineMessage;
-    private final String commandExecuteErrorMessage;
     private final ConfigurationSection commandsConfig;
     private final HashMap<String, CommandContainer> commandContainerHashMap = new HashMap<>();
     private final HashMap<String, CommandContainer> aliasCommandContainerHashMap = new HashMap<>();
 
-    public CommandManager(JavaPlugin plugin, MessageManager messageManager,  String prefix, FileConfiguration config,
-                          String noPermissionMessage, String consoleNotAllowMessage, String onlyConsoleMessage,
-                          String noSuchCommandMessage, String badUsageMessage, String playerOfflineMessage,
-                          String commandExecuteErrorMessage) {
+    public CommandManager(JavaPlugin plugin, MessageManager messageManager,  String prefix, FileConfiguration config) {
         this.plugin = plugin;
         this.messageManager = messageManager;
         this.prefix = prefix;
-        this.noPermissionMessage = noPermissionMessage;
-        this.consoleNotAllowMessage = consoleNotAllowMessage;
-        this.noSuchCommandMessage = noSuchCommandMessage;
-        this.badUsageMessage = badUsageMessage;
-        this.onlyConsoleMessage = onlyConsoleMessage;
-        this.playerOfflineMessage = playerOfflineMessage;
-        this.commandExecuteErrorMessage = commandExecuteErrorMessage;
         this.commandsConfig = config.getConfigurationSection("commands");
 
         Objects.requireNonNull(plugin.getCommand(prefix)).setExecutor(this);
@@ -131,19 +114,19 @@ public class CommandManager implements CommandExecutor {
 
         // 如果没有找到指令
         if (container == null) {
-            messageManager.sendMessage(sender, noSuchCommandMessage);
+            messageManager.sendMessage(sender, NoSuchCommandException.message);
             return false;
         }
         // 检查权限
         if (sender instanceof ConsoleCommandSender) {
             if (!container.consoleAllowable) {
-                messageManager.sendMessage(sender, consoleNotAllowMessage);
+                messageManager.sendMessage(sender, RefuseConsoleException.message);
                 return false;
             }
         }
         else if (container.permission != null && !sender.hasPermission(container.permission)) {
-            messageManager.sendMessage(sender,
-                    (container.permissionMessage == null) ? noPermissionMessage : container.permissionMessage);
+            messageManager.sendMessage(sender, (container.permissionMessage == null) ?
+                    NoPermissionException.message : container.permissionMessage);
             return false;
         }
 

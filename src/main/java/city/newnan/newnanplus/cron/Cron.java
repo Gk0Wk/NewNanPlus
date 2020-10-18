@@ -129,7 +129,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
             this.tasks.add(task);
         }
         catch (Exception e) {
-            globalData.printWARN(MessageFormat.format("无法解析表达式：{0}", cronExpression));
+            globalData.printWARN(MessageFormat.format(globalData.wolfyLanguageAPI.
+                    replaceColoredKeys("$module_message.cron.invalid_expression$"), cronExpression));
         }
     }
 
