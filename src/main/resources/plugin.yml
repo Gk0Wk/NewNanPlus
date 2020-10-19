@@ -15,7 +15,7 @@ author: 'Sttot(nmg_wk@yeah.net)'
 # 如果有多个作者的话用这个
 # authors: []
 # 网站
-website: 'https://gk0wk.github.io/'
+website: 'https://www.newnan.city/'
 # 自定义的Logger前缀，默认是插件名
 prefix: 'NewNanPlus'
 # 是否会用bukkit提供的数据库服务

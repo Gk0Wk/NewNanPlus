@@ -53,54 +53,74 @@ public class NewNanPlusPlugin extends JavaPlugin {
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
         }
         catch (Exception e) {
+            getLogger().info("§cPlugin initialize failed!");
             // 打印错误栈
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
-        globalData.printINFO("§6=================================");
-        globalData.printINFO("§6牛腩插件组   -   Powered by Sttot");
-        globalData.printINFO("§6Version: " + getDescription().getVersion());
-        globalData.printINFO("§6# 更多精彩，请见 www.newnan.city #");
-        globalData.printINFO("§6=================================");
-        globalData.printINFO("§a插件启动中...");
+        // 欢迎界面
+        {
+            globalData.printINFO("§b    _   __             _   __               ____  __");
+            globalData.printINFO("§b   / | / /__ _      __/ | / /___ _____     / __ \\/ /_  _______");
+            globalData.printINFO("§b  /  |/ / _ \\ | /| / /  |/ / __ `/ __ \\   / /_/ / / / / / ___/");
+            globalData.printINFO("§b / /|  /  __/ |/ |/ / /|  / /_/ / / / /  / ____/ / /_/ (__  )");
+            globalData.printINFO("§b/_/ |_/\\___/|__/|__/_/ |_/\\__,_/_/ /_/  /_/   /_/\\__,_/____/     v" +
+                    getDescription().getVersion());
+            globalData.printINFO("§6---------------------------------------------------");
+            globalData.printINFO("Authors:");
+            getDescription().getAuthors().forEach(author -> globalData.printINFO("§a  - " + author));
+            globalData.printINFO("Website: §b" + getDescription().getWebsite() + "§f    - Welcome to join us!");
+            globalData.printINFO("§6---------------------------------------------------");
+            globalData.printINFO("§aLoading main configure file...");
+            globalData.printINFO("Major language: §e" + globalData.wolfyLanguageAPI.getActiveLanguage().getName());
+            globalData.printINFO("Fallback language: §e" + globalData.wolfyLanguageAPI.getFallbackLanguage().getName());
+        }
 
-        // 模块初始化
         try {
+            globalData.printINFO("§6---------------------------------------------------");
+            globalData.printINFO("Binding dependencies...");
             // 绑定Vault
             if (!bindVault()) {
-                throw new Exception("Vault绑定失败。");
+                throw new Exception("Vault API bind failed.");
+            } else {
+                globalData.printINFO("§f[ §aO K §f] Vault API");
             }
 
             // 绑定Dynmap
             if (!bindDynmapAPI()) {
-                throw new Exception("Dynmap绑定失败。");
+                throw new Exception("Dynmap API bind failed.");
+            } else {
+                globalData.printINFO("§f[ §aO K §f] Dynmap API");
             }
-
-            // 模块注册
-            loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
-            loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
-            loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
-            loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
-            loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
-            loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
-            loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
-
-            changeGamerules();
-
-            globalData.printINFO("§a插件启动完毕。");
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             // 报个错
-            globalData.printERROR("§c插件启动失败：");
+            globalData.printINFO("§cBind dependencies failed!");
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
+        // 模块注册
+        globalData.printINFO("§6---------------------------------------------------");
+        globalData.printINFO("Loading modules...");
+        loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
+        loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
+        loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
+        loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
+        loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
+        loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
+        loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
+        globalData.printINFO("§6---------------------------------------------------");
+
+        globalData.printINFO("NewNanPlus is on run, have a nice day!");
+        globalData.printINFO("");
+        globalData.printINFO("");
+
         if (globalData.cron != null)
             globalData.cron.onPluginReady();
+        changeGamerules();
     }
 
     /**
