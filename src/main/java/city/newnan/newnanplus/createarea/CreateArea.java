@@ -46,6 +46,8 @@ public class CreateArea implements NewNanPlusModule {
         globalData.commandManager.register("ctp", this);
         globalData.commandManager.register("cnew", this);
         globalData.commandManager.register("cdel", this);
+
+        globalData.createArea = this;
     }
 
     /**

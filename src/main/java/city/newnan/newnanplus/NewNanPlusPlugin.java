@@ -1,11 +1,6 @@
 package city.newnan.newnanplus;
 
-import city.newnan.newnanplus.createarea.CreateArea;
-import city.newnan.newnanplus.cron.Cron;
-import city.newnan.newnanplus.deathtrigger.DeathTrigger;
-import city.newnan.newnanplus.feefly.FeeFly;
-import city.newnan.newnanplus.laganalyzer.LagAnalyzer;
-import city.newnan.newnanplus.playermanager.PlayerManager;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
@@ -21,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.lang.reflect.Constructor;
 import java.util.List;
 import java.util.Objects;
 
@@ -82,29 +78,13 @@ public class NewNanPlusPlugin extends JavaPlugin {
                 throw new Exception("Dynmap绑定失败。");
             }
 
-            // 飞行模块
-            globalData.feeFly = new FeeFly(globalData);
-            globalData.printINFO("§a付费飞行模块注册完毕。");
-
-            // 创造区模块
-            globalData.createArea = new CreateArea(globalData);
-            globalData.printINFO("§a创造区模块注册完毕。");
-
-            // 新人模块
-            globalData.playerManager = new PlayerManager(globalData);
-            globalData.printINFO("§a新人模块注册完毕。");
-
-            // 死亡触发器模块
-            globalData.deathTrigger = new DeathTrigger(globalData);
-            globalData.printINFO("§a死亡触发器模块注册完毕。");
-
-            // 卡服分析器模块
-            globalData.lagAnalyzer = new LagAnalyzer(globalData);
-            globalData.printINFO("§a卡服分析器模块注册完毕。");
-
-            // 定时任务模块
-            globalData.cron = new Cron(globalData);
-            globalData.printINFO("§a定时任务模块注册完毕。");
+            // 模块注册
+            loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
+            loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
+            loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
+            loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
+            loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
+            loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
 
             changeGamerules();
 
@@ -118,7 +98,8 @@ public class NewNanPlusPlugin extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
-        globalData.cron.onPluginReady();
+        if (globalData.cron != null)
+            globalData.cron.onPluginReady();
     }
 
     /**
@@ -136,8 +117,30 @@ public class NewNanPlusPlugin extends JavaPlugin {
         }
     }
 
-    public void loadModule() {
-
+    /**
+     * 加载模块
+     * @param module 模块类型
+     */
+    public void loadModule(Class<?> module, String moduleName) {
+        try {
+            if (NewNanPlusModule.class.isAssignableFrom(module)) {
+                // 获取构造器并构造
+                Constructor<?> constructor = module.getDeclaredConstructor(NewNanPlusGlobal.class);
+                constructor.setAccessible(true);
+                constructor.newInstance(globalData);
+                // 成功则打印结果
+                globalData.printINFO("§f[ §aO N §f] " + moduleName);
+            } else {
+                throw new Exception("模块不合法！");
+            }
+        } catch (Exception e) {
+            if (e instanceof ModuleOffException) {
+                globalData.printINFO("§f[ §7OFF §f] " + moduleName);
+            } else {
+                globalData.printINFO("§f[§cERROR§f] " + moduleName);
+                e.printStackTrace();
+            }
+        }
     }
 
     /**
@@ -245,7 +248,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
      * @param rule 规则
      * @param value 目标值
      */
-    private void changeWorldsGamerules(List<String> worlds, GameRule rule, boolean value) {
+    private void changeWorldsGamerules(List<String> worlds, GameRule<Boolean> rule, boolean value) {
         for (String world : worlds) {
             Objects.requireNonNull(this.getServer().getWorld(world)).setGameRule(rule, value);
         }

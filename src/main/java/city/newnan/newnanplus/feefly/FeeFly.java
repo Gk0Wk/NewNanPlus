@@ -60,6 +60,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
 
         globalData.commandManager.register("fly", this);
         globalData.commandManager.register("listfly", this);
+
+        globalData.feeFly = this;
     }
 
     /**

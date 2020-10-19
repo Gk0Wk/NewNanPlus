@@ -19,6 +19,14 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     }
 
     /**
+     * 获取插件的名字
+     * @return 插件的名字
+     */
+    public String getName() {
+        return "全局模块";
+    }
+
+    /**
      * 重新加载模块的配置
      */
     @Override
@@ -78,7 +86,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     /* 模块 */
 
     /* NewNanPlus Town */
-    // public city.newnan.newnanplus.town.TownManager townManager;
+    public city.newnan.newnanplus.town.TownManager townManager;
 
     /* NewNanPlus CreateArea */
     public city.newnan.newnanplus.createarea.CreateArea createArea;

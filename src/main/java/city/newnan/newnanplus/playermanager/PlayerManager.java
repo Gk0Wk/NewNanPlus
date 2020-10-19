@@ -35,6 +35,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
         // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
+
+        globalData.playerManager = this;
     }
 
     /**

@@ -29,6 +29,7 @@ public class LagAnalyzer implements NewNanPlusModule {
      */
     public LagAnalyzer(NewNanPlusGlobal globalData) {
         this.globalData = globalData;
+        globalData.lagAnalyzer = this;
     }
 
     /**

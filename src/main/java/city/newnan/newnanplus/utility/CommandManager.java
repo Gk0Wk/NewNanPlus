@@ -57,7 +57,9 @@ public class CommandManager implements CommandExecutor {
             aliases = section.getStringList("aliases");
         } else {
             aliases = new ArrayList<>();
-            aliases.add(section.getString("aliases"));
+            String alias = section.getString("aliases");
+            if (alias != null)
+                aliases.add(alias);
         }
 
         CommandContainer container = new CommandContainer(token, permission, usage, description,

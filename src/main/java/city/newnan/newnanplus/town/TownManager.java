@@ -1,10 +1,14 @@
 package city.newnan.newnanplus.town;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.NewNanPlusModule;
 import org.bukkit.Location;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.dynmap.markers.MarkerSet;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.text.ParseException;
@@ -17,7 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * 小镇模块指令模块
  */
-public class TownManager {
+public class TownManager implements NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
@@ -47,6 +51,29 @@ public class TownManager {
             townMarkers = globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
                     "NewNanPlus.Towns", "Towns", null, false);
         }
+
+        globalData.townManager = this;
+    }
+
+    /**
+     * 重新加载模块的配置
+     */
+    @Override
+    public void reloadConfig() {
+
+    }
+
+    /**
+     * 执行某个命令
+     *
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+
     }
 
     private Town _loadTown(String configPath) {

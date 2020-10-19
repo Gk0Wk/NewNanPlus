@@ -36,6 +36,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
         reloadConfig();
         // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
+        globalData.deathTrigger = this;
     }
 
     /**

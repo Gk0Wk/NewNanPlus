@@ -37,6 +37,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         runTaskTimer(globalData.plugin, 0, 20);
         // 注册监听函数
         globalData.plugin.getServer().getPluginManager().registerEvents(this, globalData.plugin);
+        globalData.cron = this;
     }
 
     /**
