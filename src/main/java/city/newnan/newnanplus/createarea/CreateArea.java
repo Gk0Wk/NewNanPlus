@@ -2,7 +2,9 @@ package city.newnan.newnanplus.createarea;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions.*;
+import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
+import city.newnan.newnanplus.exception.CommandExceptions.CustomCommandException;
+import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -14,9 +16,7 @@ import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.List;
 import java.util.Objects;
 
 public class CreateArea implements NewNanPlusModule {
@@ -110,15 +110,9 @@ public class CreateArea implements NewNanPlusModule {
             if (!player.hasPermission("newnanplus.createarea.teleport.other")) {
                 throw new NoPermissionException();
             }
+
             // 查找对应的玩家
-            List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
-            // 检查玩家数量
-            if (players.size() == 0) {
-                throw new PlayerNotFountException();
-            } else if (players.size() > 1) {
-                throw new PlayerMoreThanOneException();
-            }
-            Player _player = players.get(0);
+            Player _player = globalData.playerManager.findOnePlayerByName(args[0]);
 
             // 看看对应的玩家有没有创造区
             if (createArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
@@ -168,15 +162,7 @@ public class CreateArea implements NewNanPlusModule {
             throw new BadUsageException();
         }
 
-        // 查找对应的玩家
-        List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
-        // 检查玩家数量
-        if (players.size() == 0) {
-            throw new PlayerNotFountException();
-        } else if (players.size() > 1) {
-            throw new PlayerMoreThanOneException();
-        }
-        Player _player = players.get(0);
+        Player _player = globalData.playerManager.findOnePlayerByName(args[0]);
 
         // 创建创造区域
         newCreateArea(args, _player);
@@ -187,7 +173,7 @@ public class CreateArea implements NewNanPlusModule {
      * @param args 命令行参数，[PlayerName] [X1] [Z1] [X2] [Z2]
      * @param player 创造区所属玩家
      */
-    public void newCreateArea(String[] args, Player player) throws IOException {
+    public void newCreateArea(String[] args, Player player) throws Exception {
         // 坐标解析
         int x1 = Integer.parseInt(args[1]);
         int x2 = Integer.parseInt(args[3]);
@@ -239,15 +225,7 @@ public class CreateArea implements NewNanPlusModule {
             throw new BadUsageException();
         }
 
-        // 查找对应的玩家
-        List<Player> players = globalData.plugin.getServer().matchPlayer(args[0]);
-        // 检查玩家数量
-        if (players.size() == 0) {
-            throw new PlayerNotFountException();
-        } else if (players.size() > 1) {
-            throw new PlayerMoreThanOneException();
-        }
-        Player player = players.get(0);
+        Player player = globalData.playerManager.findOnePlayerByName(args[0]);
 
         // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
         AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());

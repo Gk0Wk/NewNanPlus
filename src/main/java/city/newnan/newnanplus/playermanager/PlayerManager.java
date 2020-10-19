@@ -2,6 +2,7 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -73,6 +74,24 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
         joinCheck(event.getPlayer());
+    }
+
+    /**
+     * 根据名字返回一个且仅有一个玩家(不一定要在线)，如果有多个重名玩家就报错
+     * @param playerName 玩家名称
+     * @return 玩家实例
+     * @throws Exception 如果找不到玩家或者找到多个玩家就会抛出的异常
+     */
+    public Player findOnePlayerByName(String playerName) throws Exception {
+        // 查找对应的玩家
+        List<Player> players = globalData.plugin.getServer().matchPlayer(playerName);
+        // 检查玩家数量
+        if (players.size() == 0) {
+            throw new CommandExceptions.PlayerNotFountException();
+        } else if (players.size() > 1) {
+            throw new CommandExceptions.PlayerMoreThanOneException();
+        }
+        return players.get(0);
     }
 
     /**

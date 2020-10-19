@@ -7,7 +7,6 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.dynmap.markers.MarkerSet;
 
 import java.io.File;
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -104,13 +103,13 @@ public class TownManager {
         towns.forEach((uuid, town) -> {
             try {
                 saveTown(town);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });
     }
 
-    public void saveTown(Town town) throws IOException {
+    public void saveTown(Town town) throws Exception {
         town.saveCacheToConfig(globalData.dateFormatter);
         globalData.configManager.save("town/" + town.uniqueID.toString() + ".yml");
     }
