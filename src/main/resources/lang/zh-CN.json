@@ -4,15 +4,16 @@
     "chat_prefix": "&f&l[&b牛腩小助手&f&l] &r",
     "console_prefix": "${project.name}",
     "global_message": {
-        "no_permission": "&c你没有这样做的权限！",
-        "console_selfrun_refuse": "&c控制台无法为自己执行这条指令！",
-        "player_offline": "&c用户不在线！",
-        "player_not_found": "&c用户不存在！",
+        "no_permission": "你没有这样做的权限！",
+        "console_selfrun_refuse": "控制台无法为自己执行这条指令！",
+        "player_offline": "用户不在线！",
+        "player_not_found": "用户不存在！",
         "find_more_than_one_player": "找到多个玩家！",
-        "no_such_command": "&c指令不存在！",
-        "bad_usage": "&c命令使用不正确！(使用方法：{0})",
-        "only_console": "&c该指令只允许控制台输入！",
-        "custom_command_error": "&c指令执行出错：{0}"
+        "no_such_command": "指令不存在！",
+        "bad_usage": "命令使用不正确！(使用方法：{0})",
+        "only_console": "该指令只允许控制台输入！",
+        "custom_command_error": "指令执行出错：{0}",
+        "access_file_error": "无法访问文件：{0}"
     },
     "module_message": {
         "create_area": {
@@ -23,6 +24,31 @@
         },
         "cron": {
             "invalid_expression": "无法解析表达式：{0}"
+        },
+        "player_manager": {
+            "welcome_title": "&6欢迎来到牛腩小镇",
+            "welcome_subtitle": "&b请填写问卷以获得游玩权限",
+            "you_are_newbie": "&c请在官网完成新人试卷后向管理索要游玩权限。",
+            "allow_later": "操作成功，玩家未上线，稍后玩家登录后将自动获得权限。",
+            "allow_succeed": "操作成功，赋予玩家权限。",
+            "not_newbie_already": "该玩家已不是新人。"
+        },
+        "fee_fly": {
+            "in_invalid_gamemode": "玩家在创造或者观察者模式下，不能进入付费飞行。",
+            "already_flying": "玩家正在飞行，不能进入付费飞行。",
+            "actionbar_fee": "&6&l#飞行中# &7剩余飞行时长: {0} (余额 {1,number,#.##} ₦)",
+            "actionbar_bypass": "&6&l#飞行中# &7祝 {0} 白嫖快乐",
+            "no_charge_warning": "&c余额不足，无法飞行！",
+            "begin_flying": "已允许飞行，双击空格键开启飞行模式！",
+            "finish_flying": "飞行结束！",
+            "charge_less_warning": "&c余额即将耗尽，请尽快结束飞行！",
+            "count_flying_players": "目前飞行人数：{0}",
+            "list_flying_players": "飞行中：{0}"
+        },
+        "death_trigger": {
+            "death_message_to_player": "&c你重生了，消耗 {1,number,#.##} ₦，使用/back可快速回到死亡地点。",
+            "death_message_broadcast": "&7玩家 {0} 死亡，扣除 {1,number,#.##} ₦。",
+            "death_message_to_console": "玩家 {0} 死亡，扣除 {1,number,#.##} ₦。"
         }
     },
     "inventories": {

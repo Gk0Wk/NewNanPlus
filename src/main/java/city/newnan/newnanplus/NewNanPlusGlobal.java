@@ -25,15 +25,16 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
     public void reloadConfig() {
         prefixString = wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$");
 
-        NoPermissionException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_permission$");
-        RefuseConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.console_selfrun_refuse$");
-        PlayerOfflineException.message =  wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_offline$");
-        PlayerNotFountException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_not_found$");
-        PlayerMoreThanOneException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.find_more_than_one_player$");
-        NoSuchCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_such_command$");
+        AccessFileErrorException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.access_file_error$");
         BadUsageException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.bad_usage$");
-        OnlyConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.only_console$");
         CustomCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.custom_command_error$");
+        NoSuchCommandException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_such_command$");
+        NoPermissionException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_permission$");
+        OnlyConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.only_console$");
+        PlayerMoreThanOneException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.find_more_than_one_player$");
+        PlayerNotFountException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_not_found$");
+        PlayerOfflineException.message =  wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_offline$");
+        RefuseConsoleException.message = wolfyLanguageAPI.replaceColoredKeys("&c$global_message.console_selfrun_refuse$");
     }
 
     /**

@@ -23,8 +23,8 @@ import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
+import java.util.HashMap;
 import java.util.Vector;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
@@ -39,17 +39,12 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     private double costPerCount;
     private long tickPerCount;
     private double costPerSecond;
-    private String flyStartMessage;
-    private String flyEndMessage;
     private String actionbarBypassMessage;
     private String actionbarFeeMessage;
-    private String lessFeeWarningMessage;
-    private String noFeeMessage;
-    private String countFlyingPlayersMessage;
-    private String listFlyingPlayersMessage;
+    private String lessChargeWarningMessage;
 
-    /** 正在飞行中的玩家，ConcurrentHashMap具有高并发性 */
-    public final ConcurrentHashMap<Player, FlyingPlayer> flyingPlayers = new ConcurrentHashMap<>();
+    /** 正在飞行中的玩家 */
+    public final HashMap<Player, FlyingPlayer> flyingPlayers = new HashMap<>();
 
     /**
      * 构造函数
@@ -64,6 +59,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
 
         globalData.commandManager.register("fly", this);
+        globalData.commandManager.register("listfly", this);
     }
 
     /**
@@ -78,14 +74,10 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         costPerCount = config.getDouble("module-feefly.cost-per-count");
         tickPerCount = config.getLong("module-feefly.tick-per-count");
         costPerSecond = (20.0 / tickPerCount) * costPerCount;
-        flyStartMessage = config.getString("module-feefly.msg-begin");
-        flyEndMessage = config.getString("module-feefly.msg-finish");
-        actionbarBypassMessage = config.getString("module-feefly.msg-actionbar-bypass");
-        actionbarFeeMessage = config.getString("module-feefly.msg-actionbar");
-        lessFeeWarningMessage = config.getString("module-feefly.msg-feewraning");
-        noFeeMessage = config.getString("module-feefly.msg-nofee");
-        countFlyingPlayersMessage = config.getString("module-feefly.msg-count-flying-players");
-        listFlyingPlayersMessage = config.getString("module-feefly.msg-list-flying-players");
+
+        actionbarBypassMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_bypass$");
+        actionbarFeeMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_fee$");
+        lessChargeWarningMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.charge_less_warning$");
     }
 
     /**
@@ -100,6 +92,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
         if (token.equals("fly"))
             applyFly(sender, args);
+        else if(token.equals("listfly"))
+            listFlyingPlayers(sender);
     }
 
     /**
@@ -130,7 +124,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
 
                     // 如果只能飞一分钟以内，就警告
                     if (remain_second <= 60.0) {
-                        String _msg = ChatColor.translateAlternateColorCodes('&', lessFeeWarningMessage);
+                        String _msg = ChatColor.translateAlternateColorCodes('&', lessChargeWarningMessage);
                         player.sendTitle(_msg, null, 1, 7, 2);
                     }
                 } else {
@@ -235,7 +229,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 否则就是玩家执行
             Player _player = (Player) sender;
             // 如果他有自己的飞行权限 或者他已经在飞行(有权取消自己的飞行)
-            if (!_player.hasPermission("newnanplus.feefly.self") || flyingPlayers.contains(_player)) {
+            if (!_player.hasPermission("newnanplus.feefly.self") || flyingPlayers.containsKey(_player)) {
                 throw new NoPermissionException();
             }
             player = _player;
@@ -258,19 +252,22 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     /**
      * 让一个玩家进入/退出付费飞行模式
      * @param player 玩家实例
-     * @return 成功开启/关闭返回true，反之
      */
-    private boolean makeFly(Player player) {
+    private void makeFly(Player player) {
         // 检查这个玩家是否在飞行
         if (!cancelFly(player, true)) {
             // 不在飞行，就开启飞行
             // 原本在创造或者观察者模式不能进入付费飞行
             if (player.getGameMode().equals(GameMode.CREATIVE) || player.getGameMode().equals(GameMode.SPECTATOR)) {
-                return true;
+                globalData.sendPlayerMessage(player,
+                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.fee_fly.in_invalid_gamemode$"));
+                return;
             }
             // 原本就能飞的不能进入付费飞行
             if (player.getAllowFlight()) {
-                return true;
+                globalData.sendPlayerMessage(player,
+                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.fee_fly.already_flying$"));
+                return;
             }
             // 现金大于零才能飞
             if (globalData.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.feefly.free")) {
@@ -282,14 +279,15 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 player.setFlySpeed(flySpeed);
                 player.setAllowFlight(true);
                 // 发送消息并播放声音
-                globalData.sendPlayerMessage(player, flyStartMessage);
+                globalData.sendPlayerMessage(player,
+                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.begin_flying$"));
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
             } else {
                 // 不大于零就提示不能飞
-                globalData.sendPlayerMessage(player, noFeeMessage);
+                globalData.sendPlayerMessage(player,
+                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.no_charge_warning$"));
             }
         }
-        return true;
     }
 
     /**
@@ -312,20 +310,25 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 删除玩家
         flyingPlayers.remove(player);
         // 发送飞行结束通知
-        globalData.sendPlayerMessage(player, flyEndMessage);
-        globalData.sendPlayerActionBar(player, flyEndMessage);
+        globalData.sendPlayerMessage(player,
+                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
+        globalData.sendPlayerActionBar(player,
+                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
         return true;
     }
 
-    public boolean listFlyingPlayers(CommandSender sender) {
+    public void listFlyingPlayers(CommandSender sender) {
         // 循环中不推荐使用 String 直接 +=，因为每次都会创建新的实例
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
         flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(" ")));
-        globalData.sendMessage(sender, MessageFormat.format(countFlyingPlayersMessage, flyingPlayers.size()));
+        globalData.sendMessage(sender, MessageFormat.format(
+                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.count_flying_players$"),
+                flyingPlayers.size()));
         if (flyingPlayers.size() > 0) {
-            globalData.sendMessage(sender, MessageFormat.format(listFlyingPlayersMessage, list));
+            globalData.sendMessage(sender, MessageFormat.format(
+                    globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.list_flying_players$"),
+                    list));
         }
-        return true;
     }
 }

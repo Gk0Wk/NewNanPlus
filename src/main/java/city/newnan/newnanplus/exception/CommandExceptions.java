@@ -25,6 +25,11 @@ public class CommandExceptions extends Exception {
     public static class OnlyConsoleException extends Exception {
         public static String message;
     }
+    public static class AccessFileErrorException extends Exception {
+        public static String message;
+        public String who;
+        public AccessFileErrorException(String who) {this.who = who;}
+    }
     public static class CustomCommandException extends Exception {
         public String reason;
         public static String message;

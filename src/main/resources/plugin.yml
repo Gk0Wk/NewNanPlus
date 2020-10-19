@@ -60,6 +60,10 @@ commands:
     description: '用它飞起来或者取消飞行模式，记得着落再取消'
     usage: '/nnp fly [player]'
     aliases: 'nfly'
+  'nnp listfly':
+    description: '显示正在使用付费飞行的玩家'
+    usage: '/nnp listfly'
+    permission-node: 'newnanplus.feefly.list'
   'nnp save':
     description: '保存配置'
     usage: '/nnp save'
@@ -96,16 +100,19 @@ permissions:
   #  children: #子节点(仅名字)
   #    'Example2': true会继承父节点的权限，false会与父节点相反
   'newnanplus.feefly.self':
-    description: '可以为自己开启付费飞行'
+    description: '为自己开启付费飞行的权限'
     default: 'op'
   'newnanplus.feefly.other':
-    description: '可以为别人开启付费飞行'
+    description: '为别人开启付费飞行的权限'
     default: 'op'
   'newnanplus.feefly.free':
-    description: '可以白嫖付费飞行'
+    description: '白嫖付费飞行的权限'
+    default: 'op'
+  'newnanplus.feefly.list':
+    description: '显示正在使用付费飞行的玩家的权限'
     default: 'op'
   'newnanplus.playermanager.allow':
-    description: '可以赋予玩家游玩权限'
+    description: '可以赋予玩家游玩权限的权限'
     default: 'op'
   'newnanplus.createarea.create':
     description: '可以创建/修改玩家的创造区'

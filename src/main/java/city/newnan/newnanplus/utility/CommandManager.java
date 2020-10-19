@@ -157,6 +157,9 @@ public class CommandManager implements CommandExecutor {
             else if (e instanceof CustomCommandException)
                 messageManager.sendMessage(sender, MessageFormat.format(CustomCommandException.message,
                         ((CustomCommandException) e).reason));
+            else if (e instanceof  AccessFileErrorException)
+                messageManager.sendMessage(sender, MessageFormat.format(AccessFileErrorException.message,
+                        ((AccessFileErrorException)e).who));
             else e.printStackTrace();
         }
 

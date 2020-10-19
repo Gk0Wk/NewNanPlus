@@ -49,7 +49,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 初始化WolfyAPI
             globalData.wolfyAPI = bindWolfyUtilities();
             globalData.wolfyLanguageAPI = globalData.wolfyAPI.getLanguageAPI();
-            globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
+            // globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
             // 加载配置
             globalData.reloadConfig();
             // 初始化命令管理器
@@ -134,6 +134,10 @@ public class NewNanPlusPlugin extends JavaPlugin {
                 globalData.configManager.saveAll();
             }
         }
+    }
+
+    public void loadModule() {
+
     }
 
     /**

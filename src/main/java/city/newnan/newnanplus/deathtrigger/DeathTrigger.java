@@ -2,7 +2,6 @@ package city.newnan.newnanplus.deathtrigger;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -26,9 +25,6 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
     /**
      * 模块设置
      */
-    private String deathMessagePlayer;
-    private String deathMessageBroadcast;
-    private String deathMessageConsole;
     private final ArrayList<CostStage> costStages = new ArrayList<>();
 
     /**
@@ -49,14 +45,8 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
     public void reloadConfig() {
         // 获取配置实例
         FileConfiguration config = globalData.configManager.get("config.yml");
-        // 加载配置内容
-        deathMessagePlayer = config.getBoolean("module-deathcost.msg-player.enable") ?
-                config.getString("module-deathcost.msg-player.text") : null;
-        deathMessageBroadcast = config.getBoolean("module-deathcost.msg-broadcast.enable") ?
-                config.getString("module-deathcost.msg-broadcast.text") : null;
-        deathMessageConsole = config.getBoolean("module-deathcost.msg-console.enable") ?
-                config.getString("module-deathcost.msg-console.text") : null;
 
+        // 加载配置内容
         costStages.clear();
         if (config.getBoolean("module-deathcost.use-simple-mode")) {
             // 简单扣费模式
@@ -147,22 +137,25 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      * @param cost 玩家死亡花费
      */
     public void sendDeathMessage(Player player, double cost) {
+        FileConfiguration config = globalData.configManager.get("config.yml");
+
         // 向玩家发送消息
-        if (deathMessagePlayer != null) {
-            globalData.sendPlayerMessage(player,
-                    MessageFormat.format(deathMessagePlayer, player.getDisplayName(), cost));
+        if (config.getBoolean("module-deathcost.msg-player-enable", false)) {
+            globalData.sendPlayerMessage(player, MessageFormat.format(globalData.wolfyLanguageAPI.
+                            replaceColoredKeys("$module_message.death_trigger.death_message_to_player$")
+                            , player.getDisplayName(), cost));
         }
         // 广播发送消息
-        if (deathMessageBroadcast != null) {
-            globalData.plugin.getServer().broadcastMessage(
-                    MessageFormat.format(ChatColor.translateAlternateColorCodes('&', deathMessageBroadcast),
-                    player.getDisplayName(), cost));
+        if (config.getBoolean("module-deathcost.msg-broadcast-enable", false)) {
+            globalData.plugin.getServer().broadcastMessage(MessageFormat.format(globalData.wolfyLanguageAPI.
+                            replaceColoredKeys("$module_message.death_trigger.death_message_broadcast$"),
+                            player.getDisplayName(), cost));
         }
         // 控制台发送消息
-        if (deathMessageConsole != null) {
-            globalData.printINFO(MessageFormat.format(
-                    ChatColor.translateAlternateColorCodes('&', deathMessageConsole),
-                    player.getDisplayName(), cost));
+        if (config.getBoolean("module-deathcost.msg-console-enable", false)) {
+            globalData.printINFO(MessageFormat.format(globalData.wolfyLanguageAPI.
+                            replaceColoredKeys("$module_message.death_trigger.death_message_to_console$"),
+                            player.getDisplayName(), cost));
         }
     }
 }

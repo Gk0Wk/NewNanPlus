@@ -18,21 +18,10 @@ module-playermanager:
   newbies-group: 'Newbie'
   player-group: 'Player'
   world-group: 'world'
-  msg-allow-when-online: '操作成功，玩家未上线，稍后玩家登录后将自动获得权限。'
-  msg-allow-succeed: '操作成功，赋予玩家权限。'
-  msg-not-newbie-already: '该玩家已不是新人。'
 module-feefly:
   tick-per-count: 20
   cost-per-count: 0.3
   fly-speed: 0.05
-  msg-actionbar: '&6&l#飞行中# &7剩余飞行时长: {0} (余额 {1,number,#.##} ₦)'
-  msg-actionbar-bypass: '&6&l#飞行中# &7祝 {0} 白嫖快乐'
-  msg-nofee: '&c余额不足，无法飞行！'
-  msg-begin: '已允许飞行，双击空格键开启飞行模式！'
-  msg-finish: '飞行结束！'
-  msg-feewraning: '&c余额即将耗尽，请尽快结束飞行！'
-  msg-count-flying-players: '目前飞行人数：{0}'
-  msg-list-flying-players: '飞行中：{0}'
 module-deathcost:
   use-simple-mode: false
   simple-mode:
@@ -51,12 +40,6 @@ module-deathcost:
     - max: -1.0
       cost: 0.0024
       if-percent: true
-  msg-player:
-    enable: true
-    text: '&c你重生了，消耗 {1,number,#.##} ₦，使用/back可快速回到死亡地点。'
-  msg-broadcast:
-    enable: false
-    text: '&7玩家 {0} 死亡，扣除 {1,number,#.##} ₦。'
-  msg-console:
-    enable: false
-    text: '玩家 {0} 死亡，扣除 {1,number,#.##} ₦。'
+  msg-player-enable: true
+  msg-broadcast-enable: false
+  msg-console-enable: false

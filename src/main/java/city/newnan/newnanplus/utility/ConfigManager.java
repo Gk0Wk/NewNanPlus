@@ -1,5 +1,6 @@
 package city.newnan.newnanplus.utility;
 
+import city.newnan.newnanplus.exception.CommandExceptions;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
@@ -70,7 +71,7 @@ public class ConfigManager {
      * @param configFile 资源文件路径
      * @throws IOException IO异常
      */
-    public void save(String configFile) throws IOException {
+    public void save(String configFile) throws Exception {
         // 不存在就保存默认
         if (!this.configMap.containsKey(configFile)) {
             touch(configFile);
@@ -85,6 +86,7 @@ public class ConfigManager {
                 }
             } catch (IOException e) {
                 e.printStackTrace();
+                throw new CommandExceptions.AccessFileErrorException(configFile);
             }
         }
     }
@@ -130,7 +132,7 @@ public class ConfigManager {
         configMap.forEach((name, config) -> {
             try {
                 save(name);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 e.printStackTrace();
             }
         });

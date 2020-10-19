@@ -2,7 +2,7 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions;
+import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -12,7 +12,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.jetbrains.annotations.NotNull;
 
-import java.io.IOException;
 import java.util.List;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
@@ -24,9 +23,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     private String newbiesGroup;
     private String playersGroup;
     private String workWorldsGroup;
-    private String allowLaterMessage;
-    private String allowSucceedMessage;
-    private String notNewbieAlreadyMessage;
 
     /**
      * 构造函数
@@ -52,9 +48,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         newbiesGroup = config.getString("module-playermanager.newbies-group");
         playersGroup = config.getString("module-playermanager.player-group");
         workWorldsGroup = config.getString("module-playermanager.world-group");
-        allowLaterMessage = config.getString("module-playermanager.msg-allow-when-online");
-        allowSucceedMessage = config.getString("module-playermanager.msg-allow-succeed");
-        notNewbieAlreadyMessage = config.getString("module-playermanager.msg-not-newbie-already");
 
         globalData.commandManager.register("allow", this);
     }
@@ -78,7 +71,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param event 玩家登录事件
      */
     @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) throws IOException {
+    public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
         joinCheck(event.getPlayer());
     }
 
@@ -90,7 +83,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     public void allowNewbieToPlayer(CommandSender sender, String[] args) throws Exception {
         // 检查参数
         if (args.length < 1) {
-            throw new CommandExceptions.BadUsageException();
+            throw new BadUsageException();
         }
 
         // 寻找目标玩家
@@ -116,7 +109,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
             }
-            globalData.sendMessage(sender, allowLaterMessage);
+            globalData.sendMessage(sender,
+                    globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.allow_later$"));
         } else {
             // 如果玩家在线，就直接赋予权限
             // 但是要检查一下原来所在的组
@@ -131,17 +125,15 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                     newbiesList.set("not-passed-newbies", list_not);
                     need_refresh = true;
                 }
-                globalData.sendMessage(sender, allowSucceedMessage);
+                globalData.sendMessage(sender,
+                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.allow_succeed$"));
             } else {
-                globalData.sendMessage(sender, notNewbieAlreadyMessage);
+                globalData.sendMessage(sender,
+                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.not_newbie_already$"));
             }
         }
         if (need_refresh) {
-            try {
-                globalData.configManager.save("newbies_list.yml");
-            } catch (IOException e) {
-                throw new CommandExceptions.CustomCommandException("配置文件保存失败！");
-            }
+            globalData.configManager.save("newbies_list.yml");
         }
     }
 
@@ -149,7 +141,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组
      * @param player 待检测的玩家实例
      */
-    public void joinCheck(Player player) throws IOException {
+    public void joinCheck(Player player) throws Exception {
         FileConfiguration newbiesList = globalData.configManager.get("newbies_list.yml");
         boolean need_refresh = false;
         // 获取已通过的新人组的List
@@ -164,7 +156,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
             } else {
-                globalData.sendPlayerMessage(player, "&c你还没有获得游玩权限，请在官网完成新人试卷后向管理索要权限。");
+                globalData.sendPlayerMessage(player, globalData.wolfyLanguageAPI.
+                        replaceKeys("$module_message.player_manager.you_are_newbie$"));
+                player.sendTitle(
+                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_title$"),
+                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_subtitle$"),
+                        3, 37, 5);
                 // 获取未通过的新人组的List
                 List<String> list_not = newbiesList.getStringList("not-passed-newbies");
                 if (!list_not.contains(player.getName())) {
