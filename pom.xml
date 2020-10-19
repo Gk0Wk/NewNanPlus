@@ -13,7 +13,7 @@
     <!--name 指定了 maven 工程的名字，可以省略-->
     <name>NewNanPlus</name>
     <!--version 指定了当前工程的版本号-->
-    <version>1.5.4</version>
+    <version>1.6.0</version>
 
     <!--设置编码方式是为了保证跨平台的兼容性，而设置源及目标的JDK版本是为了能够正确的使用某些特性，否则在使用lambda的时候都有可能会编译错误-->
     <properties>
