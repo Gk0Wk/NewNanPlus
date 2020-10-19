@@ -66,6 +66,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
 
     public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
     public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
+    public org.anjocaido.groupmanager.GroupManager groupManager;
     // public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
 
     public org.dynmap.DynmapAPI dynmapAPI;
@@ -73,10 +74,6 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
      * Vault 经济实例
      */
     public net.milkbowl.vault.economy.Economy vaultEco;
-    /**
-     * Vault 权限实例
-     */
-    public net.milkbowl.vault.permission.Permission vaultPerm;
 
     /* =============================================================================================== */
     /* 全局 */

@@ -26,11 +26,11 @@ depend:
   - 'dynmap'
   - 'WolfyUtilities'
   - 'QuickShop'
+  - 'GroupManager'
 # 软依赖，插件会在这些依赖加载后再加载
 softdepend:
   - 'BKCommonLib'
   - 'Essentials'
-  - 'GroupManager'
   - 'Multiverse-Core'
   - 'ProtocolLib'
   - 'PlaceholderAPI'

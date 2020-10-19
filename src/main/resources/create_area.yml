@@ -1,4 +1,5 @@
 version: ${project.version}
 enable: true
 world: 'create_world'
+builder-group: 'Builder'
 areas: {}

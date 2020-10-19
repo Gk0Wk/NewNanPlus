@@ -20,7 +20,8 @@
             "title_on_dynmap": "{0}的创造区",
             "player_have_no_area": "玩家没有创造区！",
             "you_have_no_area": "你还没有创造区！",
-            "teleported_to_ones_area": "已到达[{0}]的创造区"
+            "teleported_to_ones_area": "已到达[{0}]的创造区",
+            "remove_from_builder_for_no_area": "你没有创造区，已被取消创造权限。请先申请创造区域。"
         },
         "cron": {
             "invalid_expression": "无法解析表达式：{0}"

@@ -6,6 +6,8 @@ import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import org.anjocaido.groupmanager.data.Group;
+import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -27,9 +29,9 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     private final NewNanPlusGlobal globalData;
 
-    private String newbiesGroup;
-    private String playersGroup;
-    private String workWorldsGroup;
+    private Group newbiesGroup;
+    private Group playersGroup;
+    private OverloadedWorldHolder workWorldsPermissionHandler;
 
     /**
      * 构造函数
@@ -57,9 +59,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         globalData.configManager.reload("newbies_list.yml");
         // 加载配置内容
         FileConfiguration config = globalData.configManager.get("config.yml");
-        newbiesGroup = config.getString("module-playermanager.newbies-group");
-        playersGroup = config.getString("module-playermanager.player-group");
-        workWorldsGroup = config.getString("module-playermanager.world-group");
+        workWorldsPermissionHandler = globalData.groupManager.getWorldsHolder().
+                getWorldData(config.getString("module-playermanager.world-group"));
+        newbiesGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.newbies-group"));
+        playersGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.player-group"));
 
         globalData.commandManager.register("allow", this);
     }
@@ -144,9 +147,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         } else {
             // 如果玩家在线，就直接赋予权限
             // 但是要检查一下原来所在的组
-            if (globalData.vaultPerm.getPrimaryGroup(player).equalsIgnoreCase(newbiesGroup)) {
-                globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                        "manuadd " + player.getName() + " " + playersGroup + " " + workWorldsGroup);
+            if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(newbiesGroup)) {
+                workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(playersGroup);
                 // 获取未通过的新人组的List
                 List<String> list_not = newbiesList.getStringList("not-passed-newbies");
                 // 如果未通过里有这个玩家，那就去掉
@@ -177,11 +179,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 获取已通过的新人组的List
         List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
         // 如果是新人组的话
-        if (globalData.vaultPerm.getPrimaryGroup(player).equalsIgnoreCase(newbiesGroup)) {
+        if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(newbiesGroup)) {
             if (list_yet.contains(player.getName())) {
                 // 查看玩家是否在已通过新人组，将玩家移入玩家权限组，并更新
-                globalData.plugin.getServer().dispatchCommand(globalData.plugin.getServer().getConsoleSender(),
-                        "manuadd " + player.getName() + " " + playersGroup + " " + workWorldsGroup);
+                workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(playersGroup);
                 list_yet.remove(player.getName());
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;

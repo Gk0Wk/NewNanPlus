@@ -7,7 +7,7 @@ import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
 import me.wolfyscript.utilities.api.language.LanguageAPI;
 import net.milkbowl.vault.economy.Economy;
-import net.milkbowl.vault.permission.Permission;
+import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
 import org.bukkit.configuration.ConfigurationSection;
@@ -86,6 +86,13 @@ public class NewNanPlusPlugin extends JavaPlugin {
                 throw new Exception("Vault API bind failed.");
             } else {
                 globalData.printINFO("§f[ §aO K §f] Vault API");
+            }
+
+            // 绑定Vault
+            if (!bindGroupManager()) {
+                throw new Exception("GroupManager bind failed.");
+            } else {
+                globalData.printINFO("§f[ §aO K §f] GroupManager");
             }
 
             // 绑定Dynmap
@@ -180,15 +187,21 @@ public class NewNanPlusPlugin extends JavaPlugin {
         }
         // 绑定
         this.globalData.vaultEco = rsp1.getProvider();
+        return true;
+    }
 
-        // 再检查并获取Vault的Permission公共服务
-        RegisteredServiceProvider<Permission> rsp2 = getServer().getServicesManager().getRegistration(Permission.class);
-        if (rsp2 == null) {
+    /**
+     * 绑定GroupManager模块，失败返回false
+     * @return 绑定成功返回true，反之false
+     */
+    private boolean bindGroupManager() {
+        final Plugin groupManager = getServer().getPluginManager().getPlugin("GroupManager");
+        if (groupManager != null && groupManager.isEnabled())
+        {
+            globalData.groupManager = (GroupManager) groupManager;
+        } else {
             return false;
         }
-        // 绑定
-        this.globalData.vaultPerm = rsp2.getProvider();
-
         return true;
     }
 

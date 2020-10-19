@@ -6,6 +6,8 @@ import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.CustomCommandException;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import org.anjocaido.groupmanager.data.Group;
+import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -13,6 +15,10 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
@@ -20,7 +26,7 @@ import org.jetbrains.annotations.NotNull;
 import java.text.MessageFormat;
 import java.util.Objects;
 
-public class CreateArea implements NewNanPlusModule {
+public class CreateArea implements NewNanPlusModule, Listener {
     /**
      * 持久化访问全局数据
      */
@@ -28,6 +34,8 @@ public class CreateArea implements NewNanPlusModule {
 
     private World createWorld;
     private MarkerSet createAreaMarkers;
+    private Group builderGroup;
+    private OverloadedWorldHolder createWorldPermissionHandler;
 
     /**
      * 构造函数
@@ -48,6 +56,8 @@ public class CreateArea implements NewNanPlusModule {
 
         reloadConfig();
 
+        globalData.plugin.getServer().getPluginManager().registerEvents(this, globalData.plugin);
+
         globalData.commandManager.register("ctp", this);
         globalData.commandManager.register("cnew", this);
         globalData.commandManager.register("cdel", this);
@@ -62,6 +72,9 @@ public class CreateArea implements NewNanPlusModule {
     public void reloadConfig() {
         FileConfiguration createArea = globalData.configManager.reload("create_area.yml");
         createWorld = globalData.plugin.getServer().getWorld(Objects.requireNonNull(createArea.getString("world")));
+
+        createWorldPermissionHandler = globalData.groupManager.getWorldsHolder().getWorldData(createWorld.getName());
+        builderGroup = createWorldPermissionHandler.getGroup(createArea.getString("builder-group"));
 
         // 检查有无没有在图中画出的创造区域
         ConfigurationSection areas = createArea.getConfigurationSection("areas");
@@ -203,6 +216,8 @@ public class CreateArea implements NewNanPlusModule {
         AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());
         if (marker != null) {
             marker.deleteMarker();
+        } else {
+            createWorldPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(builderGroup);
         }
 
         // 地图上绘制区域
@@ -238,6 +253,8 @@ public class CreateArea implements NewNanPlusModule {
         AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());
         if (marker != null) {
             marker.deleteMarker();
+            createWorldPermissionHandler.getUser(player.getUniqueId().toString()).
+                    setGroup(createWorldPermissionHandler.getDefaultGroup());
         }
 
         // 删除配置文件对应的设置
@@ -245,5 +262,42 @@ public class CreateArea implements NewNanPlusModule {
         createArea.set("areas."+player.getUniqueId(), null);
         // 存储设置
         globalData.configManager.save("create_area.yml");
+    }
+
+    /**
+     * 玩家切换世界事件监听函数
+     * @param event 玩家切换世界事件实例
+     */
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        if (event.getPlayer().getWorld().equals(createWorld)) {
+            checkArea(event.getPlayer());
+        }
+    }
+
+    /**
+     * 玩家登录时触发的方法
+     * @param event 玩家登录事件
+     */
+    @EventHandler
+    public void onPlayerJoin(PlayerJoinEvent event) {
+        if (event.getPlayer().getWorld().equals(createWorld)) {
+            checkArea(event.getPlayer());
+        }
+    }
+
+    /**
+     * 看看玩家原来有没有创造区地图标记，没有就将玩家从Builder组移除
+     * @param player 玩家实例
+     */
+    public void checkArea(Player player) {
+        if (createWorldPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(builderGroup)) {
+            FileConfiguration createArea = globalData.configManager.get("create_area.yml");
+            if (createArea.getConfigurationSection("areas." + player.getUniqueId()) == null) {
+                createWorldPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(
+                        createWorldPermissionHandler.getDefaultGroup());
+                globalData.sendPlayerMessage(player, globalData.wolfyLanguageAPI.replaceKeys("$module_message.create_area.remove_from_builder_for_no_area$"));
+            }
+        }
     }
 }
