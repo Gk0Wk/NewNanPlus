@@ -235,7 +235,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 否则就是玩家执行
             Player _player = (Player) sender;
             // 如果他有自己的飞行权限 或者他已经在飞行(有权取消自己的飞行)
-            if (!_player.hasPermission("newnanplus.feefly.self") || flyingPlayers.containsKey(_player)) {
+            if (!_player.hasPermission("newnanplus.feefly.self") && !flyingPlayers.containsKey(_player)) {
                 throw new NoPermissionException();
             }
             player = _player;

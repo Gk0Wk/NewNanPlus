@@ -1,0 +1,5 @@
+version: ${project.version}
+emails:
+  unread:
+    - welcome_to_newnan_city
+  readed: []

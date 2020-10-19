@@ -1,0 +1,12 @@
+title: 'Hello'
+author: 'foobar'
+date: 'yyyy-MM-dd HH:mm:ss'
+available-until: 'yyyy-MM-dd HH:mm:ss'
+permission: ''
+require-inventory: false
+# Will replace @s to the user reading this email.
+commands: []
+text: |-
+  Blah
+  Blah
+  Blah

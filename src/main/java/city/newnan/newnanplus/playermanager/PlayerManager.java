@@ -6,6 +6,7 @@ import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -13,8 +14,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
@@ -208,5 +212,100 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         if (need_refresh) {
             globalData.configManager.save("newbies_list.yml");
         }
+    }
+
+    /**
+     * 为某玩家打开某封信
+     * @param player 玩家实例
+     * @param email 信件名称
+     * @return 如果true说明玩家完成阅读，false说明需要回滚到未读状态
+     */
+    public boolean showEmail(Player player, String email) {
+        FileConfiguration emailConfig = globalData.configManager.get("email/" + email + ".yml");
+        String author = emailConfig.getString("author");
+        String title = emailConfig.getString("title");
+        String dateString = emailConfig.getString("date");
+        String availableDateString = emailConfig.getString("available-until");
+        String permission = emailConfig.getString("permission", "");
+        boolean requireInventory = emailConfig.getBoolean("require-inventory");
+        List<String> commands = emailConfig.getStringList("commands");
+        long availableTime;
+        if (availableDateString != null) {
+            try {
+                availableTime = globalData.dateFormatter.parse(availableDateString).getTime();
+            } catch (Exception e) {
+                availableTime = 0;
+            }
+        } else {
+            availableTime = 0;
+        }
+        String text = emailConfig.getString("text");
+        assert text != null;
+        //
+        ItemStack mailBook = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta bookMeta = (BookMeta) mailBook.getItemMeta();
+        assert bookMeta != null;
+        bookMeta.setAuthor(author);
+        bookMeta.setTitle(title);
+        List<String> pages = new ArrayList<>();
+        //
+        StringBuilder pageBuffer = new StringBuilder();
+        pageBuffer.append("§l").append(title).append("§r\n");
+        pageBuffer.append("§4").append(author).append("§r\n");
+        pageBuffer.append("§7").append(dateString).append("§r\n\n");
+        int line = 4;
+        //
+        if (commands.size() != 0) {
+            if (availableTime > System.currentTimeMillis()) {
+                pageBuffer.append("§c").append("[信件过期无法领取奖励]").append("§r\n\n");
+                line++;
+            } else {
+                if (requireInventory && player.getInventory().firstEmpty() == -1) {
+                    // 命令需要玩家物品栏有空位置,否则退回
+                    pages.add(pageBuffer.toString() + "§c该信件包含奖励物品，\n请保证您的背包中有\n足够的空间再来领取！");
+                    bookMeta.setPages(pages);
+                    mailBook.setItemMeta(bookMeta);
+                    player.openBook(mailBook);
+                    return false;
+                } else {
+                    CommandSender sender = globalData.plugin.getServer().getConsoleSender();
+                    commands.forEach(command -> globalData.plugin.getServer().
+                            dispatchCommand(sender, command.replaceAll("@s", player.getName())));
+                }
+            }
+        }
+
+        // 权限检查
+        assert permission != null;
+        if (!permission.isEmpty() && !player.hasPermission(permission)) {
+            pages.add(pageBuffer.toString() + "§c你没有权限打开信件！");
+            bookMeta.setPages(pages);
+            mailBook.setItemMeta(bookMeta);
+            player.openBook(mailBook);
+            return false;
+        }
+
+        for (String paragraph : text.split("\n")) {
+            line++;
+            if (paragraph.equals("---"))
+                pageBuffer.append("===================").append('\n');
+            else
+                pageBuffer.append(paragraph).append('\n');
+            if (line == 14) {
+                pages.add(pageBuffer.toString());
+                pageBuffer.delete(0, pageBuffer.length());
+                line = 0;
+            }
+        }
+        if (line != 0) {
+            pages.add(pageBuffer.toString());
+            pageBuffer.delete(0, pageBuffer.length());
+        }
+
+        bookMeta.setPages(pages);
+        mailBook.setItemMeta(bookMeta);
+        player.openBook(mailBook);
+
+        return true;
     }
 }

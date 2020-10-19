@@ -103,15 +103,17 @@ public class CommandManager implements CommandExecutor {
 
         //是否是别名
         if (label.equals(prefix)) {
+            // 不是别名
+            isAlias = false;
             // 获取token
             token = (args.length == 0) ? "" : args[0];
             // 寻找对应的指令
             container = commandContainerHashMap.get(token);
-            isAlias = true;
         } else {
+            // 是别名
+            isAlias = true;
             container = aliasCommandContainerHashMap.get(label);
             token = container.token;
-            isAlias = false;
         }
 
         // 如果没有找到指令

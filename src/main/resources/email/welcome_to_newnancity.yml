@@ -1,0 +1,15 @@
+title: '欢迎来到牛腩小镇！'
+author: '牛腩管理组'
+date: '2020-02-02 8:00:00'
+permission: ''
+require-inventory: false
+# Will replace @s to the user reading this email.
+commands:
+  - eco give @s 500
+text: |-
+  这位小伙伴你好呀！欢迎来到
+  牛腩小镇服务器！无论你是经
+  朋友介绍而来还是看到广告而
+  来，都很高兴认识你。
+  在正式开始游戏之前，请仔细
+  阅读官网的新人指南。

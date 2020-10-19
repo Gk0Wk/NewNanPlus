@@ -1,4 +1,4 @@
-version: ${version}
+version: ${project.version}
 enable: true
 world: 'create_world'
 areas: {}

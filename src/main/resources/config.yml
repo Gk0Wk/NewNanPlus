@@ -4,7 +4,7 @@
 # Email: nmg_wk@yeah.net
 # GitHub: Gk0Wk
 
-version: ${version}
+version: ${project.version}
 global-data:
   balance-symbol: '₦'
 global-settings:

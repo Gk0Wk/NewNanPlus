@@ -1,4 +1,4 @@
-version: ${version}
+version: ${project.version}
 enable: true
 on-server-ready:
   - 'broadcast 牛腩菌启动完毕！。'
