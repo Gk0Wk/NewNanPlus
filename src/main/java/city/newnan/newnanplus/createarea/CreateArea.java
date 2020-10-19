@@ -5,6 +5,7 @@ import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.CustomCommandException;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -32,8 +33,12 @@ public class CreateArea implements NewNanPlusModule {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public CreateArea(NewNanPlusGlobal globalData) {
+    public CreateArea(NewNanPlusGlobal globalData) throws Exception {
         this.globalData = globalData;
+
+        if (!globalData.configManager.get("create_area.yml").getBoolean("enable", false)) {
+            throw new ModuleOffException();
+        }
 
         createAreaMarkers = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.CreateArea");
         if (createAreaMarkers == null) {

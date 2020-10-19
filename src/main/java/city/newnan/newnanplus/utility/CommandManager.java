@@ -52,7 +52,7 @@ public class CommandManager implements CommandExecutor {
         boolean hidden = section.getBoolean("hidden", false);
         String permission = section.getString("permission-node");
 
-        List<String> aliases;
+        List<String> aliases = null;
         if (section.isList("aliases")) {
             aliases = section.getStringList("aliases");
         } else {

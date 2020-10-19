@@ -5,6 +5,7 @@ import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
 import city.newnan.newnanplus.exception.CommandExceptions.RefuseConsoleException;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
@@ -50,8 +51,11 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public FeeFly(NewNanPlusGlobal globalData) {
+    public FeeFly(NewNanPlusGlobal globalData) throws Exception {
         this.globalData = globalData;
+        if (!globalData.configManager.get("config.yml").getBoolean("module-feefly.enable", false)) {
+            throw new ModuleOffException();
+        }
         reloadConfig();
         // 启动定时任务监控
         runTaskTimer(this.globalData.plugin, 0, tickPerCount);

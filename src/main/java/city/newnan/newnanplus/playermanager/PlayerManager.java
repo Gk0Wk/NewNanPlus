@@ -2,8 +2,10 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
-import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
+import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
+import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -29,8 +31,11 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * 构造函数
      * @param globalData 全局实例
      */
-    public PlayerManager(NewNanPlusGlobal globalData) {
+    public PlayerManager(NewNanPlusGlobal globalData) throws Exception {
         this.globalData = globalData;
+        if (!globalData.configManager.get("config.yml").getBoolean("module-playermanager.enable", false)) {
+            throw new ModuleOffException();
+        }
         reloadConfig();
 
         // 注册监听函数
@@ -89,9 +94,9 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         List<Player> players = globalData.plugin.getServer().matchPlayer(playerName);
         // 检查玩家数量
         if (players.size() == 0) {
-            throw new CommandExceptions.PlayerNotFountException();
+            throw new PlayerNotFountException();
         } else if (players.size() > 1) {
-            throw new CommandExceptions.PlayerMoreThanOneException();
+            throw new PlayerMoreThanOneException();
         }
         return players.get(0);
     }

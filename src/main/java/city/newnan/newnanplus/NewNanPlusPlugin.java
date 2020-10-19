@@ -85,6 +85,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
             loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
             loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
+            loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
 
             changeGamerules();
 
@@ -123,6 +124,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
      */
     public void loadModule(Class<?> module, String moduleName) {
         try {
+            // 为什么这个isAssignableFrom是反着用的呢？
             if (NewNanPlusModule.class.isAssignableFrom(module)) {
                 // 获取构造器并构造
                 Constructor<?> constructor = module.getDeclaredConstructor(NewNanPlusGlobal.class);
@@ -134,7 +136,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
                 throw new Exception("模块不合法！");
             }
         } catch (Exception e) {
-            if (e instanceof ModuleOffException) {
+            if (e.getCause() instanceof ModuleOffException) {
                 globalData.printINFO("§f[ §7OFF §f] " + moduleName);
             } else {
                 globalData.printINFO("§f[§cERROR§f] " + moduleName);

@@ -2,6 +2,7 @@ package city.newnan.newnanplus.deathtrigger;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -31,8 +32,11 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public DeathTrigger(NewNanPlusGlobal globalData) {
+    public DeathTrigger(NewNanPlusGlobal globalData) throws Exception {
         this.globalData = globalData;
+        if (!globalData.configManager.get("config.yml").getBoolean("module-deathtrigger.enable", false)) {
+            throw new ModuleOffException();
+        }
         reloadConfig();
         // 注册监听函数
         this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
@@ -49,14 +53,14 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
 
         // 加载配置内容
         costStages.clear();
-        if (config.getBoolean("module-deathcost.use-simple-mode")) {
+        if (config.getBoolean("module-deathtrigger.cash-cost.use-simple-mode")) {
             // 简单扣费模式
             costStages.add(new CostStage(-1,
-                    config.getDouble("module-deathcost.simple-mode.cost"),
-                    config.getBoolean("module-deathcost.simple-mode.if-percent")));
+                    config.getDouble("module-deathtrigger.cash-cost.simple-mode.cost"),
+                    config.getBoolean("module-deathtrigger.cash-cost.simple-mode.if-percent")));
         } else {
             // 复杂扣费模式
-            List<Map<?,?>> list_map = config.getMapList("module-deathcost.complex-mode");
+            List<Map<?,?>> list_map = config.getMapList("module-deathtrigger.cash-cost.complex-mode");
             for (Map<?,?> map : list_map) {
                 costStages.add(new CostStage(
                         (Double) map.get("max"),
@@ -141,19 +145,19 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
         FileConfiguration config = globalData.configManager.get("config.yml");
 
         // 向玩家发送消息
-        if (config.getBoolean("module-deathcost.msg-player-enable", false)) {
+        if (config.getBoolean("module-deathtrigger.death-message.player-enable", false)) {
             globalData.sendPlayerMessage(player, MessageFormat.format(globalData.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_to_player$")
                             , player.getDisplayName(), cost));
         }
         // 广播发送消息
-        if (config.getBoolean("module-deathcost.msg-broadcast-enable", false)) {
+        if (config.getBoolean("module-deathtrigger.death-message.broadcast-enable", false)) {
             globalData.plugin.getServer().broadcastMessage(MessageFormat.format(globalData.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_broadcast$"),
                             player.getDisplayName(), cost));
         }
         // 控制台发送消息
-        if (config.getBoolean("module-deathcost.msg-console-enable", false)) {
+        if (config.getBoolean("module-deathtrigger.death-message.console-enable", false)) {
             globalData.printINFO(MessageFormat.format(globalData.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_to_console$"),
                             player.getDisplayName(), cost));

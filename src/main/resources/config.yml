@@ -10,35 +10,46 @@ global-data:
 global-settings:
   major-language: 'zh-CN'
   fallback-language: 'zh-CN'
+
 module-world-setting:
   keepInventoryOnDeath: []
   mobGriefing: []
+
 module-playermanager:
+  enable: true
   newbies-group: 'Newbie'
   player-group: 'Player'
   world-group: 'world'
 module-feefly:
+  enable: true
   tick-per-count: 20
   cost-per-count: 0.3
   fly-speed: 0.05
-module-deathcost:
-  use-simple-mode: false
-  simple-mode:
-    if-percent: false
-    cost: 50.0
-  complex-mode:
-    - max: 5000.0
-      cost: 0.0
+module-deathtrigger:
+  enable: true
+  cash-cost:
+    use-simple-mode: false
+    simple-mode:
       if-percent: false
-    - max: 10000.0
-      cost: 20.0
-      if-percent: false
-    - max: 50000.0
-      cost: 0.001
-      if-percent: true
-    - max: -1.0
-      cost: 0.0024
-      if-percent: true
-  msg-player-enable: true
-  msg-broadcast-enable: false
-  msg-console-enable: false
+      cost: 50.0
+    complex-mode:
+      - max: 5000.0
+        cost: 0.0
+        if-percent: false
+      - max: 10000.0
+        cost: 20.0
+        if-percent: false
+      - max: 50000.0
+        cost: 0.001
+        if-percent: true
+      - max: -1.0
+        cost: 0.0024
+        if-percent: true
+  death-message:
+    player-enable: true
+    broadcast-enable: false
+    console-enable: false
+module-lagganalyzer:
+  enable: false
+module-townmanager:
+  enable: false

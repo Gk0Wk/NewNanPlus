@@ -2,6 +2,7 @@ package city.newnan.newnanplus.town;
 
 import city.newnan.newnanplus.NewNanPlusGlobal;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -35,11 +36,14 @@ public class TownManager implements NewNanPlusModule {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public TownManager(NewNanPlusGlobal globalData) {
+    public TownManager(NewNanPlusGlobal globalData) throws Exception {
         this.globalData = globalData;
+        if (!globalData.configManager.get("config.yml").getBoolean("module-townmanager.enable", false)) {
+            throw new ModuleOffException();
+        }
         File townDir = new File(this.globalData.plugin.getDataFolder(), "town");
         if (!townDir.exists()) {
-            townDir.mkdir();
+            boolean result = townDir.mkdir();
         }
         for (File file : townDir.listFiles()) {
             Town town = _loadTown(file.getPath());

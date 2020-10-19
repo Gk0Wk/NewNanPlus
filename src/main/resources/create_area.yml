@@ -1,3 +1,4 @@
 version: ${version}
+enable: true
 world: 'create_world'
 areas: {}
