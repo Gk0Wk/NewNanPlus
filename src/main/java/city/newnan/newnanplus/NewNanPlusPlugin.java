@@ -73,14 +73,14 @@ public class NewNanPlusPlugin extends JavaPlugin {
             getDescription().getAuthors().forEach(author -> globalData.printINFO("§a  - " + author));
             globalData.printINFO("Website: §b" + getDescription().getWebsite() + "§f    - Welcome to join us!");
             globalData.printINFO("§6---------------------------------------------------");
-            globalData.printINFO("§aLoading main configure file...");
+            globalData.printINFO("§2Loading main configure file...");
             globalData.printINFO("Major language: §e" + globalData.wolfyLanguageAPI.getActiveLanguage().getName());
             globalData.printINFO("Fallback language: §e" + globalData.wolfyLanguageAPI.getFallbackLanguage().getName());
         }
 
         try {
             globalData.printINFO("§6---------------------------------------------------");
-            globalData.printINFO("Binding dependencies...");
+            globalData.printINFO("§2Binding dependencies...");
             // 绑定Vault
             if (!bindVault()) {
                 throw new Exception("Vault API bind failed.");
@@ -104,7 +104,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
 
         // 模块注册
         globalData.printINFO("§6---------------------------------------------------");
-        globalData.printINFO("Loading modules...");
+        globalData.printINFO("§2Loading modules...");
         loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
         loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
         loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
@@ -114,8 +114,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
         loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
         globalData.printINFO("§6---------------------------------------------------");
 
-        globalData.printINFO("NewNanPlus is on run, have a nice day!");
-        globalData.printINFO("");
+        globalData.printINFO("§aNewNanPlus is on run, have a nice day!");
         globalData.printINFO("");
 
         if (globalData.cron != null)
