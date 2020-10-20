@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.laganalyzer;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Chunk;
@@ -20,7 +20,7 @@ public class LagAnalyzer implements NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal globalData;
+    GlobalData globalData;
 
     private final HashMap<String, Integer> hopperMap = new HashMap<>();
 
@@ -28,7 +28,7 @@ public class LagAnalyzer implements NewNanPlusModule {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public LagAnalyzer(NewNanPlusGlobal globalData) throws Exception {
+    public LagAnalyzer(GlobalData globalData) throws Exception {
         this.globalData = globalData;
         if (!globalData.configManager.get("config.yml").getBoolean("module-lagganalyzer.enable", false)) {
             throw new ModuleOffException();

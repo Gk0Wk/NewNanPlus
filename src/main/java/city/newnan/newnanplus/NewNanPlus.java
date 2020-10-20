@@ -25,11 +25,11 @@ import java.util.Objects;
  * 插件的主类需要继承 JavaPlugin，JavaPlugin 提供了插件工作时所需要的各种方法和属性
  * 每个插件只能有一个主类，在其他地方如果需要用到这个主类，应当在实例化、传参时将这个类传过去
  */
-public class NewNanPlusPlugin extends JavaPlugin {
+public class NewNanPlus extends JavaPlugin {
     /**
      * 持久化存储和访问全局数据
      */
-    private NewNanPlusGlobal globalData;
+    private GlobalData globalData;
 
     /**
      * 插件启用时调用的方法
@@ -39,7 +39,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
         // 核心初始化
         try {
             // 初始化全局存储对象
-            globalData = new NewNanPlusGlobal(this);
+            globalData = new GlobalData(this);
             // 初始化配置管理器
             globalData.configManager = new ConfigManager(this);
             // 初始化WolfyAPI
@@ -153,7 +153,7 @@ public class NewNanPlusPlugin extends JavaPlugin {
             // 为什么这个isAssignableFrom是反着用的呢？
             if (NewNanPlusModule.class.isAssignableFrom(module)) {
                 // 获取构造器并构造
-                Constructor<?> constructor = module.getDeclaredConstructor(NewNanPlusGlobal.class);
+                Constructor<?> constructor = module.getDeclaredConstructor(GlobalData.class);
                 constructor.setAccessible(true);
                 constructor.newInstance(globalData);
                 // 成功则打印结果

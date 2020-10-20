@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.createarea;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.CustomCommandException;
@@ -16,6 +16,7 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -30,7 +31,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal globalData;
+    GlobalData globalData;
 
     private World createWorld;
     private MarkerSet createAreaMarkers;
@@ -41,7 +42,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public CreateArea(NewNanPlusGlobal globalData) throws Exception {
+    public CreateArea(GlobalData globalData) throws Exception {
         this.globalData = globalData;
 
         if (!globalData.configManager.get("create_area.yml").getBoolean("enable", false)) {
@@ -132,17 +133,17 @@ public class CreateArea implements NewNanPlusModule, Listener {
             }
 
             // 查找对应的玩家
-            Player _player = globalData.playerManager.findOnePlayerByName(args[0]);
+            String targetUUIDString = globalData.playerManager.findOnePlayerUUIDByName(args[0]).toString();
 
             // 看看对应的玩家有没有创造区
-            if (createArea.getConfigurationSection("areas."+_player.getUniqueId()) == null) {
+            if (createArea.getConfigurationSection("areas." + targetUUIDString) == null) {
                 throw new CustomCommandException(globalData.wolfyLanguageAPI.replaceColoredKeys(
                         "$module_message.create_area.player_have_no_area$"));
             }
             _teleportTo(Objects.requireNonNull(
-                    createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
+                    createArea.getConfigurationSection("areas." + targetUUIDString)), player);
             globalData.sendPlayerActionBar(player,MessageFormat.format( globalData.wolfyLanguageAPI.replaceColoredKeys(
-                    "$module_message.create_area.teleported_to_ones_area$"), _player.getName()));
+                    "$module_message.create_area.teleported_to_ones_area$"), args[0]));
         } else {
             // 不带参数，传送到自己的创造区
             // 检查权限
@@ -195,15 +196,15 @@ public class CreateArea implements NewNanPlusModule, Listener {
      */
     public void newCreateArea(String[] args, Player player) throws Exception {
         // 坐标解析
-        int x1 = Integer.parseInt(args[1]);
-        int x2 = Integer.parseInt(args[3]);
+        int x1 = Integer.parseInt(args[1].split("\\.", 1)[0]);
+        int x2 = Integer.parseInt(args[3].split("\\.", 1)[0]);
         if (x1 > x2) {
             x1 ^= x2;
             x2 ^= x1;
             x1 ^= x2;
         }
-        int z1 = Integer.parseInt(args[2]);
-        int z2 = Integer.parseInt(args[4]);
+        int z1 = Integer.parseInt(args[2].split("\\.", 1)[0]);
+        int z2 = Integer.parseInt(args[4].split("\\.", 1)[0]);
         if (z1 > z2) {
             z1 ^= z2;
             z2 ^= z1;
@@ -268,7 +269,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * 玩家切换世界事件监听函数
      * @param event 玩家切换世界事件实例
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         if (event.getPlayer().getWorld().equals(createWorld)) {
             checkArea(event.getPlayer());
@@ -279,7 +280,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * 玩家登录时触发的方法
      * @param event 玩家登录事件
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (event.getPlayer().getWorld().equals(createWorld)) {
             checkArea(event.getPlayer());

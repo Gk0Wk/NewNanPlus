@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.cron;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import org.bukkit.command.Command;
@@ -25,13 +25,13 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
-    NewNanPlusGlobal globalData;
+    GlobalData globalData;
 
     /**
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public Cron(NewNanPlusGlobal globalData) throws Exception {
+    public Cron(GlobalData globalData) throws Exception {
         this.globalData = globalData;
         // 是否禁用
         if (!globalData.configManager.get("cron.yml").getBoolean("enable", false)) {

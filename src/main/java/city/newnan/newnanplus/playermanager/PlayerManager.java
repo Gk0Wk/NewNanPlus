@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.playermanager;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
@@ -9,6 +9,7 @@ import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
@@ -20,14 +21,13 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal globalData;
+    private final GlobalData globalData;
 
     private Group newbiesGroup;
     private Group playersGroup;
@@ -37,7 +37,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * 构造函数
      * @param globalData 全局实例
      */
-    public PlayerManager(NewNanPlusGlobal globalData) throws Exception {
+    public PlayerManager(GlobalData globalData) throws Exception {
         this.globalData = globalData;
         if (!globalData.configManager.get("config.yml").getBoolean("module-playermanager.enable", false)) {
             throw new ModuleOffException();
@@ -108,6 +108,26 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         return players.get(0);
     }
 
+    public UUID findOnePlayerUUIDByName(String playerName) throws Exception {
+        try {
+            return findOnePlayerByName(playerName).getUniqueId();
+        } catch (Exception e) {
+            if (e instanceof PlayerNotFountException) {
+                OfflinePlayer[] players = Arrays.stream(globalData.plugin.getServer().getOfflinePlayers()).
+                        filter(offlinePlayer -> Objects.equals(offlinePlayer.getName(), playerName)).toArray(OfflinePlayer[]::new);
+                if (players.length > 1) {
+                    throw new PlayerMoreThanOneException();
+                }
+                if (players.length == 0) {
+                    throw new PlayerNotFountException();
+                }
+                return players[0].getUniqueId();
+            } else {
+                throw e;
+            }
+        }
+    }
+
     /**
      * /nnp allow指令的实现，将一个玩家纳入已验证新人名单中，如果玩家已经在线，那么就直接赋予玩家权限
      * @param sender 命令的发送者
@@ -169,9 +189,11 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
     }
 
+
     /**
      * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组
      * @param player 待检测的玩家实例
+     * @throws Exception 指令异常
      */
     public void joinCheck(Player player) throws Exception {
         FileConfiguration newbiesList = globalData.configManager.get("newbies_list.yml");

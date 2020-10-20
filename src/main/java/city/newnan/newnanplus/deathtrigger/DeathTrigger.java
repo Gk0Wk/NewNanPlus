@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.deathtrigger;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.command.Command;
@@ -21,7 +21,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal globalData;
+    private final GlobalData globalData;
 
     /**
      * 模块设置
@@ -32,7 +32,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public DeathTrigger(NewNanPlusGlobal globalData) throws Exception {
+    public DeathTrigger(GlobalData globalData) throws Exception {
         this.globalData = globalData;
         if (!globalData.configManager.get("config.yml").getBoolean("module-deathtrigger.enable", false)) {
             throw new ModuleOffException();

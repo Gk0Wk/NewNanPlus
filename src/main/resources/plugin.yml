@@ -1,5 +1,5 @@
 # 插件的入口，记得带包名
-main: 'city.newnan.newnanplus.NewNanPlusPlugin'
+main: 'city.newnan.newnanplus.NewNanPlus'
 # 插件名，决定了插件资源文件夹的名字
 name: ${project.name}
 # 版本号，MAJOR.MINOR.PATCH

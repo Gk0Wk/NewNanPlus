@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.feefly;
 
-import city.newnan.newnanplus.NewNanPlusGlobal;
+import city.newnan.newnanplus.GlobalData;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
@@ -15,6 +15,7 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
+import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
@@ -31,7 +32,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     /**
      * 持久化访问全局数据
      */
-    private final NewNanPlusGlobal globalData;
+    private final GlobalData globalData;
 
     /**
      * 模块设置
@@ -51,7 +52,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      * 构造函数
      * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public FeeFly(NewNanPlusGlobal globalData) throws Exception {
+    public FeeFly(GlobalData globalData) throws Exception {
         this.globalData = globalData;
         if (!globalData.configManager.get("config.yml").getBoolean("module-feefly.enable", false)) {
             throw new ModuleOffException();
@@ -162,7 +163,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      * 玩家切换世界事件监听函数
      * @param event 玩家切换世界事件实例
      */
-    @EventHandler
+    @EventHandler(ignoreCancelled = true, priority = EventPriority.HIGHEST)
     public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
         // 如果新的世界没有该权限，就取消玩家的飞行
         if (!event.getPlayer().hasPermission("newnanplus.fly.self"))
@@ -327,7 +328,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 循环中不推荐使用 String 直接 +=，因为每次都会创建新的实例
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
-        flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(" ")));
+        flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(' ')));
         globalData.sendMessage(sender, MessageFormat.format(
                 globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.count_flying_players$"),
                 flyingPlayers.size()));

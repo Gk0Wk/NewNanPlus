@@ -26,18 +26,15 @@
     <repositories>
         <repository>
             <!--Vault-->
-            <!--https://github.com/MilkBowl/VaultAPI-->
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
         <repository>
             <!--Spigot API-->
-            <!--https://hub.spigotmc.org/nexus/#welcome-->
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
         </repository>
         <repository>
-            <!--https://github.com/webbukkit/dynmap/wiki-->
             <id>dynmap-repo</id>
             <url>http://repo.mikeprimm.com/</url>
         </repository>
@@ -45,17 +42,21 @@
 
     <dependencies>
         <dependency>
+            <!--https://github.com/MilkBowl/VaultAPI-->
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.7</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
+            <!--https://github.com/ElgarL/GroupManager-->
             <groupId>com.github.ElgarL</groupId>
             <artifactId>groupmanager</artifactId>
             <version>2.8</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
+            <!--https://hub.spigotmc.org/nexus/#welcome-->
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
             <version>1.14.4-R0.1-SNAPSHOT</version>
@@ -88,6 +89,7 @@
             <systemPath>${project.basedir}/lib/QuickShop-4.0.4.14.jar</systemPath>
         </dependency>
         <dependency>
+            <!--https://github.com/webbukkit/dynmap/wiki-->
             <groupId>us.dynmap</groupId>
             <artifactId>dynmap-api</artifactId>
             <version>3.0</version>

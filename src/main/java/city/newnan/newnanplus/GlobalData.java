@@ -11,8 +11,8 @@ import java.text.SimpleDateFormat;
 /**
  * NewNanPlus插件公用数据的存储类，插件内只有一份实例，每个部分都持有一份引用，以此来实现插件内通讯和持久化存储。
  */
-public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule {
-    public NewNanPlusGlobal(NewNanPlusPlugin plugin) {
+public class GlobalData extends MessageManager implements NewNanPlusModule {
+    public GlobalData(NewNanPlus plugin) {
         // 绑定控制台输出
         super(plugin.getLogger(), "");
         this.plugin = plugin;
@@ -60,7 +60,7 @@ public class NewNanPlusGlobal extends MessageManager implements NewNanPlusModule
 
     /* =============================================================================================== */
     /* 核心 */
-    public city.newnan.newnanplus.NewNanPlusPlugin plugin;
+    public NewNanPlus plugin;
     public city.newnan.newnanplus.utility.ConfigManager configManager;
     public city.newnan.newnanplus.utility.CommandManager commandManager;
 
