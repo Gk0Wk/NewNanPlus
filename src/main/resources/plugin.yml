@@ -63,6 +63,7 @@ commands:
   'nnp listfly':
     description: '显示正在使用付费飞行的玩家'
     usage: '/nnp listfly'
+    aliases: 'listfly'
     permission-node: 'newnanplus.feefly.list'
   'nnp save':
     description: '保存配置'
@@ -90,6 +91,14 @@ commands:
     usage: '/nnp cdel <player>'
     aliases: ['cdel', 'cremove', 'cdelete']
     permission-node: 'newnanplus.createarea.remove'
+  'nnp titlemsg':
+    description: '为某个玩家播放标题通知'
+    usage: '/nnp titlemsg <player> [title:<title>] [subtitle:<subtitle>]'
+    permission-node: 'newnanplus.titlemsg.send'
+  'nnp titlebroadcast':
+    description: '为全服玩家广播标题通知'
+    usage: '/nnp titlebroadcast [title:<title>] [subtitle:<subtitle>]'
+    permission-node: 'newnanplus.titlebroadcast.send'
 
 # 权限节点，可选
 permissions:
@@ -101,28 +110,37 @@ permissions:
   #    'Example2': true会继承父节点的权限，false会与父节点相反
   'newnanplus.feefly.self':
     description: '为自己开启付费飞行的权限'
-    default: 'op'
+    default: op
   'newnanplus.feefly.other':
     description: '为别人开启付费飞行的权限'
-    default: 'op'
+    default: op
   'newnanplus.feefly.free':
     description: '白嫖付费飞行的权限'
-    default: 'op'
+    default: op
   'newnanplus.feefly.list':
     description: '显示正在使用付费飞行的玩家的权限'
-    default: 'op'
+    default: op
   'newnanplus.playermanager.allow':
     description: '可以赋予玩家游玩权限的权限'
-    default: 'op'
+    default: op
   'newnanplus.createarea.create':
-    description: '可以创建/修改玩家的创造区'
-    default: 'op'
+    description: '可以创建/修改玩家的创造区的权限'
+    default: op
   'newnanplus.createarea.remove':
-    description: '可以删除玩家的创造区'
-    default: 'op'
+    description: '可以删除玩家的创造区的权限'
+    default: op
   'newnanplus.createarea.teleport.self':
-    description: '可以传送到自己的创造区'
-    default: 'op'
+    description: '可以传送到自己的创造区的权限'
+    default: op
   'newnanplus.createarea.teleport.other':
-    description: '可以传送到别人的创造区'
-    default: 'op'
+    description: '可以传送到别人的创造区的权限'
+    default: op
+  'newnanplus.titlemsg.send':
+    description: '为某个玩家播放标题通知的权限'
+    default: op
+  'newnanplus.titlebroadcast.send':
+    description: '为全服玩家广播标题通知的权限'
+    default: op
+  'newnanplus.titlebroadcast.bypass':
+    description: '忽略广播标题通知的权限'
+    default: false

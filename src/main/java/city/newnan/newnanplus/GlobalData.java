@@ -4,6 +4,7 @@ import city.newnan.newnanplus.exception.CommandExceptions.*;
 import city.newnan.newnanplus.utility.MessageManager;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.SimpleDateFormat;
@@ -46,6 +47,14 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
     }
 
     /**
+     * 由于GlobalData初始化特殊，所以初始化分了三步
+     */
+    public void otherInit() {
+        commandManager.register("titlemsg", this);
+        commandManager.register("titlebroadcast", this);
+    }
+
+    /**
      * 执行某个命令
      *
      * @param sender  发送指令者的实例
@@ -55,7 +64,90 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
      */
     @Override
     public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+        if (token.equals("titlemsg"))
+            sendTitleMessage(args);
+        else if (token.equals("titlebroadcast"))
+            sendTitleBroadcast(args);
+    }
 
+    private void sendTitleMessage(String[] args) throws Exception {
+        // 检查参数
+        if (args.length < 2 || args.length > 3) {
+            throw new BadUsageException();
+        }
+        // 找玩家
+        Player player = plugin.getServer().getPlayer(args[0]);
+        if (player == null) {
+            throw new PlayerNotFountException();
+        }
+
+        // 寻找标题
+        String title = null;
+        if (args[1].matches("^title:")) {
+            title = args[1].replaceFirst("^title:", "");
+        }
+        else if (args.length == 3 && args[2].matches("^title:")) {
+            title = args[2].replaceFirst("^title:", "");
+        }
+
+        // 寻找子标题
+        String subTitle = null;
+        if (args[1].matches("^subtitle:")) {
+            subTitle = args[1].replaceFirst("^subtitle:", "");
+        }
+        else if (args.length == 3 && args[2].matches("^subtitle:")) {
+            subTitle = args[2].replaceFirst("^subtitle:", "");
+        }
+
+        if (title == null && subTitle == null) {
+            throw new BadUsageException();
+        }
+
+        if (((title == null) ^ (subTitle == null)) && args.length == 3) {
+            throw new BadUsageException();
+        }
+
+        player.sendTitle(title, subTitle, 3, 37, 2);
+    }
+
+    private void sendTitleBroadcast(String[] args) throws Exception {
+        // 检查参数
+        if (args.length < 1 || args.length > 2) {
+            throw new BadUsageException();
+        }
+
+        // 寻找标题
+        String title = null;
+        if (args[0].matches("^title:")) {
+            title = args[0].replaceFirst("^title:", "");
+        }
+        else if (args.length == 2 && args[1].matches("^title:")) {
+            title = args[1].replaceFirst("^title:", "");
+        }
+
+        // 寻找子标题
+        String subTitle = null;
+        if (args[0].matches("^subtitle:")) {
+            subTitle = args[0].replaceFirst("^subtitle:", "");
+        }
+        else if (args.length == 2 && args[1].matches("^subtitle:")) {
+            subTitle = args[1].replaceFirst("^subtitle:", "");
+        }
+
+        if (title == null && subTitle == null) {
+            throw new BadUsageException();
+        }
+
+        if (((title == null) ^ (subTitle == null)) && args.length == 2) {
+            throw new BadUsageException();
+        }
+
+        String finalTitle = title;
+        String finalSubTitle = subTitle;
+        plugin.getServer().getOnlinePlayers().forEach(player -> {
+            if (!player.hasPermission("newnanplus.titlebroadcast.bypass"))
+                player.sendTitle(finalTitle, finalSubTitle, 3, 37, 2);
+        });
     }
 
     /* =============================================================================================== */

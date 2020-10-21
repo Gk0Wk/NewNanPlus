@@ -51,6 +51,8 @@ public class NewNanPlus extends JavaPlugin {
             // 初始化命令管理器
             globalData.commandManager = new CommandManager(this, globalData, "nnp",
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
+            // 最后的初始化
+            globalData.otherInit();
         }
         catch (Exception e) {
             getLogger().info("§cPlugin initialize failed!");
