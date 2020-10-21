@@ -111,9 +111,9 @@ public class CreateArea implements NewNanPlusModule, Listener {
         if (token.equals("ctp"))
             teleportToCreateArea(sender, args);
         if (token.equals("cnew"))
-            createCreateArea(args);
+            createCreateArea(sender, args);
         if (token.equals("cdel"))
-            removeCreateArea(args);
+            removeCreateArea(sender, args);
     }
 
     /**
@@ -177,7 +177,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * /nnp cnew指令实现，创建某个玩家的创造区
      * @param args 命令参数
      */
-    public void createCreateArea(String[] args) throws Exception {
+    public void createCreateArea(CommandSender sender, String[] args) throws Exception {
         // 检查参数
         if (args.length < 5) {
             throw new BadUsageException();
@@ -187,6 +187,9 @@ public class CreateArea implements NewNanPlusModule, Listener {
 
         // 创建创造区域
         newCreateArea(args, _player);
+
+        globalData.sendMessage(sender, globalData.wolfyLanguageAPI.
+                replaceKeys("$module_message.create_area.create_area_succeed$"));
     }
 
     /**
@@ -236,13 +239,16 @@ public class CreateArea implements NewNanPlusModule, Listener {
         section.set("z2", z2);
         // 存储设置
         globalData.configManager.save("create_area.yml");
+
+        globalData.sendMessage(player, globalData.wolfyLanguageAPI.
+                replaceKeys("$module_message.create_area.create_area_player_notice$"));
     }
 
     /**
      * /nnp cdel指令实现，删除某个玩家的创造区
      * @param args 命令参数
      */
-    public void removeCreateArea(String[] args) throws Exception {
+    public void removeCreateArea(CommandSender sender, String[] args) throws Exception {
         // 检查参数
         if (args.length < 1) {
             throw new BadUsageException();
@@ -263,6 +269,12 @@ public class CreateArea implements NewNanPlusModule, Listener {
         createArea.set("areas."+player.getUniqueId(), null);
         // 存储设置
         globalData.configManager.save("create_area.yml");
+
+        globalData.sendMessage(sender, globalData.wolfyLanguageAPI.
+                replaceKeys("$module_message.create_area.remove_area_succeed$"));
+
+        globalData.sendMessage(player, globalData.wolfyLanguageAPI.
+                replaceKeys("$module_message.create_area.remove_area_player_notice$"));
     }
 
     /**

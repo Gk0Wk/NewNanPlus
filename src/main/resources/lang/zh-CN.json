@@ -21,7 +21,11 @@
             "player_have_no_area": "玩家没有创造区！",
             "you_have_no_area": "你还没有创造区！",
             "teleported_to_ones_area": "已到达[{0}]的创造区",
-            "remove_from_builder_for_no_area": "你没有创造区，已被取消创造权限。请先申请创造区域。"
+            "remove_from_builder_for_no_area": "你没有创造区，已被取消创造权限。请先申请创造区域。",
+            "create_area_succeed": "已为{0}创建创造区并赋予权限。",
+            "create_area_player_notice": "你的创造区已创建，使用/ctp传送到自己的创造区，使用//wand使用小木斧。",
+            "remove_area_succeed": "已移除{0}的创造区并取消权限。",
+            "remove_area_player_notice": "你的创造区已被移除，无法在奎特世界建造。"
         },
         "cron": {
             "invalid_expression": "无法解析表达式：{0}"
