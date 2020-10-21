@@ -77,9 +77,9 @@
         <dependency>
             <groupId>com.wolfyscript</groupId>
             <artifactId>wolfyutilities</artifactId>
-            <version>1.6.0.5</version>
+            <version>1.6.2.9</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.1.2.jar</systemPath>
+            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.9.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.maxgamer</groupId>
