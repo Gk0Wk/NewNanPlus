@@ -2,6 +2,7 @@ package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.exception.CommandExceptions.*;
 import city.newnan.newnanplus.utility.MessageManager;
+import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -89,15 +90,19 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
         else if (args.length == 3 && args[2].matches("^title:")) {
             title = args[2].replaceFirst("^title:", "");
         }
+        if (title != null)
+            title = WolfyUtilities.translateColorCodes(title);
 
         // 寻找子标题
         String subTitle = null;
-        if (args[1].matches("^subtitle:")) {
+        if (args[1].matches("^subtitle:.*")) {
             subTitle = args[1].replaceFirst("^subtitle:", "");
         }
-        else if (args.length == 3 && args[2].matches("^subtitle:")) {
+        else if (args.length == 3 && args[2].matches("^subtitle:.*")) {
             subTitle = args[2].replaceFirst("^subtitle:", "");
         }
+        if (subTitle != null)
+            subTitle = WolfyUtilities.translateColorCodes(subTitle);
 
         if (title == null && subTitle == null) {
             throw new BadUsageException();
@@ -118,21 +123,25 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
 
         // 寻找标题
         String title = null;
-        if (args[0].matches("^title:")) {
+        if (args[0].matches("^title:.*")) {
             title = args[0].replaceFirst("^title:", "");
         }
-        else if (args.length == 2 && args[1].matches("^title:")) {
+        else if (args.length == 2 && args[1].matches("^title:.*")) {
             title = args[1].replaceFirst("^title:", "");
         }
+        if (title != null)
+            title = WolfyUtilities.translateColorCodes(title);
 
         // 寻找子标题
         String subTitle = null;
-        if (args[0].matches("^subtitle:")) {
+        if (args[0].matches("^subtitle:.*")) {
             subTitle = args[0].replaceFirst("^subtitle:", "");
         }
-        else if (args.length == 2 && args[1].matches("^subtitle:")) {
+        else if (args.length == 2 && args[1].matches("^subtitle:.*")) {
             subTitle = args[1].replaceFirst("^subtitle:", "");
         }
+        if (subTitle != null)
+            subTitle = WolfyUtilities.translateColorCodes(subTitle);
 
         if (title == null && subTitle == null) {
             throw new BadUsageException();

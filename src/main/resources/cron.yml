@@ -39,3 +39,23 @@ schedule-tasks:
     - 'broadcast 新的一年祝各位玩家万事如意！'
   '0 0 0 2 2 *':
     - 'broadcast 牛腩菌又大了一岁呢！'
+  '0 50 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e10分钟&c后重启 subtitle:&b半夜了，去睡觉吧'
+  '0 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e1分钟&c后重启 subtitle:&b哟，还搁这儿玩呢'
+  '30 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e30秒&c后重启 subtitle:&b劳逸结合，早睡早起'
+  '45 59 23 * * *':
+  - '/nnp titlebroadcast title:&c服务器将在&e15秒&c后重启 subtitle:&b迎接新一天的到来吧'
+  '55 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e5秒&c后重启 subtitle:&b注意保存工作'
+  '56 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e4秒&c后重启 subtitle:&b注意保存工作'
+  '57 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e3秒&c后重启 subtitle:&b注意保存工作'
+  '58 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e2秒&c后重启 subtitle:&b注意保存工作'
+  '59 59 23 * * *':
+    - '/nnp titlebroadcast title:&c服务器将在&e1秒&c后重启 subtitle:&b注意保存工作'
+  '0 0 0 * * *':
+    - 'stop'
