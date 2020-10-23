@@ -82,7 +82,7 @@ public class RailExpress implements NewNanPlusModule, Listener {
         if (!(e.getVehicle() instanceof Minecart))
             return;
         // 检查世界
-        if (!excludeWorlds.contains(e.getVehicle().getWorld()))
+        if (excludeWorlds.contains(e.getVehicle().getWorld()))
             return;
         // 看矿车只能坐一个实体，所以退出的就是刚才的唯一的实体
         // if (e.getVehicle().isEmpty())
@@ -99,7 +99,7 @@ public class RailExpress implements NewNanPlusModule, Listener {
         if (!(e.getVehicle() instanceof Minecart))
             return;
         // 检查世界
-        if (!excludeWorlds.contains(e.getVehicle().getWorld()))
+        if (excludeWorlds.contains(e.getVehicle().getWorld()))
             return;
         // 空车不加速
         if (e.getVehicle().isEmpty())
@@ -109,8 +109,8 @@ public class RailExpress implements NewNanPlusModule, Listener {
         Block curBlock = e.getVehicle().getLocation().getBlock();
         if (curBlock.getType().equals(Material.POWERED_RAIL)) {
             // 根据下面那一块的材质确定加速比
-            ((Minecart) e.getVehicle()).setMaxSpeed(
-                    DEFAULT_SPEED * blockType.getOrDefault(curBlock.getRelative(BlockFace.DOWN).getType(), 1.0));
+            ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED *
+                    blockType.getOrDefault(curBlock.getRelative(BlockFace.DOWN).getType(), 1.0));
         } else {
             ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
         }
