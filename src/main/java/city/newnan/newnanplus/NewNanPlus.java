@@ -90,7 +90,7 @@ public class NewNanPlus extends JavaPlugin {
                 globalData.printINFO("§f[ §aO K §f] Vault API");
             }
 
-            // 绑定Vault
+            // 绑定GroupManager
             if (!bindGroupManager()) {
                 throw new Exception("GroupManager bind failed.");
             } else {
@@ -121,6 +121,7 @@ public class NewNanPlus extends JavaPlugin {
         loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
         loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
         loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
+        loadModule(city.newnan.newnanplus.railexpress.RailExpress.class, "矿车加速模块");
         globalData.printINFO("§6---------------------------------------------------");
 
         globalData.printINFO("§aNewNanPlus is on run, have a nice day!");
@@ -152,7 +153,7 @@ public class NewNanPlus extends JavaPlugin {
      */
     public void loadModule(Class<?> module, String moduleName) {
         try {
-            // 为什么这个isAssignableFrom是反着用的呢？
+            // 检测接口实现情况
             if (NewNanPlusModule.class.isAssignableFrom(module)) {
                 // 获取构造器并构造
                 Constructor<?> constructor = module.getDeclaredConstructor(GlobalData.class);
@@ -237,17 +238,6 @@ public class NewNanPlus extends JavaPlugin {
         // 设置前缀
         wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceKeys("$chat_prefix$"));
         wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceKeys("$console_prefix$"));
-
-        // 创建背包界面API实例
-        // this.globalData.wolfyInventoryAPI = this.globalData.wolfyAPI.getInventoryAPI();
-
-        // demo
-//        GuiCluster cluster = this.globalData.wolfyInventoryAPI.getOrRegisterGuiCluster("none");
-//        GuiWindow window = new GuiWindow("main_menu", this.globalData.wolfyInventoryAPI, InventoryType.CHEST);
-//        ButtonState bstate = new ButtonState("settings", Material.OAK_LOG);
-//        DummyButton button = new DummyButton("settings", bstate);
-//        window.registerButton(button);
-//        cluster.registerGuiWindow(window);
 
         return wolfyAPI;
     }

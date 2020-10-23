@@ -49,6 +49,13 @@ module-deathtrigger:
     player-enable: true
     broadcast-enable: false
     console-enable: false
+module-railexpress:
+  enable: true
+  exclude-world: []
+  block-type:
+    REDSTONE_BLOCK: 2.5
+    DIAMOND_BLOCK: 5
+    BEACON: 10.0
 module-lagganalyzer:
   enable: false
 module-townmanager:

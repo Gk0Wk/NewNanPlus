@@ -168,7 +168,6 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
     public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
     public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
     public org.anjocaido.groupmanager.GroupManager groupManager;
-    // public me.wolfyscript.utilities.api.inventory.InventoryAPI wolfyInventoryAPI;
 
     public org.dynmap.DynmapAPI dynmapAPI;
     /**
@@ -203,4 +202,7 @@ public class GlobalData extends MessageManager implements NewNanPlusModule {
 
     /* NewNanPlus FeeFly */
     public city.newnan.newnanplus.feefly.FeeFly feeFly;
+
+    /* NewNanPlus RailExpress */
+    public city.newnan.newnanplus.railexpress.RailExpress railExpress;
 }
