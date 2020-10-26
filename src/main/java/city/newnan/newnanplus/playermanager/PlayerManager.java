@@ -6,6 +6,7 @@ import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.bukkit.Material;
@@ -308,6 +309,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         String dateString = emailConfig.getString("date");
         String availableDateString = emailConfig.getString("available-until");
         String permission = emailConfig.getString("permission", "");
+        String permissionMessage = emailConfig.getString("permission-message", "");
         boolean requireInventory = emailConfig.getBoolean("require-inventory");
         List<String> commands = emailConfig.getStringList("commands");
         long availableTime;
@@ -360,6 +362,9 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
         // 权限检查
         if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            if (permissionMessage != null && !permissionMessage.isEmpty()) {
+                pages.add(pageBuffer.toString() + WolfyUtilities.translateColorCodes(permissionMessage));
+            }
             pages.add(pageBuffer.toString() + plugin.wolfyLanguageAPI.
                     replaceColoredKeys("$module_message.player_manager.email_no_permission$"));
             bookMeta.setPages(pages);

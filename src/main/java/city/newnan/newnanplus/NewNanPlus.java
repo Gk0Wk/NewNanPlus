@@ -149,15 +149,16 @@ public class NewNanPlus extends JavaPlugin {
         {
             messageManager.printINFO("§6---------------------------------------------------");
             messageManager.printINFO("§2Loading modules...");
+            loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
             loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
+            loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
             loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
+            loadModule(city.newnan.newnanplus.powertools.PowerTools.class, "实用工具模块");
+            loadModule(city.newnan.newnanplus.railexpress.RailExpress.class, "矿车加速模块");
+            loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
             loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
             loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
-            loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
-            loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
-            // loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
-            loadModule(city.newnan.newnanplus.railexpress.RailExpress.class, "矿车加速模块");
-            loadModule(city.newnan.newnanplus.powertools.PowerTools.class, "实用工具模块");
+            loadModule(city.newnan.newnanplus.dynamiceconomy.DynamicEconomy.class, "动态经济模块");
             messageManager.printINFO("§6---------------------------------------------------");
         }
 
@@ -262,6 +263,7 @@ public class NewNanPlus extends JavaPlugin {
         wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
         // 多语言模块
         wolfyLanguageAPI = wolfyAPI.getLanguageAPI();
+        wolfyLanguageAPI.unregisterLanguages();
         // 设置主要语言
         String majorLanguageName = configManager.get("config.yml").
                 getString("global-settings.major-language");
