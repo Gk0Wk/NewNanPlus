@@ -29,7 +29,7 @@ public class ConfigManager {
      */
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
-        get("config.yml");
+        assert get("config.yml") != null;
     }
 
     /**
@@ -93,7 +93,6 @@ public class ConfigManager {
         // 已缓存则返回
         if (this.configMap.containsKey(configFile))
             return this.configMap.get(configFile);
-
         // 未缓存则加载
         touch(configFile);
         // config.yml要特殊处理一下

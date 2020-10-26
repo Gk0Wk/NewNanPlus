@@ -5,12 +5,11 @@
 # GitHub: Gk0Wk
 
 version: ${project.version}
-global-data:
-  balance-symbol: '₦'
 global-settings:
   major-language: 'zh-CN'
   fallback-language: 'zh-CN'
   date-formatter: 'yyyy-MM-dd HH:mm:ss'
+  balance-symbol: '₦'
 module-world-setting:
   keepInventoryOnDeath: []
   mobGriefing: []

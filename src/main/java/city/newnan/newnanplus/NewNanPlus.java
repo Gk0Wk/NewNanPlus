@@ -13,6 +13,7 @@ import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -30,7 +31,7 @@ import java.util.Objects;
  * 插件的主类需要继承 JavaPlugin，JavaPlugin 提供了插件工作时所需要的各种方法和属性
  * 每个插件只能有一个主类，在其他地方如果需要用到这个主类，应当在实例化、传参时将这个类传过去
  */
-public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
+public class NewNanPlus extends JavaPlugin {
     /**
      * 插件的唯一静态实例，加载不成功是null
      */
@@ -77,8 +78,16 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
             // 初始化配置管理器
             configManager = new ConfigManager(this);
             // 日期格式化形式
-            dateFormatter = new SimpleDateFormat(Objects.requireNonNull(configManager.
-                    get("config.yml").getString("global-settings.date-formatter")));
+            FileConfiguration fileC =  getConfig();
+            getLogger().info("[1]");
+            while (fileC == null)
+                getLogger().info("!!!!!!!");
+            fileC.getKeys(true).forEach(key -> getLogger().info("  " + key));
+            getLogger().info("[2]");
+            dateFormatter = new SimpleDateFormat(
+                    Objects.requireNonNull(configManager.
+                    get("config.yml").
+                            getString("global-settings.date-formatter", "yyyy-MM-dd HH:mm:ss")));
             // 初始化WolfyAPI
             bindWolfyUtilities();
             // globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
@@ -93,6 +102,7 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         // 绑定静态实例
@@ -146,12 +156,14 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
+            return;
         }
 
         // 模块注册
         {
             messageManager.printINFO("§6---------------------------------------------------");
             messageManager.printINFO("§2Loading modules...");
+            new GlobalModule();
             loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
             loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
             loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
@@ -167,10 +179,6 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
 
         messageManager.printINFO("§aNewNanPlus is on run, have a nice day!");
         messageManager.printINFO("");
-
-        commandManager.register("", this);
-        commandManager.register("reload", this);
-        commandManager.register("save", this);
 
         // 插件就绪时的执行的任务
         if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
@@ -304,43 +312,10 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
     }
 
     /**
-     * 重新加载模块的配置
+     * 重新加载插件的配置
      */
-    @Override
-    public void reloadConfig() {
+    public void reloadPluginConfig() {
 
-    }
-
-    /**
-     * 执行某个命令
-     * @param sender  发送指令者的实例
-     * @param command 被执行的指令实例
-     * @param token   指令的标识字符串
-     * @param args    指令的参数
-     */
-    @Override
-    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command,
-                               @NotNull String token, @NotNull String[] args) throws Exception {
-        if (token.isEmpty()) {
-            messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件");
-            messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite());
-            messageManager.sendMessage(sender, "作者(欢迎一起来开发): ");
-            getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author));
-            messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助");
-        }
-        else if (token.equals("reload")) {
-            if (args.length == 0)
-                reloadConfig();
-            else {
-                modules.forEach((moduleClass, module) -> {
-                   if (moduleClass.getSimpleName().equals(args[0]))
-                       module.reloadConfig();
-                });
-            }
-        }
-        else if (token.equals("save")) {
-            configManager.saveAll();
-        }
     }
 
     /**
@@ -367,6 +342,66 @@ public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
     private void changeWorldsGamerules(List<String> worlds, GameRule<Boolean> rule, boolean value) {
         for (String world : worlds) {
             Objects.requireNonNull(this.getServer().getWorld(world)).setGameRule(rule, value);
+        }
+    }
+
+    public void printWelcome(CommandSender sender) {
+        messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件");
+        messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite());
+        messageManager.sendMessage(sender, "作者(欢迎一起来开发): ");
+        getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author));
+        messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助");
+    }
+
+    public void reloadModule(@NotNull CommandSender sender, @NotNull String[] args) {
+        if (args.length == 0) {
+            reloadPluginConfig();
+            messageManager.sendMessage(sender, "插件重载完毕。");
+        }
+        else {
+            modules.forEach((moduleClass, module) -> {
+                if (moduleClass.getSimpleName().equals(args[0])) {
+                    module.reloadConfig();
+                    messageManager.sendMessage(sender, "模块 " + args[0] + " 重载完毕。");
+                }
+            });
+        }
+    }
+}
+
+class GlobalModule implements NewNanPlusModule {
+
+    public GlobalModule() {
+        NewNanPlus.getPlugin().commandManager.register("", this);
+        NewNanPlus.getPlugin().commandManager.register("reload", this);
+        NewNanPlus.getPlugin().commandManager.register("save", this);
+    }
+
+    /**
+     * 重新加载模块的配置
+     */
+    @Override
+    public void reloadConfig() {
+
+    }
+
+    /**
+     * 执行某个命令
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command,
+                               @NotNull String token, @NotNull String[] args) throws Exception {
+        if (token.isEmpty())
+            NewNanPlus.getPlugin().printWelcome(sender);
+        else if (token.equals("reload"))
+            NewNanPlus.getPlugin().reloadModule(sender, args);
+        else if (token.equals("save")) {
+            NewNanPlus.getPlugin().configManager.saveAll();
+            NewNanPlus.getPlugin().messageManager.sendMessage(sender, "配置保存完毕。");
         }
     }
 }
