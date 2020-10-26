@@ -86,4 +86,18 @@ public class MessageManager {
             printINFO(ChatColor.translateAlternateColorCodes('&', msg));
         }
     }
+
+    /**
+     * 给对象发送一条消息
+     * @param sender 发送的对象
+     * @param msg 发送的消息
+     * @param prefix 是否包括前缀(只对玩家有效)
+     */
+    public void sendMessage(CommandSender sender, String msg, boolean prefix) {
+        if (sender instanceof Player) {
+            sendPlayerMessage((Player) sender, msg, prefix);
+        } else if (sender instanceof ConsoleCommandSender) {
+            printINFO(ChatColor.translateAlternateColorCodes('&', msg));
+        }
+    }
 }

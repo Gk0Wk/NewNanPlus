@@ -319,7 +319,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         CommandSender sender =  plugin.getServer().getConsoleSender();
         this.inTimeTasks.forEach(task -> {
             for (String command : task.commands) {
-                plugin.getServer().dispatchCommand(sender,command);
+                plugin.getServer().dispatchCommand(sender, command);
             }
         });
         this.inTimeTasks.clear();

@@ -34,6 +34,7 @@ public class CommandManager implements CommandExecutor {
         this.commandsConfig = config.getConfigurationSection("commands");
 
         Objects.requireNonNull(plugin.getCommand(prefix)).setExecutor(this);
+        register("help", null);
     }
 
     public void register(String token, NewNanPlusModule module) {
@@ -174,7 +175,7 @@ public class CommandManager implements CommandExecutor {
     }
 
     public void printCommandHelp(CommandSender sender) {
-        messageManager.sendMessage(sender, "NewNanPlus Commands:");
+        messageManager.sendMessage(sender, "NewNanPlus Commands:", false);
         commandContainerHashMap.forEach((token, command) -> {
             if (command.hidden)
                 return;
@@ -182,12 +183,12 @@ public class CommandManager implements CommandExecutor {
                 return;
             if (command.permission != null && sender instanceof Player && !sender.hasPermission(command.permission))
                 return;
-            messageManager.sendMessage(sender, "/nnp " + command.token + " " + command.description);
-            messageManager.sendMessage(sender, "  Usage: " + command.usageSuggestion);
+            messageManager.sendMessage(sender, "/nnp " + command.token + " " + command.description, false);
+            messageManager.sendMessage(sender, "  Usage: " + command.usageSuggestion, false);
             StringBuilder aliasBuffer = new StringBuilder();
             Arrays.stream(command.aliases).forEach(alias -> aliasBuffer.append(alias).append(' '));
             if (aliasBuffer.length() > 0)
-                messageManager.sendMessage(sender, "  Alias: " + aliasBuffer.toString());
+                messageManager.sendMessage(sender, "  Alias: " + aliasBuffer.toString(), false);
         });
     }
 }

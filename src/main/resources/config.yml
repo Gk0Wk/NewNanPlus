@@ -13,7 +13,6 @@ global-settings:
 module-world-setting:
   keepInventoryOnDeath: []
   mobGriefing: []
-
 module-playermanager:
   enable: true
   newbies-group: 'Newbie'

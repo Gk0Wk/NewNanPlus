@@ -1,5 +1,6 @@
 package city.newnan.newnanplus;
 
+import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
@@ -13,7 +14,6 @@ import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -78,12 +78,6 @@ public class NewNanPlus extends JavaPlugin {
             // 初始化配置管理器
             configManager = new ConfigManager(this);
             // 日期格式化形式
-            FileConfiguration fileC =  getConfig();
-            getLogger().info("[1]");
-            while (fileC == null)
-                getLogger().info("!!!!!!!");
-            fileC.getKeys(true).forEach(key -> getLogger().info("  " + key));
-            getLogger().info("[2]");
             dateFormatter = new SimpleDateFormat(
                     Objects.requireNonNull(configManager.
                     get("config.yml").
@@ -96,6 +90,8 @@ public class NewNanPlus extends JavaPlugin {
             // 初始化命令管理器
             commandManager = new CommandManager(this, messageManager, "nnp",
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
+            // 错误消息初始化
+            CommandExceptions.init(this);
         } catch (Exception e) {
             getLogger().info("§cPlugin initialize failed!");
             // 打印错误栈
@@ -346,11 +342,11 @@ public class NewNanPlus extends JavaPlugin {
     }
 
     public void printWelcome(CommandSender sender) {
-        messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件");
-        messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite());
-        messageManager.sendMessage(sender, "作者(欢迎一起来开发): ");
+        messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件", false);
+        messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite(), false);
+        messageManager.sendMessage(sender, "作者(欢迎一起来开发): ", false);
         getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author));
-        messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助");
+        messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助", false);
     }
 
     public void reloadModule(@NotNull CommandSender sender, @NotNull String[] args) {
