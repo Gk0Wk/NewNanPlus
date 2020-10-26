@@ -10,11 +10,14 @@ import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
 import org.bukkit.GameRule;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
 import java.text.SimpleDateFormat;
@@ -27,7 +30,7 @@ import java.util.Objects;
  * 插件的主类需要继承 JavaPlugin，JavaPlugin 提供了插件工作时所需要的各种方法和属性
  * 每个插件只能有一个主类，在其他地方如果需要用到这个主类，应当在实例化、传参时将这个类传过去
  */
-public class NewNanPlus extends JavaPlugin {
+public class NewNanPlus extends JavaPlugin implements NewNanPlusModule {
     /**
      * 插件的唯一静态实例，加载不成功是null
      */
@@ -165,6 +168,10 @@ public class NewNanPlus extends JavaPlugin {
         messageManager.printINFO("§aNewNanPlus is on run, have a nice day!");
         messageManager.printINFO("");
 
+        commandManager.register("", this);
+        commandManager.register("reload", this);
+        commandManager.register("save", this);
+
         // 插件就绪时的执行的任务
         if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
             ((city.newnan.newnanplus.cron.Cron) modules.get(city.newnan.newnanplus.cron.Cron.class)).onPluginReady();
@@ -294,6 +301,46 @@ public class NewNanPlus extends JavaPlugin {
         assert dynmap != null;
         dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
         return true;
+    }
+
+    /**
+     * 重新加载模块的配置
+     */
+    @Override
+    public void reloadConfig() {
+
+    }
+
+    /**
+     * 执行某个命令
+     * @param sender  发送指令者的实例
+     * @param command 被执行的指令实例
+     * @param token   指令的标识字符串
+     * @param args    指令的参数
+     */
+    @Override
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command,
+                               @NotNull String token, @NotNull String[] args) throws Exception {
+        if (token.isEmpty()) {
+            messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件");
+            messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite());
+            messageManager.sendMessage(sender, "作者(欢迎一起来开发): ");
+            getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author));
+            messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助");
+        }
+        else if (token.equals("reload")) {
+            if (args.length == 0)
+                reloadConfig();
+            else {
+                modules.forEach((moduleClass, module) -> {
+                   if (moduleClass.getSimpleName().equals(args[0]))
+                       module.reloadConfig();
+                });
+            }
+        }
+        else if (token.equals("save")) {
+            configManager.saveAll();
+        }
     }
 
     /**

@@ -17,6 +17,6 @@ public interface NewNanPlusModule {
      * @param token   指令的标识字符串
      * @param args    指令的参数
      */
-    void onCommand(@NotNull CommandSender sender, @NotNull Command command,
-                             @NotNull String token, @NotNull String[] args) throws Exception;
+    void executeCommand(@NotNull CommandSender sender, @NotNull Command command,
+                        @NotNull String token, @NotNull String[] args) throws Exception;
 }

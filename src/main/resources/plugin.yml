@@ -54,8 +54,21 @@ commands:
 
   # 命令名称，不带'/'
   'nnp':
-    description: ''
-    usage: ''
+    description: 'NewNanPlus插件介绍'
+    usage: '/nnp'
+  'nnp help':
+    description: 'NewNanPlus命令帮助'
+    usage: '/nnp help'
+  'nnp reload':
+    description: '重载某个模块，或者整个插件'
+    usage: '/nnp reload [module name]'
+    permission-node: 'newnanplus.reload'
+    hidden: true
+  'nnp save':
+    description: '保存配置'
+    usage: '/nnp save'
+    permission-node: 'newnanplus.save'
+    hidden: true
   'nnp fly':
     description: '用它飞起来或者取消飞行模式，记得着落再取消'
     usage: '/nnp fly [player]'
@@ -65,12 +78,6 @@ commands:
     usage: '/nnp listfly'
     aliases: 'listfly'
     permission-node: 'newnanplus.feefly.list'
-  'nnp save':
-    description: '保存配置'
-    usage: '/nnp save'
-  'nnp reload':
-    description: '重新载入配置'
-    usage: '/nnp reload'
   'nnp allow':
     description: '允许某玩家正式进入游戏(获得玩家权限)'
     usage: '/nnp allow <player>'
@@ -108,6 +115,12 @@ permissions:
   #  default: 玩家权限节点的默认值，true、false、op和not op
   #  children: #子节点(仅名字)
   #    'Example2': true会继承父节点的权限，false会与父节点相反
+  'newnanplus.reload':
+    description: '重载插件或者模块的权限'
+    default: false
+  'newnanplus.save':
+    description: '保存插件配置文件的权限'
+    default: false
   'newnanplus.feefly.self':
     description: '为自己开启付费飞行的权限'
     default: op

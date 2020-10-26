@@ -8,15 +8,13 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nullable;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 直接分担掉plugin.yml的功能
@@ -116,6 +114,11 @@ public class CommandManager implements CommandExecutor {
             token = container.token;
         }
 
+        if (token.equals("help")) {
+            printCommandHelp(sender);
+            return true;
+        }
+
         // 如果没有找到指令
         if (container == null) {
             messageManager.sendMessage(sender, NoSuchCommandException.message);
@@ -138,7 +141,7 @@ public class CommandManager implements CommandExecutor {
         if (args.length >= 1) System.arraycopy(args, 1, newArgs, 0, args.length - 1);
 
         try {
-            container.module.onCommand(sender, command, token, newArgs);
+            container.module.executeCommand(sender, command, token, newArgs);
         }
         catch (Exception e) {
             if (e instanceof NoPermissionException)
@@ -168,6 +171,24 @@ public class CommandManager implements CommandExecutor {
         }
 
         return true;
+    }
+
+    public void printCommandHelp(CommandSender sender) {
+        messageManager.sendMessage(sender, "NewNanPlus Commands:");
+        commandContainerHashMap.forEach((token, command) -> {
+            if (command.hidden)
+                return;
+            if (!command.consoleAllowable && sender instanceof ConsoleCommandSender)
+                return;
+            if (command.permission != null && sender instanceof Player && !sender.hasPermission(command.permission))
+                return;
+            messageManager.sendMessage(sender, "/nnp " + command.token + " " + command.description);
+            messageManager.sendMessage(sender, "  Usage: " + command.usageSuggestion);
+            StringBuilder aliasBuffer = new StringBuilder();
+            Arrays.stream(command.aliases).forEach(alias -> aliasBuffer.append(alias).append(' '));
+            if (aliasBuffer.length() > 0)
+                messageManager.sendMessage(sender, "  Alias: " + aliasBuffer.toString());
+        });
     }
 }
 

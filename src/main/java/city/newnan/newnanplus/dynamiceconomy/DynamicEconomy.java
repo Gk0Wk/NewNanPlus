@@ -37,7 +37,7 @@ public class DynamicEconomy implements NewNanPlusModule {
      * @param args    指令的参数
      */
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
 
     }
 }

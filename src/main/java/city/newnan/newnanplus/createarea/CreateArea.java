@@ -104,7 +104,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * @param args    指令的参数
      */
     @Override
-    public void onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
         if (token.equals("ctp"))
             teleportToCreateArea(sender, args);
         if (token.equals("cnew"))
