@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.deathtrigger;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.command.Command;
@@ -19,9 +19,9 @@ import java.util.Map;
 
 public class DeathTrigger implements Listener, NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    private final GlobalData globalData;
+    private final NewNanPlus plugin;
 
     /**
      * 模块设置
@@ -30,17 +30,15 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
 
     /**
      * 构造函数
-     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public DeathTrigger(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-deathtrigger.enable", false)) {
+    public DeathTrigger() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-deathtrigger.enable", false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
         // 注册监听函数
-        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
-        globalData.deathTrigger = this;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -49,7 +47,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
     @Override
     public void reloadConfig() {
         // 获取配置实例
-        FileConfiguration config = globalData.configManager.get("config.yml");
+        FileConfiguration config = plugin.configManager.get("config.yml");
 
         // 加载配置内容
         costStages.clear();
@@ -107,7 +105,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
         }
 
         // 获得玩家的现金
-        double bal = globalData.vaultEco.getBalance(player);
+        double bal = plugin.vaultEco.getBalance(player);
         double cost = 0.0;
 
         double pre_max = 0.0;
@@ -130,7 +128,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
 
         // 扣钱
         if (cost > 0) {
-            globalData.vaultEco.withdrawPlayer(player, cost);
+            plugin.vaultEco.withdrawPlayer(player, cost);
         }
 
         return cost;
@@ -142,23 +140,23 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      * @param cost 玩家死亡花费
      */
     public void sendDeathMessage(Player player, double cost) {
-        FileConfiguration config = globalData.configManager.get("config.yml");
+        FileConfiguration config = plugin.configManager.get("config.yml");
 
         // 向玩家发送消息
         if (config.getBoolean("module-deathtrigger.death-message.player-enable", false)) {
-            globalData.sendPlayerMessage(player, MessageFormat.format(globalData.wolfyLanguageAPI.
+            plugin.messageManager.sendPlayerMessage(player, MessageFormat.format(plugin.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_to_player$")
                             , player.getDisplayName(), cost));
         }
         // 广播发送消息
         if (config.getBoolean("module-deathtrigger.death-message.broadcast-enable", false)) {
-            globalData.plugin.getServer().broadcastMessage(MessageFormat.format(globalData.wolfyLanguageAPI.
+            plugin.getServer().broadcastMessage(MessageFormat.format(plugin.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_broadcast$"),
                             player.getDisplayName(), cost));
         }
         // 控制台发送消息
         if (config.getBoolean("module-deathtrigger.death-message.console-enable", false)) {
-            globalData.printINFO(MessageFormat.format(globalData.wolfyLanguageAPI.
+            plugin.messageManager.printINFO(MessageFormat.format(plugin.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.death_trigger.death_message_to_console$"),
                             player.getDisplayName(), cost));
         }

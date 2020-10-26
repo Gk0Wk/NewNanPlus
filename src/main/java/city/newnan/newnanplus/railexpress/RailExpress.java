@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.railexpress;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Material;
@@ -25,19 +25,22 @@ import java.util.HashSet;
  * 矿车加速模块，根据激活铁轨下不同的材质进行加速
  */
 public class RailExpress implements NewNanPlusModule, Listener {
+    /**
+     * 插件的唯一静态实例，加载不成功是null
+     */
+    private final NewNanPlus plugin;
+
     private final static double DEFAULT_SPEED = 0.4;
-    private final GlobalData globalData;
     private final HashSet<World> excludeWorlds = new HashSet<>();
     private final HashMap<Material, Double> blockType = new HashMap<>();
 
-    public RailExpress(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-railexpress.enable", false)) {
+    public RailExpress() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-railexpress.enable", false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
-        globalData.plugin.getServer().getPluginManager().registerEvents(this, globalData.plugin);
-        globalData.railExpress = this;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -46,10 +49,10 @@ public class RailExpress implements NewNanPlusModule, Listener {
     @Override
     public void reloadConfig() {
         excludeWorlds.clear();
-        globalData.configManager.get("config.yml").getStringList("module-railexpress.exclude-world")
-                .forEach(world -> excludeWorlds.add(globalData.plugin.getServer().getWorld(world)));
+        plugin.configManager.get("config.yml").getStringList("module-railexpress.exclude-world")
+                .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
         blockType.clear();
-        ConfigurationSection blocks = globalData.configManager.get("config.yml")
+        ConfigurationSection blocks = plugin.configManager.get("config.yml")
                 .getConfigurationSection("module-railexpress.block-type");
         assert blocks != null;
         blocks.getKeys(false).forEach(key -> {
@@ -109,8 +112,8 @@ public class RailExpress implements NewNanPlusModule, Listener {
         Block curBlock = e.getVehicle().getLocation().getBlock();
         if (curBlock.getType().equals(Material.POWERED_RAIL)) {
             // 根据下面那一块的材质确定加速比
-            ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED *
-                    blockType.getOrDefault(curBlock.getRelative(BlockFace.DOWN).getType(), 1.0));
+            ((Minecart) e.getVehicle()).setMaxSpeed(
+                    blockType.getOrDefault(curBlock.getRelative(BlockFace.DOWN).getType(), DEFAULT_SPEED));
         } else {
             ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
         }

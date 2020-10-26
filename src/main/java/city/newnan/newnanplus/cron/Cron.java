@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.cron;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import org.bukkit.command.Command;
@@ -23,26 +23,24 @@ import java.util.List;
  */
 public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    GlobalData globalData;
+    private final NewNanPlus plugin;
 
     /**
      * 构造函数
-     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public Cron(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
+    public Cron() throws Exception {
+        plugin = NewNanPlus.getPlugin();
         // 是否禁用
-        if (!globalData.configManager.get("cron.yml").getBoolean("enable", false)) {
+        if (!plugin.configManager.get("cron.yml").getBoolean("enable", false)) {
             throw new ModuleExeptions.ModuleOffException();
         }
         reloadConfig();
         // 启动定时任务
-        runTaskTimer(globalData.plugin, 0, 20);
+        runTaskTimer(plugin, 0, 20);
         // 注册监听函数
-        globalData.plugin.getServer().getPluginManager().registerEvents(this, globalData.plugin);
-        globalData.cron = this;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -50,7 +48,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      */
     @Override
     public void reloadConfig() {
-        FileConfiguration config = globalData.configManager.reload("cron.yml");
+        FileConfiguration config = plugin.configManager.reload("cron.yml");
         this.tasks.clear();
         this.cacheInTimeTasks.clear();
         this.inTimeTasks.clear();
@@ -82,11 +80,11 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      */
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerLoad(ServerLoadEvent event) {
-        List<String> commands = globalData.configManager.get("cron.yml").getStringList("on-server-ready");
-        CommandSender sender = globalData.plugin.getServer().getConsoleSender();
+        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-server-ready");
+        CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
-            globalData.printINFO("§a§lRun Command: §r" + command);
-            globalData.plugin.getServer().dispatchCommand(sender, command);
+            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
+            plugin.getServer().dispatchCommand(sender, command);
         });
     }
 
@@ -95,11 +93,11 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 和on-server-ready不同，后者只会在服务器开启时执行
      */
     public void onPluginReady() {
-        List<String> commands = globalData.configManager.get("cron.yml").getStringList("on-plugin-ready");
-        CommandSender sender = globalData.plugin.getServer().getConsoleSender();
+        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-ready");
+        CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
-            globalData.printINFO("§a§lRun Command: §r" + command);
-            globalData.plugin.getServer().dispatchCommand(sender, command);
+            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
+            plugin.getServer().dispatchCommand(sender, command);
         });
     }
 
@@ -107,11 +105,11 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 执行在插件禁用时执行的命令，即on-plugin-disable
      */
     public void onPluginDisable() {
-        List<String> commands = globalData.configManager.get("cron.yml").getStringList("on-plugin-disable");
-        CommandSender sender = globalData.plugin.getServer().getConsoleSender();
+        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-disable");
+        CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
-            globalData.printINFO("§a§lRun Command: §r" + command);
-            globalData.plugin.getServer().dispatchCommand(sender, command);
+            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
+            plugin.getServer().dispatchCommand(sender, command);
         });
     }
 
@@ -135,7 +133,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
             this.tasks.add(task);
         }
         catch (Exception e) {
-            globalData.printWARN(MessageFormat.format(globalData.wolfyLanguageAPI.
+            plugin.messageManager.printWARN(MessageFormat.format(plugin.wolfyLanguageAPI.
                     replaceColoredKeys("$module_message.cron.invalid_expression$"), cronExpression));
         }
     }
@@ -221,30 +219,13 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
 
         // 执行一秒内到来的任务
         if (!this.inTimeTasks.isEmpty()) {
-            this.globalData.plugin.getServer().getScheduler().runTaskLater(
-                    globalData.plugin, this::runInSecond, 20);
+            plugin.getServer().getScheduler().runTaskLater(plugin, this::runInSecond, 20);
         }
 
         // 计算下次检查时间
         counterBorder = getIntervalSeconds(nextMillisecond);
         secondsCounter = 1;
     }
-
-    /**
-     * 一段时间所对应的TICK数
-     */
-    private static final int TICKS_OF_12HOUR = 864000;
-    private static final int TICKS_OF_6HOUR  = 432000;
-    private static final int TICKS_OF_3HOUR  = 216000;
-    private static final int TICKS_OF_1HOUR  = 72000;
-    private static final int TICKS_OF_30MIN  = 36000;
-    private static final int TICKS_OF_15MIN  = 18000;
-    private static final int TICKS_OF_8MIN   = 9600;
-    private static final int TICKS_OF_4MIN   = 4800;
-    private static final int TICKS_OF_MINUTE = 1200;
-    private static final int TICKS_OF_15SEC  = 300;
-    private static final int TICKS_OF_5SEC   = 100;
-    private static final int TICKS_OF_SECOND = 20;
 
     /**
      * 一段时间所对应的秒数
@@ -276,61 +257,6 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     private static final long MILLISECOND_OF_5MIN   = 300000;
     private static final long MILLISECOND_OF_MINUTE = 60000;
     private static final long MILLISECOND_OF_30SEC  = 30000;
-
-    /**
-     * 根据毫秒差获得合适的休眠间隔(Tick为单位)
-     * @param delta 毫秒差
-     * @return 休眠间隔(Tick为单位)
-     */
-    @Deprecated
-    private int getIntervalTicks(long delta) {
-        // 小于30秒   - 每秒
-        if (delta < MILLISECOND_OF_30SEC)
-            return TICKS_OF_SECOND;
-
-        // 小于1分钟  - 每5秒
-        if (delta < MILLISECOND_OF_MINUTE)
-            return TICKS_OF_5SEC;
-
-        // 小于5分钟  - 每15秒
-        if (delta < MILLISECOND_OF_5MIN)
-            return TICKS_OF_15SEC;
-
-        // 小于15分钟 - 每1分钟
-        if (delta < MILLISECOND_OF_15MIN)
-            return TICKS_OF_MINUTE;
-
-        // 小于30分钟 - 每4分钟
-        if (delta < MILLISECOND_OF_30MIN)
-            return TICKS_OF_4MIN;
-
-        // 小于1小时 - 每8分钟
-        if (delta < MILLISECOND_OF_HOUR)
-            return TICKS_OF_8MIN;
-
-        // 小于2小时 - 每15分钟
-        if (delta < MILLISECOND_OF_2HOUR)
-            return TICKS_OF_15MIN;
-
-        // 小于4小时 - 每半小时
-        if (delta < MILLISECOND_OF_4HOUR)
-            return TICKS_OF_30MIN;
-
-        // 小于12小时 - 每1小时
-        if (delta < MILLISECOND_OF_12HOUR)
-            return TICKS_OF_1HOUR;
-
-        // 小于1天 - 每3小时
-        if (delta < MILLISECOND_OF_1DAY)
-            return TICKS_OF_3HOUR;
-
-        // 小于2天 - 每6小时
-        if (delta < MILLISECOND_OF_2DAY)
-            return TICKS_OF_6HOUR;
-
-        // 其他 - 每12小时
-        return TICKS_OF_12HOUR;
-    }
 
     /**
      * 根据毫秒差获得合适的休眠间隔(秒为单位)
@@ -390,10 +316,10 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 执行inTimeTask中的那些一秒内即将执行的任务
      */
     public void runInSecond() {
-        CommandSender sender =  globalData.plugin.getServer().getConsoleSender();
+        CommandSender sender =  plugin.getServer().getConsoleSender();
         this.inTimeTasks.forEach(task -> {
             for (String command : task.commands) {
-                globalData.plugin.getServer().dispatchCommand(sender,command);
+                plugin.getServer().dispatchCommand(sender,command);
             }
         });
         this.inTimeTasks.clear();

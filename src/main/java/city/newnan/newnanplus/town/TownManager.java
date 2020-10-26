@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.town;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Location;
@@ -24,9 +24,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class TownManager implements NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    GlobalData globalData;
+    private final NewNanPlus plugin;
 
     private final ConcurrentHashMap<UUID, Town> towns = new ConcurrentHashMap<>();
 
@@ -34,30 +34,27 @@ public class TownManager implements NewNanPlusModule {
 
     /**
      * 构造函数
-     *@param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      * @throws Exception 构造时异常
      */
-    public TownManager(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-townmanager.enable", false)) {
+    public TownManager() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-townmanager.enable", false)) {
             throw new ModuleOffException();
         }
-        File townDir = new File(this.globalData.plugin.getDataFolder(), "town");
+        File townDir = new File(plugin.getDataFolder(), "town");
         if (!townDir.exists()) {
-            boolean result = townDir.mkdir();
+            boolean result = townDir.mkdirs();
         }
-        for (File file : townDir.listFiles()) {
+        for (File file : Objects.requireNonNull(townDir.listFiles())) {
             Town town = _loadTown(file.getPath());
             resistTown(town);
         }
 
-        townMarkers = globalData.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.Towns");
+        townMarkers = plugin.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.Towns");
         if (townMarkers == null) {
-            townMarkers = globalData.dynmapAPI.getMarkerAPI().createMarkerSet(
+            townMarkers = plugin.dynmapAPI.getMarkerAPI().createMarkerSet(
                     "NewNanPlus.Towns", "Towns", null, false);
         }
-
-        globalData.townManager = this;
     }
 
     /**
@@ -82,13 +79,13 @@ public class TownManager implements NewNanPlusModule {
     }
 
     private Town _loadTown(String configPath) {
-        FileConfiguration config = globalData.configManager.get(configPath);
+        FileConfiguration config = plugin.configManager.get(configPath);
         Town town = new Town();
         town.townConfig = config;
         town.uniqueID = UUID.fromString(Objects.requireNonNull(config.getString("uuid")));
         town.name = config.getString("name");
         town.location = new Location(
-                globalData.plugin.getServer().getWorld(Objects.requireNonNull(config.getString("location.world"))),
+                plugin.getServer().getWorld(Objects.requireNonNull(config.getString("location.world"))),
                 config.getDouble("location.x"),
                 config.getDouble("location.y"),
                 config.getDouble("location.z")
@@ -96,7 +93,7 @@ public class TownManager implements NewNanPlusModule {
         town.balance = config.getDouble("balance");
         town.exp = config.getInt("exp");
         town.level = config.getInt("level");
-        town.leader = globalData.plugin.getServer().getOfflinePlayer(
+        town.leader = plugin.getServer().getOfflinePlayer(
                 UUID.fromString(Objects.requireNonNull(config.getString("town-leader"))));
         town.website = config.getString("intro-website");
 
@@ -109,7 +106,7 @@ public class TownManager implements NewNanPlusModule {
         effects.forEach(map -> {
             try {
                 TownEffectType effect = TownEffectType.fromString((String) map.get("name"));
-                Date date = globalData.dateFormatter.parse((String) map.get("expirydate"));
+                Date date = plugin.dateFormatter.parse((String) map.get("expirydate"));
                 town.effects.put(effect, date);
             }
             catch (ParseException e) {
@@ -127,7 +124,7 @@ public class TownManager implements NewNanPlusModule {
     public void loadTown(UUID uuid) {
         if (towns.containsKey(uuid))
             return;
-        Town town =  _loadTown((new File(globalData.plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
+        Town town =  _loadTown((new File(plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
         resistTown(town);
     }
 
@@ -142,8 +139,8 @@ public class TownManager implements NewNanPlusModule {
     }
 
     public void saveTown(Town town) throws Exception {
-        town.saveCacheToConfig(globalData.dateFormatter);
-        globalData.configManager.save("town/" + town.uniqueID.toString() + ".yml");
+        town.saveCacheToConfig(plugin.dateFormatter);
+        plugin.configManager.save("town/" + town.uniqueID.toString() + ".yml");
     }
 
     public boolean checkAndRemoveOutdatedTownEffect(Town town, TownEffectType effect) {

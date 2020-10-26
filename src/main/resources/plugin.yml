@@ -93,11 +93,11 @@ commands:
     permission-node: 'newnanplus.createarea.remove'
   'nnp titlemsg':
     description: '为某个玩家播放标题通知'
-    usage: '/nnp titlemsg <player> [title:<title>] [subtitle:<subtitle>]'
+    usage: '/nnp titlemsg <player> [title:<title>] [subtitle:<subtitle>] [sound:<sound>]'
     permission-node: 'newnanplus.titlemsg.send'
   'nnp titlebroadcast':
     description: '为全服玩家广播标题通知'
-    usage: '/nnp titlebroadcast [title:<title>] [subtitle:<subtitle>]'
+    usage: '/nnp titlebroadcast [title:<title>] [subtitle:<subtitle>] [sound:<sound>]'
     permission-node: 'newnanplus.titlebroadcast.send'
 
 # 权限节点，可选

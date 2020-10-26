@@ -5,9 +5,9 @@ import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
+import java.util.Objects;
 
 /**
  * 配置文件管理器，管理包括config.yml、plugin.yml等在内的配置文件
@@ -35,16 +35,53 @@ public class ConfigManager {
     /**
      * 检查这个资源文件是否存在，不存在就创建
      * @param configFile 资源文件路径
+     * @return 如果文件之前存在就返回true，如果现在新创建就返回false
      */
-    public void touch(String configFile) {
-        // config.yml要特殊处理一下
-        if (configFile.equals("config.yml")) {
-            plugin.saveDefaultConfig();
-            return;
-        }
+    public boolean touch(String configFile) {
         // 不存在就创建
-        if (!new File(plugin.getDataFolder(), configFile).exists())
-            plugin.saveResource(configFile, false);
+        if (!new File(plugin.getDataFolder(), configFile).exists()) {
+            // config.yml要特殊处理一下
+            if (configFile.equals("config.yml"))
+                plugin.saveDefaultConfig();
+            else
+                plugin.saveResource(configFile, false);
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 检查这个资源文件是否存在，如果不存在就从指定的模板复制一份
+     * @param targetFile 要检查的配置文件
+     * @param templateFile 模板配置文件
+     * @return 如果文件之前存在就返回true，如果现在新创建就返回false
+     * @throws IOException IO异常
+     */
+    public boolean touchOrCopyTemplate(String targetFile, String templateFile) throws IOException {
+        File file = new File(plugin.getDataFolder(), targetFile);
+        // 如果文件不存在
+        if (!file.exists()) {
+            // 检查父目录
+            if (!file.getParentFile().exists()) {
+                boolean result = file.getParentFile().mkdirs();
+            }
+
+            // 创建文件
+            boolean result = file.createNewFile();
+
+            // 拷贝内容
+            BufferedInputStream input = new BufferedInputStream(Objects.requireNonNull(plugin.getResource(templateFile)));
+            BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
+            int len;
+            byte[] bytes = new byte[1024];
+            while ((len=input.read(bytes)) != -1) {
+                output.write(bytes, 0, len);
+            }
+            input.close();
+            output.close();
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -63,6 +100,24 @@ public class ConfigManager {
         FileConfiguration config = configFile.equals("config.yml") ? plugin.getConfig() :
                 YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), configFile));
         this.configMap.put(configFile, config);
+        return config;
+    }
+
+    /**
+     * 获取某个配置文件，如果不存在就从指定的模板复制一份
+     * @param targetFile 要获取的配置文件
+     * @param templateFile 模板配置文件
+     * @return 配置实例
+     * @throws IOException IO异常
+     */
+    public FileConfiguration getOrCopyTemplate(String targetFile, String templateFile) throws IOException {
+        // 已缓存则返回
+        if (this.configMap.containsKey(targetFile))
+            return this.configMap.get(targetFile);
+        // 未缓存则加载
+        touchOrCopyTemplate(targetFile, templateFile);
+        FileConfiguration config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), targetFile));
+        this.configMap.put(targetFile, config);
         return config;
     }
 

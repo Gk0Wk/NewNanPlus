@@ -1,5 +1,7 @@
 package city.newnan.newnanplus.exception;
 
+import city.newnan.newnanplus.NewNanPlus;
+
 public class CommandExceptions extends Exception {
     public static class NoPermissionException extends CommandExceptions {
         public static String message;
@@ -36,5 +38,18 @@ public class CommandExceptions extends Exception {
         public CustomCommandException(String reason) {
             this.reason = reason;
         }
+    }
+
+    public static void init(NewNanPlus plugin) {
+        AccessFileErrorException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.access_file_error$");
+        BadUsageException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.bad_usage$");
+        CustomCommandException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.custom_command_error$");
+        NoSuchCommandException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_such_command$");
+        NoPermissionException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.no_permission$");
+        OnlyConsoleException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.only_console$");
+        PlayerMoreThanOneException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.find_more_than_one_player$");
+        PlayerNotFountException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_not_found$");
+        PlayerOfflineException.message =  plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.player_offline$");
+        RefuseConsoleException.message = plugin.wolfyLanguageAPI.replaceColoredKeys("&c$global_message.console_selfrun_refuse$");
     }
 }

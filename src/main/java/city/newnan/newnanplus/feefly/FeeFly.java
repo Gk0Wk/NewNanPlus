@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.feefly;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
@@ -30,9 +30,9 @@ import java.util.Vector;
 
 public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    private final GlobalData globalData;
+    private final NewNanPlus plugin;
 
     /**
      * 模块设置
@@ -50,23 +50,20 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
 
     /**
      * 构造函数
-     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public FeeFly(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-feefly.enable", false)) {
+    public FeeFly() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-feefly.enable", false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
         // 启动定时任务监控
-        runTaskTimer(this.globalData.plugin, 0, tickPerCount);
+        runTaskTimer(plugin, 0, tickPerCount);
         // 注册监听函数
-        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
 
-        globalData.commandManager.register("fly", this);
-        globalData.commandManager.register("listfly", this);
-
-        globalData.feeFly = this;
+        plugin.commandManager.register("fly", this);
+        plugin.commandManager.register("listfly", this);
     }
 
     /**
@@ -75,16 +72,16 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
     @Override
     public void reloadConfig() {
         // 获取配置实例
-        FileConfiguration config = globalData.configManager.get("config.yml");
+        FileConfiguration config = plugin.configManager.get("config.yml");
         // 加载配置内容
         flySpeed = (float) config.getDouble("module-feefly.fly-speed");
         costPerCount = config.getDouble("module-feefly.cost-per-count");
         tickPerCount = config.getLong("module-feefly.tick-per-count");
         costPerSecond = (20.0 / tickPerCount) * costPerCount;
 
-        actionbarBypassMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_bypass$");
-        actionbarFeeMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_fee$");
-        lessChargeWarningMessage = globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.charge_less_warning$");
+        actionbarBypassMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_bypass$");
+        actionbarFeeMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_fee$");
+        lessChargeWarningMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.charge_less_warning$");
     }
 
     /**
@@ -115,18 +112,18 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 遍历飞行玩家 - 改用Lambda forEach
             flyingPlayers.forEach(((player, flyingPlayer) -> {
                 if (player.hasPermission("newnanplus.feefly.free")) {
-                    globalData.sendPlayerActionBar(
+                    plugin.messageManager.sendPlayerActionBar(
                             player, MessageFormat.format(actionbarBypassMessage, player.getName()));
                     // lambda表达式中要用return跳过本次调用，相当于for的continue
                     return;
                 }
                 // 获取玩家现金金额
-                double balance = globalData.vaultEco.getBalance(player);
+                double balance = plugin.vaultEco.getBalance(player);
                 // 如果玩家还有现金
                 if (balance > 0.0) {
                     int remain_second = (int)(balance / costPerSecond);
-                    globalData.vaultEco.withdrawPlayer(player, Math.min(balance, costPerCount));
-                    globalData.sendPlayerActionBar(player,
+                    plugin.vaultEco.withdrawPlayer(player, Math.min(balance, costPerCount));
+                    plugin.messageManager.sendPlayerActionBar(player,
                             MessageFormat.format(actionbarFeeMessage, formatSecond(remain_second), balance));
 
                     // 如果只能飞一分钟以内，就警告
@@ -247,7 +244,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 throw new NoPermissionException();
             }
             // 找到要操作的那个玩家
-            player = globalData.plugin.getServer().getPlayer(args[0]);
+            player = plugin.getServer().getPlayer(args[0]);
             if (player == null) {
                 throw new PlayerOfflineException();
             }
@@ -266,18 +263,18 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 不在飞行，就开启飞行
             // 原本在创造或者观察者模式不能进入付费飞行
             if (player.getGameMode().equals(GameMode.CREATIVE) || player.getGameMode().equals(GameMode.SPECTATOR)) {
-                globalData.sendPlayerMessage(player,
-                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.fee_fly.in_invalid_gamemode$"));
+                plugin.messageManager.sendPlayerMessage(player,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.in_invalid_gamemode$"));
                 return;
             }
             // 原本就能飞的不能进入付费飞行
             if (player.getAllowFlight()) {
-                globalData.sendPlayerMessage(player,
-                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.fee_fly.already_flying$"));
+                plugin.messageManager.sendPlayerMessage(player,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.already_flying$"));
                 return;
             }
             // 现金大于零才能飞
-            if (globalData.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.feefly.free")) {
+            if (plugin.vaultEco.getBalance(player) > 0.0 || player.hasPermission("newnanplus.feefly.free")) {
                 // 添加玩家
                 flyingPlayers.put(player, new FlyingPlayer(System.currentTimeMillis(), player.getFlySpeed()));
                 // 如果玩家在疾跑，应当取消它，否则飞起来之后会快
@@ -286,13 +283,13 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 player.setFlySpeed(flySpeed);
                 player.setAllowFlight(true);
                 // 发送消息并播放声音
-                globalData.sendPlayerMessage(player,
-                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.begin_flying$"));
+                plugin.messageManager.sendPlayerMessage(player,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.begin_flying$"));
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
             } else {
                 // 不大于零就提示不能飞
-                globalData.sendPlayerMessage(player,
-                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.no_charge_warning$"));
+                plugin.messageManager.sendPlayerMessage(player,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.no_charge_warning$"));
             }
         }
     }
@@ -317,10 +314,10 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 删除玩家
         flyingPlayers.remove(player);
         // 发送飞行结束通知
-        globalData.sendPlayerMessage(player,
-                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
-        globalData.sendPlayerActionBar(player,
-                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
+        plugin.messageManager.sendPlayerMessage(player,
+                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
+        plugin.messageManager.sendPlayerActionBar(player,
+                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
         return true;
     }
 
@@ -329,12 +326,12 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
         flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(' ')));
-        globalData.sendMessage(sender, MessageFormat.format(
-                globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.count_flying_players$"),
+        plugin.messageManager.sendMessage(sender, MessageFormat.format(
+                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.count_flying_players$"),
                 flyingPlayers.size()));
         if (flyingPlayers.size() > 0) {
-            globalData.sendMessage(sender, MessageFormat.format(
-                    globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.list_flying_players$"),
+            plugin.messageManager.sendMessage(sender, MessageFormat.format(
+                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.list_flying_players$"),
                     list));
         }
     }

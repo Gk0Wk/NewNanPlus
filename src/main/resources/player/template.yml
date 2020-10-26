@@ -1,4 +1,6 @@
 version: ${project.version}
+name: ''
+update-log-last-read-time: 0
 emails:
   unread:
     - welcome_to_newnan_city

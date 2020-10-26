@@ -3,9 +3,9 @@ package city.newnan.newnanplus;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
+import city.newnan.newnanplus.utility.MessageManager;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.language.Language;
-import me.wolfyscript.utilities.api.language.LanguageAPI;
 import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
@@ -17,6 +17,8 @@ import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.lang.reflect.Constructor;
+import java.text.SimpleDateFormat;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -27,9 +29,40 @@ import java.util.Objects;
  */
 public class NewNanPlus extends JavaPlugin {
     /**
-     * 持久化存储和访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    private GlobalData globalData;
+    private static NewNanPlus plugin = null;
+
+    /**
+     * 获取唯一实例
+     * @return 唯一实例，插件加载未成功则为null
+     */
+    public static NewNanPlus getPlugin() {
+        return plugin;
+    }
+
+    // 模块映射
+    private final HashMap<Class<?>, NewNanPlusModule> modules = new HashMap<>();
+
+    /**
+     * 根据模块类型获取模块实例
+     * @param moduleClass 模块类型
+     * @return 模块实例，不存在则返回Null
+     */
+    public NewNanPlusModule getModule(Class<?> moduleClass) {
+        return modules.get(moduleClass);
+    }
+
+    //
+    public SimpleDateFormat dateFormatter;
+    public city.newnan.newnanplus.utility.ConfigManager configManager;
+    public city.newnan.newnanplus.utility.CommandManager commandManager;
+    public city.newnan.newnanplus.utility.MessageManager messageManager;
+    public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
+    public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
+    public org.anjocaido.groupmanager.GroupManager groupManager;
+    public net.milkbowl.vault.economy.Economy vaultEco;
+    public org.dynmap.DynmapAPI dynmapAPI;
 
     /**
      * 插件启用时调用的方法
@@ -38,23 +71,20 @@ public class NewNanPlus extends JavaPlugin {
     public void onEnable() {
         // 核心初始化
         try {
-            // 初始化全局存储对象
-            globalData = new GlobalData(this);
             // 初始化配置管理器
-            globalData.configManager = new ConfigManager(this);
+            configManager = new ConfigManager(this);
+            // 日期格式化形式
+            dateFormatter = new SimpleDateFormat(Objects.requireNonNull(configManager.
+                    get("config.yml").getString("global-settings.date-formatter")));
             // 初始化WolfyAPI
-            globalData.wolfyAPI = bindWolfyUtilities();
-            globalData.wolfyLanguageAPI = globalData.wolfyAPI.getLanguageAPI();
+            bindWolfyUtilities();
             // globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
-            // 加载配置
-            globalData.reloadConfig();
+            // 初始化消息管理器
+            messageManager = new MessageManager(getLogger(),  wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$"));
             // 初始化命令管理器
-            globalData.commandManager = new CommandManager(this, globalData, "nnp",
+            commandManager = new CommandManager(this, messageManager, "nnp",
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
-            // 最后的初始化
-            globalData.otherInit();
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             getLogger().info("§cPlugin initialize failed!");
             // 打印错误栈
             e.printStackTrace();
@@ -62,73 +92,83 @@ public class NewNanPlus extends JavaPlugin {
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
+        // 绑定静态实例
+        plugin = this;
+
         // 欢迎界面
         {
-            globalData.printINFO("§b    _   __             _   __               ____  __");
-            globalData.printINFO("§b   / | / /__ _      __/ | / /___ _____     / __ \\/ /_  _______");
-            globalData.printINFO("§b  /  |/ / _ \\ | /| / /  |/ / __ `/ __ \\   / /_/ / / / / / ___/");
-            globalData.printINFO("§b / /|  /  __/ |/ |/ / /|  / /_/ / / / /  / ____/ / /_/ (__  )");
-            globalData.printINFO("§b/_/ |_/\\___/|__/|__/_/ |_/\\__,_/_/ /_/  /_/   /_/\\__,_/____/     v" +
+            messageManager.printINFO("§b    _   __             _   __               ____  __");
+            messageManager.printINFO("§b   / | / /__ _      __/ | / /___ _____     / __ \\/ /_  _______");
+            messageManager.printINFO("§b  /  |/ / _ \\ | /| / /  |/ / __ `/ __ \\   / /_/ / / / / / ___/");
+            messageManager.printINFO("§b / /|  /  __/ |/ |/ / /|  / /_/ / / / /  / ____/ / /_/ (__  )");
+            messageManager.printINFO("§b/_/ |_/\\___/|__/|__/_/ |_/\\__,_/_/ /_/  /_/   /_/\\__,_/____/     v" +
                     getDescription().getVersion());
-            globalData.printINFO("§6---------------------------------------------------");
-            globalData.printINFO("Authors:");
-            getDescription().getAuthors().forEach(author -> globalData.printINFO("§a  - " + author));
-            globalData.printINFO("Website: §b" + getDescription().getWebsite() + "§f    - Welcome to join us!");
-            globalData.printINFO("§6---------------------------------------------------");
-            globalData.printINFO("§2Loading main configure file...");
-            globalData.printINFO("Major language: §e" + globalData.wolfyLanguageAPI.getActiveLanguage().getName());
-            globalData.printINFO("Fallback language: §e" + globalData.wolfyLanguageAPI.getFallbackLanguage().getName());
+            messageManager.printINFO("§6---------------------------------------------------");
+            messageManager.printINFO("Authors:");
+            getDescription().getAuthors().forEach(author -> messageManager.printINFO("§a  - " + author));
+            messageManager.printINFO("Website: §b" + getDescription().getWebsite() + "§f    - Welcome to join us!");
+            messageManager.printINFO("§6---------------------------------------------------");
+            messageManager.printINFO("§2Loading main configure file...");
+            messageManager.printINFO("Major language: §e" + wolfyLanguageAPI.getActiveLanguage().getName());
+            messageManager.printINFO("Fallback language: §e" + wolfyLanguageAPI.getFallbackLanguage().getName());
         }
 
+        // API 绑定
         try {
-            globalData.printINFO("§6---------------------------------------------------");
-            globalData.printINFO("§2Binding dependencies...");
+            messageManager.printINFO("§6---------------------------------------------------");
+            messageManager.printINFO("§2Binding dependencies...");
             // 绑定Vault
             if (!bindVault()) {
                 throw new Exception("Vault API bind failed.");
             } else {
-                globalData.printINFO("§f[ §aO K §f] Vault API");
+                messageManager.printINFO("§f[ §aO K §f] Vault API");
             }
 
             // 绑定GroupManager
             if (!bindGroupManager()) {
                 throw new Exception("GroupManager bind failed.");
             } else {
-                globalData.printINFO("§f[ §aO K §f] GroupManager");
+                messageManager.printINFO("§f[ §aO K §f] GroupManager");
             }
 
             // 绑定Dynmap
             if (!bindDynmapAPI()) {
                 throw new Exception("Dynmap API bind failed.");
             } else {
-                globalData.printINFO("§f[ §aO K §f] Dynmap API");
+                messageManager.printINFO("§f[ §aO K §f] Dynmap API");
             }
         } catch (Exception e) {
             // 报个错
-            globalData.printINFO("§cBind dependencies failed!");
+            messageManager.printINFO("§cBind dependencies failed!");
             e.printStackTrace();
             // 禁用插件
             Bukkit.getPluginManager().disablePlugin(this);
         }
 
         // 模块注册
-        globalData.printINFO("§6---------------------------------------------------");
-        globalData.printINFO("§2Loading modules...");
-        loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
-        loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
-        loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
-        loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
-        loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
-        loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
-        loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
-        loadModule(city.newnan.newnanplus.railexpress.RailExpress.class, "矿车加速模块");
-        globalData.printINFO("§6---------------------------------------------------");
+        {
+            messageManager.printINFO("§6---------------------------------------------------");
+            messageManager.printINFO("§2Loading modules...");
+            loadModule(city.newnan.newnanplus.feefly.FeeFly.class, "付费飞行模块");
+            loadModule(city.newnan.newnanplus.createarea.CreateArea.class, "创造区域模块");
+            loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
+            loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
+            loadModule(city.newnan.newnanplus.laganalyzer.LagAnalyzer.class, "卡服分析器模块");
+            loadModule(city.newnan.newnanplus.cron.Cron.class, "定时任务模块");
+            // loadModule(city.newnan.newnanplus.town.TownManager.class, "小镇管理模块");
+            loadModule(city.newnan.newnanplus.railexpress.RailExpress.class, "矿车加速模块");
+            loadModule(city.newnan.newnanplus.powertools.PowerTools.class, "实用工具模块");
+            messageManager.printINFO("§6---------------------------------------------------");
+        }
 
-        globalData.printINFO("§aNewNanPlus is on run, have a nice day!");
-        globalData.printINFO("");
+        messageManager.printINFO("§aNewNanPlus is on run, have a nice day!");
+        messageManager.printINFO("");
 
-        if (globalData.cron != null)
-            globalData.cron.onPluginReady();
+        // 插件就绪时的执行的任务
+        if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
+            ((city.newnan.newnanplus.cron.Cron) modules.get(city.newnan.newnanplus.cron.Cron.class)).onPluginReady();
+        }
+
         changeGamerules();
     }
 
@@ -137,38 +177,43 @@ public class NewNanPlus extends JavaPlugin {
      */
     @Override
     public void onDisable(){
-        if (globalData != null) {
-            if (globalData.cron != null)
-                globalData.cron.onPluginDisable();
-            globalData.printINFO("§a正在保存配置文件...");
-            if (globalData.configManager != null) {
-                globalData.configManager.saveAll();
-            }
+        if (messageManager != null) {
+            messageManager.printINFO("§aSaving configuration files...");
         }
+
+        if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
+            ((city.newnan.newnanplus.cron.Cron) modules.get(city.newnan.newnanplus.cron.Cron.class)).onPluginDisable();
+        }
+
+        if (configManager != null) {
+            configManager.saveAll();
+        }
+        plugin = null;
     }
 
     /**
      * 加载模块
-     * @param module 模块类型
+     * @param moduleClass 模块类型
      */
-    public void loadModule(Class<?> module, String moduleName) {
+    private void loadModule(Class<?> moduleClass, String moduleName) {
         try {
             // 检测接口实现情况
-            if (NewNanPlusModule.class.isAssignableFrom(module)) {
+            if (NewNanPlusModule.class.isAssignableFrom(moduleClass)) {
                 // 获取构造器并构造
-                Constructor<?> constructor = module.getDeclaredConstructor(GlobalData.class);
+                Constructor<?> constructor = moduleClass.getConstructor();
                 constructor.setAccessible(true);
-                constructor.newInstance(globalData);
+                NewNanPlusModule module = (NewNanPlusModule) constructor.newInstance();
+                modules.put(moduleClass, module);
                 // 成功则打印结果
-                globalData.printINFO("§f[ §aO N §f] " + moduleName);
+                messageManager.printINFO("§f[ §aO N §f] " + moduleName);
             } else {
-                throw new Exception("模块不合法！");
+                throw new Exception("Illegal module！");
             }
         } catch (Exception e) {
             if (e.getCause() instanceof ModuleOffException) {
-                globalData.printINFO("§f[ §7OFF §f] " + moduleName);
+                messageManager.printINFO("§f[ §7OFF §f] " + moduleName);
             } else {
-                globalData.printINFO("§f[§cERROR§f] " + moduleName);
+                messageManager.printINFO("§f[§cERROR§f] " + moduleName);
                 e.printStackTrace();
             }
         }
@@ -189,7 +234,7 @@ public class NewNanPlus extends JavaPlugin {
             return false;
         }
         // 绑定
-        this.globalData.vaultEco = rsp1.getProvider();
+        vaultEco = rsp1.getProvider();
         return true;
     }
 
@@ -201,7 +246,7 @@ public class NewNanPlus extends JavaPlugin {
         final Plugin groupManager = getServer().getPluginManager().getPlugin("GroupManager");
         if (groupManager != null && groupManager.isEnabled())
         {
-            globalData.groupManager = (GroupManager) groupManager;
+            this.groupManager = (GroupManager) groupManager;
         } else {
             return false;
         }
@@ -210,36 +255,32 @@ public class NewNanPlus extends JavaPlugin {
 
     /**
      * 绑定WolfyAPI
-     * @return WolfyAPI实例
      * @throws Exception 各种可能遇到的异常
      */
-    private WolfyUtilities bindWolfyUtilities() throws Exception {
+    private void bindWolfyUtilities() throws Exception {
         // 创建API实例
-        WolfyUtilities wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
-
+        wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
         // 多语言模块
-        LanguageAPI wolfyLanguageAPI = wolfyAPI.getLanguageAPI();
+        wolfyLanguageAPI = wolfyAPI.getLanguageAPI();
         // 设置主要语言
-        String majorLanguageName = globalData.configManager.get("config.yml").
+        String majorLanguageName = configManager.get("config.yml").
                 getString("global-settings.major-language");
-        globalData.configManager.touch("lang/" + majorLanguageName + ".json");
+        configManager.touch("lang/" + majorLanguageName + ".json");
         Language majorLanguage = new Language(this, majorLanguageName);
         wolfyLanguageAPI.registerLanguage(majorLanguage);
         // 设置次要语言
-        String fallbackLanguageName = globalData.configManager.get("config.yml").
+        String fallbackLanguageName = configManager.get("config.yml").
                 getString("global-settings.fallback-language");
         if (fallbackLanguageName != null && !fallbackLanguageName.equals(majorLanguageName)) {
-            globalData.configManager.touch("lang/" + fallbackLanguageName + ".json");
+            configManager.touch("lang/" + fallbackLanguageName + ".json");
             Language fallbackLanguage = new Language(this, fallbackLanguageName);
             wolfyLanguageAPI.registerLanguage(fallbackLanguage);
             wolfyLanguageAPI.setFallbackLanguage(fallbackLanguage);
         }
 
         // 设置前缀
-        wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceKeys("$chat_prefix$"));
-        wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceKeys("$console_prefix$"));
-
-        return wolfyAPI;
+        wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$"));
+        wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceColoredKeys("$console_prefix$"));
     }
 
     /**
@@ -249,7 +290,7 @@ public class NewNanPlus extends JavaPlugin {
     private boolean bindDynmapAPI() {
         Plugin dynmap = Bukkit.getPluginManager().getPlugin("dynmap");
         assert dynmap != null;
-        globalData.dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
+        dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
         return true;
     }
 
@@ -257,7 +298,7 @@ public class NewNanPlus extends JavaPlugin {
      * 设置世界的Gamerule
      */
     public void changeGamerules() {
-        ConfigurationSection rules = globalData.configManager.get("config.yml").
+        ConfigurationSection rules = configManager.get("config.yml").
                 getConfigurationSection("module-world-setting");
         assert rules != null;
         for (String rule : rules.getKeys(false)) {

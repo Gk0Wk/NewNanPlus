@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.laganalyzer;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import org.bukkit.Chunk;
@@ -18,22 +18,20 @@ import java.util.HashMap;
 
 public class LagAnalyzer implements NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    GlobalData globalData;
+    private final NewNanPlus plugin;
 
     private final HashMap<String, Integer> hopperMap = new HashMap<>();
 
     /**
      * 构造函数
-     * @param globalData NewNanPlusGlobal实例，用于持久化存储和访问全局数据
      */
-    public LagAnalyzer(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-lagganalyzer.enable", false)) {
+    public LagAnalyzer() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-lagganalyzer.enable", false)) {
             throw new ModuleOffException();
         }
-        globalData.lagAnalyzer = this;
     }
 
     /**
@@ -94,9 +92,9 @@ public class LagAnalyzer implements NewNanPlusModule {
                 }
             });
             fp.close();
-            globalData.printINFO("漏斗报告已保存至 hopper.csv");
+            plugin.messageManager.printINFO("漏斗报告已保存至 hopper.csv");
         } catch (IOException e) {
-            globalData.printERROR("无法保存报告: " + e.getMessage());
+            plugin.messageManager.printERROR("无法保存报告: " + e.getMessage());
             return false;
         }
         return true;

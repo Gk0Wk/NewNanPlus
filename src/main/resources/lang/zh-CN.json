@@ -36,7 +36,12 @@
             "you_are_newbie": "&c请在官网完成新人试卷后向管理索要游玩权限。",
             "allow_later": "操作成功，玩家未上线，稍后玩家登录后将自动获得权限。",
             "allow_succeed": "操作成功，赋予玩家权限。",
-            "not_newbie_already": "该玩家已不是新人。"
+            "not_newbie_already": "该玩家已不是新人。",
+            "email_outdated": "&c[信件过期无法领取奖励]",
+            "email_no_permission": "&c你没有权限打开信件！",
+            "email_require_inventory": "&c该信件包含奖励物品，\n请保证您的背包中有\n足够的空间再来领取！",
+            "updatelog_title": "更新日志",
+            "updatelog_head": "&l====[&c&l更新日志&r&l]===="
         },
         "fee_fly": {
             "in_invalid_gamemode": "玩家在创造或者观察者模式下，不能进入付费飞行。",

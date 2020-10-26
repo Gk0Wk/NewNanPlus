@@ -1,6 +1,6 @@
 package city.newnan.newnanplus.playermanager;
 
-import city.newnan.newnanplus.GlobalData;
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
@@ -12,6 +12,7 @@ import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -21,13 +22,14 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
     /**
-     * 持久化访问全局数据
+     * 插件的唯一静态实例，加载不成功是null
      */
-    private final GlobalData globalData;
+    private final NewNanPlus plugin;
 
     private Group newbiesGroup;
     private Group playersGroup;
@@ -35,19 +37,16 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
     /**
      * 构造函数
-     * @param globalData 全局实例
      */
-    public PlayerManager(GlobalData globalData) throws Exception {
-        this.globalData = globalData;
-        if (!globalData.configManager.get("config.yml").getBoolean("module-playermanager.enable", false)) {
+    public PlayerManager() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-playermanager.enable", false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
 
         // 注册监听函数
-        this.globalData.plugin.getServer().getPluginManager().registerEvents(this, this.globalData.plugin);
-
-        globalData.playerManager = this;
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
     /**
@@ -56,15 +55,19 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     @Override
     public void reloadConfig() {
         // 获取配置实例
-        globalData.configManager.reload("newbies_list.yml");
+        plugin.configManager.reload("newbies_list.yml");
         // 加载配置内容
-        FileConfiguration config = globalData.configManager.get("config.yml");
-        workWorldsPermissionHandler = globalData.groupManager.getWorldsHolder().
+        FileConfiguration config = plugin.configManager.get("config.yml");
+        workWorldsPermissionHandler = plugin.groupManager.getWorldsHolder().
                 getWorldData(config.getString("module-playermanager.world-group"));
         newbiesGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.newbies-group"));
         playersGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.player-group"));
 
-        globalData.commandManager.register("allow", this);
+        plugin.commandManager.register("allow", this);
+    }
+
+    private void refreshUpdateLog() {
+        plugin.configManager.reload("update_log.yml");
     }
 
     /**
@@ -88,6 +91,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
         joinCheck(event.getPlayer());
+        touchPlayer(event.getPlayer());
+        showUpdateLog(event.getPlayer());
     }
 
     /**
@@ -98,7 +103,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     public Player findOnePlayerByName(String playerName) throws Exception {
         // 查找对应的玩家
-        List<Player> players = globalData.plugin.getServer().matchPlayer(playerName);
+        List<Player> players = plugin.getServer().matchPlayer(playerName);
         // 检查玩家数量
         if (players.size() == 0) {
             throw new PlayerNotFountException();
@@ -113,7 +118,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             return findOnePlayerByName(playerName).getUniqueId();
         } catch (Exception e) {
             if (e instanceof PlayerNotFountException) {
-                OfflinePlayer[] players = Arrays.stream(globalData.plugin.getServer().getOfflinePlayers()).
+                OfflinePlayer[] players = Arrays.stream(plugin.getServer().getOfflinePlayers()).
                         filter(offlinePlayer -> Objects.equals(offlinePlayer.getName(), playerName)).toArray(OfflinePlayer[]::new);
                 if (players.length > 1) {
                     throw new PlayerMoreThanOneException();
@@ -140,11 +145,11 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
 
         // 寻找目标玩家
-        Player player = globalData.plugin.getServer().getPlayer(args[0]);
+        Player player = plugin.getServer().getPlayer(args[0]);
         // 是否需要刷新新人名单
         boolean need_refresh = false;
 
-        FileConfiguration newbiesList = globalData.configManager.get("newbies_list.yml");
+        FileConfiguration newbiesList = plugin.configManager.get("newbies_list.yml");
 
         // 如果玩家不在线或不存在，就存到配置里
         if (player == null) {
@@ -162,8 +167,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
             }
-            globalData.sendMessage(sender,
-                    globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.allow_later$"));
+            plugin.messageManager.sendMessage(sender,
+                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_later$"));
         } else {
             // 如果玩家在线，就直接赋予权限
             // 但是要检查一下原来所在的组
@@ -177,15 +182,15 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                     newbiesList.set("not-passed-newbies", list_not);
                     need_refresh = true;
                 }
-                globalData.sendMessage(sender,
-                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.allow_succeed$"));
+                plugin.messageManager.sendMessage(sender,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_succeed$"));
             } else {
-                globalData.sendMessage(sender,
-                        globalData.wolfyLanguageAPI.replaceKeys("$module_message.player_manager.not_newbie_already$"));
+                plugin.messageManager.sendMessage(sender,
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.not_newbie_already$"));
             }
         }
         if (need_refresh) {
-            globalData.configManager.save("newbies_list.yml");
+            plugin.configManager.save("newbies_list.yml");
         }
     }
 
@@ -196,7 +201,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @throws Exception 指令异常
      */
     public void joinCheck(Player player) throws Exception {
-        FileConfiguration newbiesList = globalData.configManager.get("newbies_list.yml");
+        FileConfiguration newbiesList = plugin.configManager.get("newbies_list.yml");
         boolean need_refresh = false;
         // 获取已通过的新人组的List
         List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
@@ -209,12 +214,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
             } else {
-                globalData.sendPlayerMessage(player, globalData.wolfyLanguageAPI.
-                        replaceKeys("$module_message.player_manager.you_are_newbie$"));
+                plugin.messageManager.sendPlayerMessage(player, plugin.wolfyLanguageAPI.
+                        replaceColoredKeys("$module_message.player_manager.you_are_newbie$"));
                 player.sendTitle(
-                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_title$"),
-                        globalData.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_subtitle$"),
-                        3, 37, 5);
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_title$"),
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.welcome_subtitle$"),
+                        3, 97, 5);
                 // 获取未通过的新人组的List
                 List<String> list_not = newbiesList.getStringList("not-passed-newbies");
                 if (!list_not.contains(player.getName())) {
@@ -233,8 +238,61 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             }
         }
         if (need_refresh) {
-            globalData.configManager.save("newbies_list.yml");
+            plugin.configManager.save("newbies_list.yml");
         }
+    }
+
+    public void showUpdateLog(Player player) throws Exception {
+        FileConfiguration updateLog = plugin.configManager.get("update_log.yml");
+        FileConfiguration playerConfig =
+                plugin.configManager.get("player/" + player.getUniqueId().toString() + ".yml");
+        long lastTime = playerConfig.getLong("update-log-last-read-time", 0);
+
+        StringBuilder pageBuffer = new StringBuilder();
+        pageBuffer.append(plugin.wolfyLanguageAPI.
+                replaceColoredKeys("$module_message.player_manager.updatelog_head$")).append("§r\n\n");
+        int line = 1;
+        boolean isEmpty = true;
+        //
+        List<String> pages = new ArrayList<>();
+        ConfigurationSection logs = updateLog.getConfigurationSection("logs");
+        if (logs == null)
+            return;
+        for (String key : logs.getKeys(false)) {
+            if (plugin.dateFormatter.parse(key).getTime() > lastTime) {
+                isEmpty = false;
+                for (String paragraph : Objects.requireNonNull(logs.getString(key)).split("\n")) {
+                    line++;
+                    pageBuffer.append(paragraph).append('\n');
+                    if (line == 14) {
+                        pages.add(pageBuffer.toString());
+                        pageBuffer.delete(0, pageBuffer.length());
+                        line = 0;
+                    }
+                }
+            }
+        }
+        //
+        if (isEmpty)
+            return;
+        //
+        if (line != 0) {
+            pages.add(pageBuffer.toString());
+            pageBuffer.delete(0, pageBuffer.length());
+        }
+        //
+        ItemStack mailBook = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta bookMeta = (BookMeta) mailBook.getItemMeta();
+        assert bookMeta != null;
+        bookMeta.setAuthor("NewNanCity");
+        bookMeta.setTitle(plugin.wolfyLanguageAPI.
+                replaceColoredKeys("$module_message.player_manager.updatelog_title$"));
+        bookMeta.setPages(pages);
+        mailBook.setItemMeta(bookMeta);
+        player.openBook(mailBook);
+        //
+        playerConfig.set("update-log-last-read-time", System.currentTimeMillis());
+        plugin.configManager.save("player/" + player.getUniqueId().toString() + ".yml");
     }
 
     /**
@@ -244,7 +302,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @return 如果true说明玩家完成阅读，false说明需要回滚到未读状态
      */
     public boolean showEmail(Player player, String email) {
-        FileConfiguration emailConfig = globalData.configManager.get("email/" + email + ".yml");
+        FileConfiguration emailConfig = plugin.configManager.get("email/" + email + ".yml");
         String author = emailConfig.getString("author");
         String title = emailConfig.getString("title");
         String dateString = emailConfig.getString("date");
@@ -255,7 +313,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         long availableTime;
         if (availableDateString != null) {
             try {
-                availableTime = globalData.dateFormatter.parse(availableDateString).getTime();
+                availableTime = plugin.dateFormatter.parse(availableDateString).getTime();
             } catch (Exception e) {
                 availableTime = 0;
             }
@@ -280,31 +338,34 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         //
         if (commands.size() != 0) {
             if (availableTime > System.currentTimeMillis()) {
-                pageBuffer.append("§c").append("[信件过期无法领取奖励]").append("§r\n\n");
+                pageBuffer.append(plugin.wolfyLanguageAPI.
+                        replaceColoredKeys("$module_message.player_manager.email_outdated$")).append("§r\n\n");
                 line++;
             } else {
                 if (requireInventory && player.getInventory().firstEmpty() == -1) {
                     // 命令需要玩家物品栏有空位置,否则退回
-                    pages.add(pageBuffer.toString() + "§c该信件包含奖励物品，\n请保证您的背包中有\n足够的空间再来领取！");
+                    pages.add(pageBuffer.toString() + plugin.wolfyLanguageAPI.
+                            replaceColoredKeys("$module_message.player_manager.email_require_inventory$"));
                     bookMeta.setPages(pages);
                     mailBook.setItemMeta(bookMeta);
                     player.openBook(mailBook);
                     return false;
                 } else {
-                    CommandSender sender = globalData.plugin.getServer().getConsoleSender();
-                    commands.forEach(command -> globalData.plugin.getServer().
-                            dispatchCommand(sender, command.replaceAll("@s", player.getName())));
+                    CommandSender sender = plugin.getServer().getConsoleSender();
+                    commands.forEach(command -> plugin.getServer().
+                            dispatchCommand(sender, command.replaceAll("@p", player.getName())));
                 }
             }
         }
 
         // 权限检查
-        assert permission != null;
-        if (!permission.isEmpty() && !player.hasPermission(permission)) {
-            pages.add(pageBuffer.toString() + "§c你没有权限打开信件！");
+        if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
+            pages.add(pageBuffer.toString() + plugin.wolfyLanguageAPI.
+                    replaceColoredKeys("$module_message.player_manager.email_no_permission$"));
             bookMeta.setPages(pages);
             mailBook.setItemMeta(bookMeta);
             player.openBook(mailBook);
+
             return false;
         }
 
@@ -330,5 +391,17 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         player.openBook(mailBook);
 
         return true;
+    }
+
+    public void touchPlayer(Player player) throws Exception {
+        String playerConfigPath = "player/" + player.getUniqueId().toString() + ".yml";
+        // 如果玩家配置文件是新被创建的
+        if (!plugin.configManager.touchOrCopyTemplate(playerConfigPath, "player/template.yml")) {
+            plugin.messageManager.printINFO(MessageFormat.format("New player file added: {0}({1})",
+                    player.getName(), player.getUniqueId()));
+            FileConfiguration playerConfig = plugin.configManager.get(playerConfigPath);
+            playerConfig.set("name", player.getName());
+            plugin.configManager.save(playerConfigPath);
+        }
     }
 }
