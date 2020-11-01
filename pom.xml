@@ -13,7 +13,7 @@
     <!--name 指定了 maven 工程的名字，可以省略-->
     <name>NewNanPlus</name>
     <!--version 指定了当前工程的版本号-->
-    <version>1.7.0</version>
+    <version>1.7.1</version>
 
     <!--设置编码方式是为了保证跨平台的兼容性，而设置源及目标的JDK版本是为了能够正确的使用某些特性，否则在使用lambda的时候都有可能会编译错误-->
     <properties>
@@ -38,6 +38,10 @@
             <id>dynmap-repo</id>
             <url>http://repo.mikeprimm.com/</url>
         </repository>
+        <repository>
+            <id>ess-repo</id>
+            <url>https://ci.ender.zone/plugin/repository/everything/</url>
+        </repository>
     </repositories>
 
     <dependencies>
@@ -46,6 +50,12 @@
             <groupId>com.github.MilkBowl</groupId>
             <artifactId>VaultAPI</artifactId>
             <version>1.7</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>net.ess3</groupId>
+            <artifactId>EssentialsX</artifactId>
+            <version>2.18.1</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -77,9 +87,9 @@
         <dependency>
             <groupId>com.wolfyscript</groupId>
             <artifactId>wolfyutilities</artifactId>
-            <version>1.6.2.9</version>
+            <version>1.6.2.11</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.9.jar</systemPath>
+            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.11.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.maxgamer</groupId>
@@ -139,9 +149,17 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>9</source>
+                    <target>9</target>
+                </configuration>
+            </plugin>
         </plugins>
 
-        <finalName>NewNanPlus</finalName>
+        <finalName>NewNanPlus-${version}</finalName>
         <resources>
             <resource>
                 <filtering>true</filtering>

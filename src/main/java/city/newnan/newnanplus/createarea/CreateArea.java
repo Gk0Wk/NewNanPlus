@@ -190,8 +190,8 @@ public class CreateArea implements NewNanPlusModule, Listener {
         // 创建创造区域
         newCreateArea(args, _player);
 
-        plugin.messageManager.sendMessage(sender, plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.create_area.create_area_succeed$"));
+        plugin.messageManager.sendMessage(sender, MessageFormat.format(plugin.wolfyLanguageAPI.
+                replaceColoredKeys("$module_message.create_area.create_area_succeed$"), args[0]));
     }
 
     /**

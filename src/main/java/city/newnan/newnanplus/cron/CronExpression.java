@@ -17,7 +17,7 @@ public class CronExpression {
 
     private static final List<Integer> LAST_DAY_OF_MONTH = Arrays.asList(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
-    private static final HashMap<String, Integer> MONTH_NAME_MAP = new HashMap<String, Integer>() {{
+    private static final HashMap<String, Integer> MONTH_NAME_MAP = new HashMap<>() {{
         put("jan",  1); put("january",   1); put("1",   1);
         put("feb",  2); put("february",  2); put("2",   2);
         put("mar",  3); put("march",     3); put("3",   3);
@@ -31,7 +31,7 @@ public class CronExpression {
         put("nov", 11); put("november", 11); put("11", 11);
         put("dec", 12); put("december", 12); put("12", 12);
     }};
-    private static final HashMap<String, Integer> DAYOFWEEK_NAME_MAP = new HashMap<String, Integer>() {{
+    private static final HashMap<String, Integer> DAYOFWEEK_NAME_MAP = new HashMap<>() {{
         put("mon", 1); put("monday",    1); put("1", 1);
         put("tue", 2); put("tuesday",   2); put("2", 2);
         put("wed", 3); put("wednesday", 3); put("3", 3);
@@ -47,7 +47,7 @@ public class CronExpression {
     private final int[] minuteList;
     private final int[] hourList;
     private final int[] monthList;
-    private final List<Boolean> avaliableRegularDayOfWeek;
+    private final List<Boolean> availableRegularDayOfWeek;
 
     // 虚拟转轮算法
     // 很简单，秒→分→时→天→月→年
@@ -90,7 +90,7 @@ public class CronExpression {
         this.monthList = parseToArray(expressionSplits[4], 12, LEGAL_MONTH_INTERVAL_LIST, MONTH_NAME_MAP);
 
         // 常规周解析
-        this.avaliableRegularDayOfWeek = parseRegularDayOfWeekList(expressionSplits[5]);
+        this.availableRegularDayOfWeek = parseRegularDayOfWeekList(expressionSplits[5]);
 
         // 存储表达式
         this.expressionString = expressionString;
@@ -352,7 +352,7 @@ public class CronExpression {
             if (!expressionSplits[5].equals("*")) {
                 for (String splits : expressionSplits[5].split(",")) {
                     // 先从表里面找最近的日期
-                    if (this.avaliableRegularDayOfWeek != null) {
+                    if (this.availableRegularDayOfWeek != null) {
                         // 定义第二天而不是第一天，因为第一天可能是非法的(0)
                         LocalDateTime secondDate = LocalDateTime.of(this.yearPointer,
                                 this.monthList[this.monthListPointer],
@@ -362,7 +362,7 @@ public class CronExpression {
                         int tmpDay = this.dayPointer + 1;
                         int i = curDayOfWeek;
                         for (int j = 0; j < 7; j++) {
-                            if (this.avaliableRegularDayOfWeek.get(i))
+                            if (this.availableRegularDayOfWeek.get(i))
                                 break;
                             tmpDay++;
                             i = (i == 7) ? 1 : (i + 1);

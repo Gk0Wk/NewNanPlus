@@ -10,10 +10,8 @@ import me.wolfyscript.utilities.api.language.Language;
 import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
-import org.bukkit.GameRule;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
@@ -21,9 +19,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
+import java.text.MessageFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -180,8 +178,6 @@ public class NewNanPlus extends JavaPlugin {
         if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
             ((city.newnan.newnanplus.cron.Cron) modules.get(city.newnan.newnanplus.cron.Cron.class)).onPluginReady();
         }
-
-        changeGamerules();
     }
 
     /**
@@ -314,38 +310,11 @@ public class NewNanPlus extends JavaPlugin {
 
     }
 
-    /**
-     * 设置世界的Gamerule
-     */
-    public void changeGamerules() {
-        ConfigurationSection rules = configManager.get("config.yml").
-                getConfigurationSection("module-world-setting");
-        assert rules != null;
-        for (String rule : rules.getKeys(false)) {
-            if ("keepInventoryOnDeath".equals(rule)) {
-                changeWorldsGamerules(Objects.requireNonNull(rules.getStringList(rule)),
-                        GameRule.KEEP_INVENTORY, true);
-            }
-        }
-    }
-
-    /**
-     * 设置一组世界的某一个Gamerule
-     * @param worlds 世界列表
-     * @param rule 规则
-     * @param value 目标值
-     */
-    private void changeWorldsGamerules(List<String> worlds, GameRule<Boolean> rule, boolean value) {
-        for (String world : worlds) {
-            Objects.requireNonNull(this.getServer().getWorld(world)).setGameRule(rule, value);
-        }
-    }
-
     public void printWelcome(CommandSender sender) {
         messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件", false);
         messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite(), false);
         messageManager.sendMessage(sender, "作者(欢迎一起来开发): ", false);
-        getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author));
+        getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author, false));
         messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助", false);
     }
 
@@ -371,6 +340,7 @@ class GlobalModule implements NewNanPlusModule {
         NewNanPlus.getPlugin().commandManager.register("", this);
         NewNanPlus.getPlugin().commandManager.register("reload", this);
         NewNanPlus.getPlugin().commandManager.register("save", this);
+        NewNanPlus.getPlugin().commandManager.register("reloadconfig", this);
     }
 
     /**
@@ -398,6 +368,11 @@ class GlobalModule implements NewNanPlusModule {
         else if (token.equals("save")) {
             NewNanPlus.getPlugin().configManager.saveAll();
             NewNanPlus.getPlugin().messageManager.sendMessage(sender, "配置保存完毕。");
+        }
+        else if (token.equals("reloadconfig")) {
+            NewNanPlus.getPlugin().configManager.reload(args[0]);
+            NewNanPlus.getPlugin().messageManager.sendMessage(
+                    sender, MessageFormat.format("配置文件{0}保存完毕。", args[0]));
         }
     }
 }

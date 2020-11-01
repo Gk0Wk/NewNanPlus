@@ -19,6 +19,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
@@ -94,6 +95,16 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         joinCheck(event.getPlayer());
         touchPlayer(event.getPlayer());
         showUpdateLog(event.getPlayer());
+    }
+
+    /**
+     * 玩家退出时触发的方法
+     * @param event 玩家退出事件
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) throws Exception {
+        String playerConfigPath = "player/" + event.getPlayer().getUniqueId().toString() + ".yml";
+        plugin.configManager.unload(playerConfigPath, true);
     }
 
     /**
@@ -244,10 +255,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     }
 
     public void showUpdateLog(Player player) throws Exception {
-        FileConfiguration updateLog = plugin.configManager.get("update_log.yml");
+        FileConfiguration updateLog = plugin.configManager.reload("update_log.yml");
         FileConfiguration playerConfig =
                 plugin.configManager.get("player/" + player.getUniqueId().toString() + ".yml");
-        long lastTime = playerConfig.getLong("update-log-last-read-time", 0);
+        long lastTime = playerConfig.getLong("last-login-time", 0);
 
         StringBuilder pageBuffer = new StringBuilder();
         pageBuffer.append(plugin.wolfyLanguageAPI.
@@ -292,7 +303,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         mailBook.setItemMeta(bookMeta);
         player.openBook(mailBook);
         //
-        playerConfig.set("update-log-last-read-time", System.currentTimeMillis());
+        playerConfig.set("last-login-time", System.currentTimeMillis());
         plugin.configManager.save("player/" + player.getUniqueId().toString() + ".yml");
     }
 

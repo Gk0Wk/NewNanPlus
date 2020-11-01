@@ -32,8 +32,8 @@
         },
         "player_manager": {
             "welcome_title": "&6欢迎来到牛腩小镇",
-            "welcome_subtitle": "&b请填写问卷以获得游玩权限",
-            "you_are_newbie": "&c请在官网完成新人试卷后向管理索要游玩权限。",
+            "welcome_subtitle": "&b请加QQ群并跟随官网指引完成入服仪式",
+            "you_are_newbie": "&c欢迎你！请加QQ群(1037840198)并跟随官网(newnan.city)指引完成入服仪式！",
             "allow_later": "操作成功，玩家未上线，稍后玩家登录后将自动获得权限。",
             "allow_succeed": "操作成功，赋予玩家权限。",
             "not_newbie_already": "该玩家已不是新人。",

@@ -167,4 +167,10 @@ public class TownManager implements NewNanPlusModule {
         // Add to map
         town.effects.put(effect, date);
     }
+
+    public List<Town> getTowns() {
+        ArrayList<Town> townsList = new ArrayList<>();
+        towns.forEach((uuid, town) -> townsList.add(town));
+        return townsList;
+    }
 }

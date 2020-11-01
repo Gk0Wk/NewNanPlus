@@ -22,6 +22,7 @@ prefix: 'NewNanPlus'
 database: false
 # 硬依赖，没有就无法启动
 depend:
+  - 'Essentials'
   - 'Vault'
   - 'dynmap'
   - 'WolfyUtilities'
@@ -30,7 +31,6 @@ depend:
 # 软依赖，插件会在这些依赖加载后再加载
 softdepend:
   - 'BKCommonLib'
-  - 'Essentials'
   - 'Multiverse-Core'
   - 'ProtocolLib'
   - 'PlaceholderAPI'
@@ -63,6 +63,11 @@ commands:
     description: '重载某个模块，或者整个插件'
     usage: '/nnp reload [module name]'
     permission-node: 'newnanplus.reload'
+    hidden: true
+  'nnp reloadconfig':
+    description: '重载某个配置文件，用于ConfigManager'
+    usage: '/nnp reloadconfig [config file]'
+    permission-node: 'newnanplus.reloadconfig'
     hidden: true
   'nnp save':
     description: '保存配置'
@@ -122,6 +127,9 @@ permissions:
   'newnanplus.reload':
     description: '重载插件或者模块的权限'
     default: false
+  'newnanplus.reloadconfig':
+    description: '重载某个配置文件的权限'
+    default: false
   'newnanplus.save':
     description: '保存插件配置文件的权限'
     default: false
@@ -140,6 +148,14 @@ permissions:
   'newnanplus.playermanager.allow':
     description: '可以赋予玩家游玩权限的权限'
     default: op
+  'newnanplus.createarea':
+    description: '创造区管理权限'
+    default: op
+    children:
+      'newnanplus.createarea.create': true
+      'newnanplus.createarea.remove': true
+      'newnanplus.createarea.teleport.self': true
+      'newnanplus.createarea.teleport.other': true
   'newnanplus.createarea.create':
     description: '可以创建/修改玩家的创造区的权限'
     default: op
@@ -148,19 +164,22 @@ permissions:
     default: op
   'newnanplus.createarea.teleport.self':
     description: '可以传送到自己的创造区的权限'
-    default: op
+    default: true
   'newnanplus.createarea.teleport.other':
     description: '可以传送到别人的创造区的权限'
     default: op
-  'newnanplus.titlemsg.send':
-    description: '为某个玩家播放标题通知的权限'
-    default: op
   'newnanplus.powertools.whois':
     description: '通过名字或者UUID查找玩家的权限'
+    default: op
+  'newnanplus.powertools.titlemsg.send':
+    description: '为某个玩家播放标题通知的权限'
     default: op
   'newnanplus.powertools.titlebroadcast.send':
     description: '为全服玩家广播标题通知的权限'
     default: op
   'newnanplus.powertools.titlebroadcast.bypass':
     description: '忽略广播标题通知的权限'
+    default: false
+  'newnanplus.dynamiceconomy.statics.bypass':
+    description: '动态经济在价值资源采集检查时忽略的玩家'
     default: false

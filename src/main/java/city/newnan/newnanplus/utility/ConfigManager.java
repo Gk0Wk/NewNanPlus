@@ -123,7 +123,7 @@ public class ConfigManager {
     /**
      * 保存某个配置文件，如果之前没有加载过且磁盘中不存在，就会保存默认配置文件
      * @param configFile 资源文件路径
-     * @throws IOException IO异常
+     * @throws Exception 执行异常
      */
     public void save(String configFile) throws Exception {
         // 不存在就保存默认
@@ -142,6 +142,27 @@ public class ConfigManager {
                 e.printStackTrace();
                 throw new CommandExceptions.AccessFileErrorException(configFile);
             }
+        }
+    }
+
+    /**
+     * 卸载配置文件，并选择是否保存配置文件
+     * @param configFile 配置文件名
+     * @param save 是否保存内存中的配置文件信息到硬盘
+     * @throws Exception 执行异常
+     */
+    public void unload(String configFile, boolean save) throws Exception {
+        // 不能卸载 config.yml
+        if (configFile.equals("config.yml"))
+            return;
+        FileConfiguration config = this.configMap.remove(configFile);
+        if (config == null || !save)
+            return;
+        try {
+            config.save(new File(plugin.getDataFolder(), configFile));
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new CommandExceptions.AccessFileErrorException(configFile);
         }
     }
 

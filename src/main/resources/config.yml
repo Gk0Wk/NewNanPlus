@@ -10,9 +10,8 @@ global-settings:
   fallback-language: 'zh-CN'
   date-formatter: 'yyyy-MM-dd HH:mm:ss'
   balance-symbol: '₦'
-module-world-setting:
-  keepInventoryOnDeath: []
-  mobGriefing: []
+module-dynamicaleconomy:
+  enable: false
 module-playermanager:
   enable: true
   newbies-group: 'Newbie'
@@ -50,11 +49,6 @@ module-deathtrigger:
 module-railexpress:
   enable: true
   exclude-world: []
-  block-type:
-    # default speed is 0.4
-    # max is 1.5
-    REDSTONE_BLOCK: 0.9
-    DIAMOND_BLOCK: 1.5
 module-lagganalyzer:
   enable: false
 module-townmanager:

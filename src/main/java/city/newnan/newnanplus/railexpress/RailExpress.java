@@ -9,17 +9,17 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Minecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
+import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * 矿车加速模块，根据激活铁轨下不同的材质进行加速
@@ -30,9 +30,11 @@ public class RailExpress implements NewNanPlusModule, Listener {
      */
     private final NewNanPlus plugin;
 
+    /**
+     * 游戏默认矿车极速为0.4，最高为1.5
+     */
     private final static double DEFAULT_SPEED = 0.4;
     private final HashSet<World> excludeWorlds = new HashSet<>();
-    private final HashMap<Material, Double> blockType = new HashMap<>();
 
     public RailExpress() throws Exception {
         plugin = NewNanPlus.getPlugin();
@@ -51,15 +53,6 @@ public class RailExpress implements NewNanPlusModule, Listener {
         excludeWorlds.clear();
         plugin.configManager.get("config.yml").getStringList("module-railexpress.exclude-world")
                 .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
-        blockType.clear();
-        ConfigurationSection blocks = plugin.configManager.get("config.yml")
-                .getConfigurationSection("module-railexpress.block-type");
-        assert blocks != null;
-        blocks.getKeys(false).forEach(key -> {
-            Material material = Material.getMaterial(key);
-            if (material != null)
-                blockType.put(material, blocks.getDouble(key));
-        });
     }
 
     /**
@@ -111,11 +104,20 @@ public class RailExpress implements NewNanPlusModule, Listener {
         // 需要是激活铁轨才加速，否则重置成原速
         Block curBlock = e.getVehicle().getLocation().getBlock();
         if (curBlock.getType().equals(Material.POWERED_RAIL)) {
-            // 根据下面那一块的材质确定加速比
-            ((Minecart) e.getVehicle()).setMaxSpeed(
-                    blockType.getOrDefault(curBlock.getRelative(BlockFace.DOWN).getType(), DEFAULT_SPEED));
-        } else {
-            ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
+            // 下面需要是红石块
+            Block belowBlock = curBlock.getRelative(BlockFace.DOWN);
+            if (belowBlock.getType().equals(Material.REDSTONE_BLOCK)) {
+                // 需要有"rail"数据标签来指定速度
+                if (belowBlock.hasMetadata("rail")) {
+                    List<MetadataValue> metaList = belowBlock.getMetadata("rail");
+                    if (metaList.size() != 0) {
+                        ((Minecart) e.getVehicle()).setMaxSpeed(metaList.get(0).asFloat());
+                        return;
+                    }
+                }
+            }
         }
+        // 否则设置为默认速度
+        ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
     }
 }
