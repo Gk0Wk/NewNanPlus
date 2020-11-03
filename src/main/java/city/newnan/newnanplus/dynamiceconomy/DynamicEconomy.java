@@ -3,11 +3,14 @@ package city.newnan.newnanplus.dynamiceconomy;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
+import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -16,10 +19,11 @@ import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
+import org.maxgamer.quickshop.event.*;
+import org.maxgamer.quickshop.shop.Shop;
+import org.maxgamer.quickshop.shop.ShopType;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.*;
 
 public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
@@ -28,6 +32,9 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     private final NewNanPlus plugin;
 
     private final HashSet<World> excludeWorld = new HashSet<>();
+
+    private final UUID ntOwner;
+    private final HashMap<Material, ArrayList<SystemCommodity>> systemCommodityListMap = new HashMap<>();
 
     /**
      * 价值资源矿与价值资源的对应
@@ -60,16 +67,18 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
      * 价值资源的采集总量
      */
-    private final HashMap<Material, Integer> valueResourceCounter = new HashMap<>() {{
-        put(Material.COAL, 0);             // 煤炭
-        put(Material.IRON_INGOT, 0);       // 铁锭
-        put(Material.GOLD_INGOT, 0);       // 金锭
-        put(Material.REDSTONE, 0);         // 红石
-        put(Material.LAPIS_LAZULI, 0);     // 青金石
-        put(Material.DIAMOND, 0);          // 钻石
-        put(Material.EMERALD, 0);          // 绿宝石
-        put(Material.QUARTZ, 0);           // 下界石英
+    private final HashMap<Material, Long> valueResourceCounter = new HashMap<>() {{
+        put(Material.COAL, 0L);             // 煤炭
+        put(Material.IRON_INGOT, 0L);       // 铁锭
+        put(Material.GOLD_INGOT, 0L);       // 金锭
+        put(Material.REDSTONE, 0L);         // 红石
+        put(Material.LAPIS_LAZULI, 0L);     // 青金石
+        put(Material.DIAMOND, 0L);          // 钻石
+        put(Material.EMERALD, 0L);          // 绿宝石
+        put(Material.QUARTZ, 0L);           // 下界石英
     }};
+
+    public ConfigurationSection commodities;
 
     /**
      * 系统总价值量
@@ -89,7 +98,12 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
      * 参考货币指数，收购货币指数，出售货币指数
      */
-    private double referenceCurrencyIndex, buyCurrencyIndex, sellCurrencyIndex;
+    public double referenceCurrencyIndex, buyCurrencyIndex, sellCurrencyIndex;
+
+    public static DynamicEconomy instance;
+    public static DynamicEconomy getInstance() {
+        return instance;
+    }
 
     public DynamicEconomy() throws Exception {
         plugin = NewNanPlus.getPlugin();
@@ -98,6 +112,29 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         }
         reloadConfig();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        instance = this;
+
+        // 国库所有者是 NewNanCity
+        ntOwner = ((city.newnan.newnanplus.playermanager.PlayerManager)
+                plugin.getModule(city.newnan.newnanplus.playermanager.PlayerManager.class))
+                .findOnePlayerUUIDByName(plugin.configManager.get("config.yml")
+                        .getString("module-dynamicaleconomy.owner-player"));
+
+        // 定时保存配置
+        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            FileConfiguration config = plugin.configManager.get("dyneco_cache.yml");
+            config.set("wealth.total", systemTotalWealth);
+            valueResourceCounter.forEach(((material, count) -> {
+                config.set("wealth.valued-resource-count" + material.toString(), count);
+            }));
+            config.set("currency-issuance", currencyIssuance);
+            config.set("national-treasury", nationalTreasury);
+            try {
+                plugin.configManager.save("dyneco_cache.yml");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }, 600L, 600L);
     }
 
     /**
@@ -105,6 +142,32 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      */
     @Override
     public void reloadConfig() {
+        FileConfiguration config = plugin.configManager.reload("dyneco_cache.yml");
+        systemTotalWealth = config.getDouble("wealth.total");
+
+        ConfigurationSection vrCountMap = config.getConfigurationSection("wealth.valued-resource-count");
+        assert vrCountMap != null;
+        vrCountMap.getKeys(false).
+                forEach(key -> valueResourceCounter.put(Material.valueOf(key.toUpperCase()), vrCountMap.getLong(key)));
+
+        currencyIssuance = config.getDouble("currency-issuance");
+        nationalTreasury = config.getDouble("national-treasury");
+
+        commodities = config.getConfigurationSection("commodities");
+        assert commodities != null;
+        commodities.getKeys(false).forEach(key -> {
+            ConfigurationSection commoditySection = commodities.getConfigurationSection(key);
+            assert commoditySection != null;
+            SystemCommodity commodity = new SystemCommodity(commoditySection);
+            Material mKey = commodity.itemStack.getType();
+            if (systemCommodityListMap.containsKey(mKey)) {
+                systemCommodityListMap.get(mKey).add(commodity);
+            } else {
+                ArrayList<SystemCommodity> commoditiesList = new ArrayList<>();
+                commoditiesList.add(commodity);
+                systemCommodityListMap.put(mKey, commoditiesList);
+            }
+        });
     }
 
     /**
@@ -176,15 +239,16 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
                 oPlayer -> currencyIssuance += plugin.vaultEco.getBalance(oPlayer));
 
         // 统计城镇
-        ((city.newnan.newnanplus.town.TownManager) plugin.getModule(city.newnan.newnanplus.town.TownManager.class))
-                .getTowns().forEach(town -> currencyIssuance += town.balance);
+        if (plugin.getModule(city.newnan.newnanplus.town.TownManager.class) != null)
+            ((city.newnan.newnanplus.town.TownManager) plugin.getModule(city.newnan.newnanplus.town.TownManager.class))
+                    .getTowns().forEach(town -> currencyIssuance += town.balance);
 
         // 统计集体(?不搞了不搞了，太肝了)
     }
 
     /**
-     * 玩家现金改变的时候调用，用于更新国库货币储量
-     * @param event 玩家现金改变的事件，是Essentials的事件
+     * Essentials的事件，玩家现金改变的时候调用，用于更新国库货币储量
+     * @param event 玩家现金改变的事件
      */
     @EventHandler
     public void onUserBalanceUpdate(UserBalanceUpdateEvent event) {
@@ -240,8 +304,297 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         buyCurrencyIndex = Math.pow(referenceCurrencyIndex, 0.691);
         sellCurrencyIndex = Math.pow(referenceCurrencyIndex, 1.309);
     }
+
+    /**
+     * QuickShop 事件，玩家成功与箱子商店交易时调用，用于更新国库
+     * @param event 玩家成功与箱子商店交易时的事件
+     */
+    @EventHandler
+    public void onShopSuccessPurchase(ShopSuccessPurchaseEvent event) throws Exception {
+        // 检查是否为国库
+        if (!event.getShop().getOwner().equals(ntOwner))
+            return;
+
+        // 钱已经在上面统计过了
+        // 只需要统计国库商品库存量
+        int amount = event.getAmount();
+        SystemCommodity commodity = matchCommodity(event.getShop());
+        assert commodity != null;
+        if (event.getShop().getShopType().equals(ShopType.BUYING)) {
+            // 收购商店，执行收购
+            commodity.buy(amount);
+        } else {
+            // 售卖商店，执行售卖
+            commodity.sell(amount);
+        }
+
+        // 保存商店的修改
+        commodity.saveCommodityToSection();
+    }
+
+    /**
+     * QuickShop 事件，商店创建时调用，用于与官方商店绑定，并加入更新队列
+     * @param event 商店创建的事件
+     */
+    @EventHandler
+    public void onShopCreate(ShopCreateEvent event) {
+        // 检查是否为国库
+        if (event.getShop().getOwner().equals(ntOwner))
+            addToSystemShop(event.getShop());
+    }
+
+    /**
+     * QuickShop 事件，商店加载时调用，用于更新系统商店的显示信息，并加入更新队列
+     * 该方法和下面的方法一起，实现商店的 Lazy Bind
+     * @param event 商店加载事件
+     */
+    @EventHandler
+    public void onShopLoad(ShopLoadEvent event) {
+        // 检查是否为国库
+        if (event.getShop().getOwner().equals(ntOwner))
+            addToSystemShop(event.getShop());
+    }
+
+    /**
+     * QuickShop 事件，玩家点击箱子时调用，用于更新系统商店的显示信息，并加入更新队列
+     * 和ShopLoadEvent功能重复，但是考虑到QuickShop在NewNanPlus之前加载，不排除有一些商店的ShopLoadEvent未被加载到，
+     * 所以这里算是再次确认一下
+     * @param event 玩家点击箱子的事件
+     */
+    @EventHandler
+    public void onShopClick(ShopClickEvent event) {
+        // 检查是否为国库
+        if (event.getShop().getOwner().equals(ntOwner))
+            addToSystemShop(event.getShop());
+    }
+
+    /**
+     * QuickShop 事件，商店从内存中卸载时调用，从更新队列中移除
+     * @param event 商店从内存中卸载的事件
+     */
+    @EventHandler
+    public void onShopUnloadEvent(ShopUnloadEvent event) {
+        // 检查是否为国库
+        if (event.getShop().getOwner().equals(ntOwner))
+            removeFromSystemShop(event.getShop());
+    }
+
+    /**
+     * QuickShop 事件，箱子商店被删除时调用，从更新队列中移除；
+     * 和Unload功能重叠但是不清楚删除箱子会不会调用ShopUnloadEvent所以这里又监听了一下
+     * @param event 箱子商店被删除的事件
+     */
+    @EventHandler
+    public void onShopDelete(ShopDeleteEvent event) {
+        // 检查是否为国库
+        if (event.getShop().getOwner().equals(ntOwner))
+            removeFromSystemShop(event.getShop());
+    }
+
+    /**
+     * QuickShop 事件，商店主人改变时触发
+     * 如果现在的所有人是国库，那么说明之前不是，将该商店绑定国库；
+     * 如果现在的所有人不是国库且存在于商店更新列表中，说明之前是，则从更新队列中移除并将商店库存清空
+     * @param event 商店主人改变的事件
+     */
+    @EventHandler
+    public void onShopModeratorChange(ShopModeratorChangedEvent event) {
+        Shop shop = event.getShop();
+        // 检查是否现在为国库
+        if (shop.getOwner().equals(ntOwner)) {
+            addToSystemShop(shop);
+        } else {
+            // 如果不是，则检查之前是否在列表中
+            SystemCommodity commodity = matchCommodity(shop);
+            if (commodity != null && commodity.shopList.contains(shop)) {
+                // 如果在列表中，说明之前是国库，所以要清空库存
+                commodity.shopList.remove(shop);
+                ItemStack itemStack = shop.getItem();
+                itemStack.setAmount(0);
+                shop.setItem(itemStack);
+            }
+        }
+    }
+
+    /**
+     * 添加到系统商店(对应的更新列表中)，并执行一次更新
+     * @param shop 要添加的商店
+     */
+    public void addToSystemShop(Shop shop) {
+        SystemCommodity commodity = matchCommodity(shop);
+        if (commodity != null) {
+            commodity.shopList.add(shop);
+            commodity.updateShop(shop);
+        }
+    }
+
+    /**
+     * 从系统商店移除(从对应的更新列表)
+     * @param shop 要移除的商店
+     */
+    public void removeFromSystemShop(Shop shop) {
+        SystemCommodity commodity = matchCommodity(shop);
+        if (commodity != null) {
+            commodity.shopList.remove(shop);
+        }
+    }
+
+    /**
+     * 根据商店匹配对应的库存类型
+     * @param shop 要匹配的商店实例
+     * @return 库存实例，找不到就返回null
+     */
+    private SystemCommodity matchCommodity(Shop shop) {
+        Material key = shop.getItem().getType();
+        if (systemCommodityListMap.containsKey(key)) {
+            ItemStack shopItem = shop.getItem();
+            List<SystemCommodity> commoditiesList = systemCommodityListMap.get(key);
+            for (SystemCommodity commodity : commoditiesList) {
+                if (commodity.itemStack.isSimilar(shopItem)) {
+                    return commodity;
+                }
+            }
+        }
+        return null;
+    }
 }
 
 class SystemCommodity {
-    ItemStack itemStack;
+    public String name;
+    public ItemStack itemStack;
+    public int amount;
+    public double value;
+    public double sellResponseVolume, buyResponseVolume;
+    public long lastSellTime, lastBuyTime;
+    public double buyValue, sellValue;
+    public ArrayList<Shop> shopList = new ArrayList<>();
+    
+    public SystemCommodity(ConfigurationSection commoditySection) {
+        name = commoditySection.getName();
+        String data = commoditySection.getString("data");
+        assert data != null;
+        // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
+        if (data.charAt(0) == '{') {
+            itemStack = ItemUtils.convertJsontoItemStack(data);
+        } else {
+            itemStack = ItemUtils.deserializeNMSItemStack(data);
+        }
+
+        amount = commoditySection.getInt("amount", 0);
+        value = commoditySection.getDouble("value", 0.0);
+        sellResponseVolume = commoditySection.getDouble("sell-response-volume", 0.0);
+        buyResponseVolume = commoditySection.getDouble("buy-response-volume", 0.0);
+        lastSellTime = commoditySection.getLong("last-sell-time", 0L);
+        lastBuyTime = commoditySection.getLong("last-buy-time", 0L);
+
+        updatePrice();
+    }
+
+    /**
+     * 收购：官方 <- 玩家
+     * @param amount 收购数量
+     */
+    public void buy(long amount) {
+        this.amount += amount;
+
+        long curTime = System.currentTimeMillis();
+        // 计算γ
+        double gamma = (lastBuyTime == 0) ? 0.0 : (10.0 / (10.0 + Math.log10(1 + curTime - lastBuyTime)));
+
+        // 更新时间
+        lastBuyTime = curTime;
+
+        // 更新响应量
+        buyResponseVolume = amount + gamma * buyResponseVolume;
+
+        // 更新商品价值
+        updatePrice();
+
+        // 刷新所有商店
+        updateShops();
+    }
+
+    /**
+     * 售卖：官方 -> 玩家
+     * @param amount 售卖数量
+     */
+    public void sell(long amount) {
+        this.amount -= amount;
+
+        // 小于0检查，虽然一般不可能出现这种情况，但是还是检测一下
+        if (this.amount < 0)
+            this.amount = 0;
+
+        long curTime = System.currentTimeMillis();
+        // 计算γ
+        double gamma = (lastSellTime == 0) ? 0.0 : (10.0 / (10.0 + Math.log10(1 + curTime - lastSellTime)));
+
+        // 更新时间
+        lastSellTime = curTime;
+
+        // 更新响应量
+        sellResponseVolume = amount + gamma * sellResponseVolume;
+
+        // 更新商品价值
+        updatePrice();
+
+        // 刷新所有商店
+        updateShops();
+    }
+
+    final static double EPSILON = 0.001;
+    private void updatePrice() {
+        // 计算响应比
+        double ratio = (amount + sellResponseVolume + EPSILON) / (amount + buyResponseVolume + EPSILON);
+        if (ratio > 10) {
+            ratio = 10;
+        }
+        else if (ratio < 0.1) {
+            ratio = 0.1;
+        }
+        buyValue = value * Math.pow(ratio, 0.8);
+        sellValue = value * Math.pow(ratio, 1.2);
+    }
+
+    public void updateShops() {
+        shopList.forEach(this::updateShop);
+    }
+
+    public void updateShop(Shop shop) {
+        // 更新库存
+        ItemStack itemstack  = shop.getItem();
+        itemStack.setAmount(amount);
+        shop.setItem(itemStack);
+
+        //更新价格
+        if (shop.getShopType().equals(ShopType.BUYING)) {
+            // 收购商店
+            shop.setPrice(DynamicEconomy.getInstance().buyCurrencyIndex * buyValue);
+        } else {
+            // 售卖商店
+            shop.setPrice(DynamicEconomy.getInstance().sellCurrencyIndex * sellValue);
+        }
+    }
+
+    public void saveCommodityToSection() {
+        ConfigurationSection section = DynamicEconomy.getInstance().commodities.getConfigurationSection(name);
+        assert section != null;
+
+        Material type = itemStack.getType();
+        // 带文字的书、潜影盒属于json化内容很多的，转化为base64存储
+        if (type.equals(Material.WRITABLE_BOOK) || type.equals(Material.WRITTEN_BOOK) || type.equals(Material.SHULKER_BOX)) {
+            section.set("data", ItemUtils.serializeNMSItemStack(itemStack));
+        } else {
+            section.set("data", ItemUtils.convertItemStackToJson(itemStack));
+        }
+
+        section.set("amount", amount);
+        section.set("value", value);
+        section.set("sell-response-volume", sellResponseVolume);
+        section.set("last-sell-time", lastSellTime);
+        section.set("buy-response-volume", buyResponseVolume);
+        section.set("last-buy-time", lastBuyTime);
+
+        DynamicEconomy.getInstance().commodities.set(name, section);
+    }
 }

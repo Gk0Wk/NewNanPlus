@@ -52,7 +52,9 @@ public class NewNanPlus extends JavaPlugin {
      * @return 模块实例，不存在则返回Null
      */
     public NewNanPlusModule getModule(Class<?> moduleClass) {
-        return modules.get(moduleClass);
+        if (modules.containsKey(moduleClass))
+            return modules.get(moduleClass);
+        return null;
     }
 
     //

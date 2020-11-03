@@ -12,6 +12,7 @@ global-settings:
   balance-symbol: '₦'
 module-dynamicaleconomy:
   enable: false
+  owner-player: NewNanCity
 module-playermanager:
   enable: true
   newbies-group: 'Newbie'
