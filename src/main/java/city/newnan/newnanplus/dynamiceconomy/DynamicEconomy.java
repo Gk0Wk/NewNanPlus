@@ -124,9 +124,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             FileConfiguration config = plugin.configManager.get("dyneco_cache.yml");
             config.set("wealth.total", systemTotalWealth);
-            valueResourceCounter.forEach(((material, count) -> {
-                config.set("wealth.valued-resource-count" + material.toString(), count);
-            }));
+            valueResourceCounter.forEach(((material, count) ->
+                    config.set("wealth.valued-resource-count" + material.toString(), count)));
             config.set("currency-issuance", currencyIssuance);
             config.set("national-treasury", nationalTreasury);
             try {
@@ -142,6 +141,11 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      */
     @Override
     public void reloadConfig() {
+        excludeWorld.clear();
+        FileConfiguration mainConfig = plugin.configManager.get("config.yml");
+        mainConfig.getStringList("module-dynamicaleconomy.exclude-world").
+                forEach(world -> excludeWorld.add(plugin.getServer().getWorld(world)));
+
         FileConfiguration config = plugin.configManager.reload("dyneco_cache.yml");
         systemTotalWealth = config.getDouble("wealth.total");
 
@@ -152,6 +156,12 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
 
         currencyIssuance = config.getDouble("currency-issuance");
         nationalTreasury = config.getDouble("national-treasury");
+
+        systemCommodityListMap.forEach((material, systemCommodities) -> {
+            systemCommodities.forEach((systemCommodity -> systemCommodity.shopList.clear()));
+            systemCommodities.clear();
+        });
+        systemCommodityListMap.clear();
 
         commodities = config.getConfigurationSection("commodities");
         assert commodities != null;

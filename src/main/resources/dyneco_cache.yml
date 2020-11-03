@@ -17,11 +17,11 @@ wealth:
 currency-issuance: 0.0
 national-treasury: 0.0
 commodities:
-  煤炭:
-    data: '{id:"minecraft:coal",Count:1b}'
-    amount: 1000
-    value: 1.5
-    sell-response-volume: 0.0
-    last-sell-time: 0
-    buy-response-volume: 0.0
-    last-buy-time: 0
+#  煤炭:
+#    data: '{id:"minecraft:coal",Count:1b}'
+#    amount: 1000
+#    value: 1.5
+#    sell-response-volume: 0.0
+#    last-sell-time: 0
+#    buy-response-volume: 0.0
+#    last-buy-time: 0

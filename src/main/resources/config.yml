@@ -13,6 +13,7 @@ global-settings:
 module-dynamicaleconomy:
   enable: false
   owner-player: NewNanCity
+  exclude-world: []
 module-playermanager:
   enable: true
   newbies-group: 'Newbie'
