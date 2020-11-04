@@ -62,6 +62,9 @@
         },
         "power_tools": {
             "user_display_format": "玩家名称: {0} UUID: {1}"
+        },
+        "dynamical_economy": {
+            "issue_complete": "货币发行/销毁成功，当前货币发行量: {0} {1}"
         }
     },
     "inventories": {

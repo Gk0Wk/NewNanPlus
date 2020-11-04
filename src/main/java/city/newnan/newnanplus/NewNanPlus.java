@@ -16,7 +16,6 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Constructor;
@@ -68,7 +67,6 @@ public class NewNanPlus extends JavaPlugin {
     public org.anjocaido.groupmanager.GroupManager groupManager;
     public net.milkbowl.vault.economy.Economy vaultEco;
     public org.dynmap.DynmapAPI dynmapAPI;
-    public Scoreboard scoreboard;
 
     /**
      * 插件启用时调用的方法
@@ -94,8 +92,6 @@ public class NewNanPlus extends JavaPlugin {
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
             // 错误消息初始化
             CommandExceptions.init(this);
-            // 绑定分数榜
-            scoreboard = Objects.requireNonNull(getServer().getScoreboardManager()).getNewScoreboard();
         } catch (Exception e) {
             getLogger().info("§cPlugin initialize failed!");
             // 打印错误栈

@@ -2,6 +2,7 @@ package city.newnan.newnanplus.dynamiceconomy;
 
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
 import net.ess3.api.events.UserBalanceUpdateEvent;
@@ -12,16 +13,19 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
 import org.bukkit.event.inventory.FurnaceExtractEvent;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.RenderType;
+import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.maxgamer.quickshop.event.*;
 import org.maxgamer.quickshop.shop.Shop;
@@ -40,6 +44,9 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
 
     private final UUID ntOwner;
     private final HashMap<Material, ArrayList<SystemCommodity>> systemCommodityListMap = new HashMap<>();
+
+    private final Scoreboard scoreboard;
+    private final HashSet<Player> displayEcoInfoPlayers = new HashSet<>();
 
     /**
      * 价值资源矿与价值资源的对应
@@ -130,25 +137,33 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // 定时保存配置
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAndSave, 600L, 600L);
 
-        ecoObjective = plugin.scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
-
+        // 绑定分数榜
+        scoreboard = Objects.requireNonNull(plugin.getServer().getScoreboardManager()).getNewScoreboard();
+        ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
         // 经济系统信息显示
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            if (displayEcoInfoPlayers.isEmpty())
+                return;
             ecoObjective.unregister();
-            plugin.scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-            ecoObjective = plugin.scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
+            scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+            ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
             ecoObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
-
+            // 显示信息
             ecoObjective.getScore(MessageFormat.format("系统价值总量: {0,number,#.##}", systemTotalWealth)).setScore(9);
             ecoObjective.getScore(MessageFormat.format("货币发行量: {0,number,#.##}", currencyIssuance)).setScore(8);
             ecoObjective.getScore(MessageFormat.format("国库货币储量: {0,number,#.##}", nationalTreasury)).setScore(7);
             ecoObjective.getScore(MessageFormat.format("参考货币指数: {0,number,#.##}", referenceCurrencyIndex)).setScore(6);
             ecoObjective.getScore(MessageFormat.format("收购货币指数: {0,number,#.##}", buyCurrencyIndex)).setScore(5);
             ecoObjective.getScore(MessageFormat.format("出售货币指数: {0,number,#.##}", sellCurrencyIndex)).setScore(4);
-            plugin.getServer().getOnlinePlayers().forEach(player -> {
-                player.setScoreboard(plugin.scoreboard);
+            // 放置计分板
+            displayEcoInfoPlayers.forEach(player -> {
+                if (player.isOnline())
+                    player.setScoreboard(scoreboard);
             });
-        }, 10L, 10L);
+        }, 20L, 20L);
+
+        plugin.commandManager.register("ecosidebar", this);
+        plugin.commandManager.register("issue", this);
     }
 
     /**
@@ -228,7 +243,43 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      */
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+        switch(token) {
+            case "ecosidebar":
+                toggleEconomySidebar(sender);
+                break;
+            case "issue":
+                issueCurrency(sender, args);
+        }
+    }
 
+    private void issueCurrency(CommandSender sender, String[] args) throws Exception {
+        if (args.length < 1) {
+            throw new CommandExceptions.BadUsageException();
+        }
+        issueCurrency(Double.parseDouble(args[0]));
+        plugin.messageManager.sendMessage(sender, MessageFormat.format(
+                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.dynamical_economy.issue_complete$"),
+                currencyIssuance, plugin.configManager.get("config.yml").getString("global-settings.balance-symbol")
+        ));
+        updateCurrencyIndex();
+    }
+
+    private void toggleEconomySidebar(CommandSender sender) {
+        if (sender instanceof Player) {
+            if (displayEcoInfoPlayers.contains(sender))
+                displayEcoInfoPlayers.remove(sender);
+            else
+                displayEcoInfoPlayers.add((Player) sender);
+        }
+    }
+
+    /**
+     * 玩家退出时触发的方法
+     * @param event 玩家退出事件
+     */
+    @EventHandler
+    public void onPlayerQuit(PlayerQuitEvent event) throws Exception {
+        displayEcoInfoPlayers.remove(event.getPlayer());
     }
 
     /**
@@ -368,7 +419,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         if (systemTotalWealth == 0 || currencyIssuance == 0) {
             referenceCurrencyIndex = 1.0;
         } else {
-            referenceCurrencyIndex = systemTotalWealth / currencyIssuance;
+            referenceCurrencyIndex = currencyIssuance / systemTotalWealth;
         }
         buyCurrencyIndex = Math.pow(referenceCurrencyIndex, 0.691);
         sellCurrencyIndex = Math.pow(referenceCurrencyIndex, 1.309);
@@ -631,7 +682,7 @@ class SystemCommodity {
 
     public void updateShop(Shop shop) {
         // 更新库存
-        ItemStack itemstack  = shop.getItem();
+        ItemStack itemStack  = shop.getItem();
         itemStack.setAmount(amount);
         shop.setItem(itemStack);
 

@@ -127,6 +127,17 @@ commands:
     permission-node: 'newnanplus.powertools.itemtools.serialize'
     console: false
     aliases: 'serializeitem'
+  'nnp ecosidebar':
+    description: '开关经济系统统计数据(侧边排行榜)'
+    usage: '/nnp showeco'
+    permission-node: 'newnanplus.dynamicaleconomy.sidebar'
+    console: false
+    aliases: 'showeco'
+  'nnp issue':
+    description: '调整国库货币量，正为发行，负为销毁'
+    usage: '/nnp issue <amount>'
+    permission-node: 'newnanplus.dynamicaleconomy.issue'
+    console: true
 
 # 权限节点，可选
 permissions:
@@ -206,4 +217,10 @@ permissions:
     default: false
   'newnanplus.dynamiceconomy.statics.bypass':
     description: '动态经济在价值资源采集检查时忽略的玩家'
+    default: false
+  'newnanplus.dynamicaleconomy.sidebar':
+    description: '开关经济系统统计数据(侧边排行榜)的权限'
+    default: op
+  'newnanplus.dynamicaleconomy.issue':
+    description: '调整国库货币量的权限'
     default: false
