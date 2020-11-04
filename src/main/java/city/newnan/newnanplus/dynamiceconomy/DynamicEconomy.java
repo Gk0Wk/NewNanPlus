@@ -7,6 +7,7 @@ import city.newnan.newnanplus.exception.ModuleExeptions;
 import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -74,7 +75,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         put(Material.LAPIS_LAZULI, 90.0);    // 青金石
         put(Material.DIAMOND, 100.0);        // 钻石
         put(Material.EMERALD, 620.0);        // 绿宝石
-        put(Material.QUARTZ, 1.0);           // 下界石英
+        put(Material.QUARTZ, 7.4);           // 下界石英
     }};
 
     /**
@@ -113,11 +114,6 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      */
     public double referenceCurrencyIndex, buyCurrencyIndex, sellCurrencyIndex;
 
-    public static DynamicEconomy instance;
-    public static DynamicEconomy getInstance() {
-        return instance;
-    }
-
     private Objective ecoObjective;
 
     public DynamicEconomy() throws Exception {
@@ -127,7 +123,6 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         }
         reloadConfig();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
-        instance = this;
 
         // 国库所有者是 NewNanCity
         ntOwner = ((city.newnan.newnanplus.playermanager.PlayerManager)
@@ -135,19 +130,23 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
                 .findOnePlayerUUIDByName(plugin.configManager.get("config.yml")
                         .getString("module-dynamicaleconomy.owner-player"));
 
+        SystemCommodity.ntOwner = plugin.getServer().getOfflinePlayer(ntOwner);
+        SystemCommodity.plugin = plugin;
+        SystemCommodity.dynamicEconomy = this;
+
         // 定时保存配置
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAndSave, 600L, 600L);
 
         // 绑定分数榜
         scoreboard = Objects.requireNonNull(plugin.getServer().getScoreboardManager()).getNewScoreboard();
-        ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
+        ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "牛腩经济系统统计", RenderType.INTEGER);
         // 经济系统信息显示
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
             if (displayEcoInfoPlayers.isEmpty())
                 return;
             ecoObjective.unregister();
             scoreboard.clearSlot(DisplaySlot.SIDEBAR);
-            ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
+            ecoObjective = scoreboard.registerNewObjective("eco", "dummy", "牛腩经济系统统计", RenderType.INTEGER);
             ecoObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
             // 显示信息
             ecoObjective.getScore(MessageFormat.format("系统价值总量: {0,number,#.##}", systemTotalWealth)).setScore(9);
@@ -598,6 +597,10 @@ class SystemCommodity {
     public long lastSellTime, lastBuyTime;
     public double buyValue, sellValue;
     public ArrayList<Shop> shopList = new ArrayList<>();
+
+    public static OfflinePlayer ntOwner;
+    public static DynamicEconomy dynamicEconomy;
+    public static NewNanPlus plugin;
     
     public SystemCommodity(ConfigurationSection commoditySection) {
         name = commoditySection.getName();
@@ -625,6 +628,10 @@ class SystemCommodity {
      * @param amount 收购数量
      */
     public void buy(long amount) {
+        // 维持国库所有者的虚拟存款在500000以上
+        if (plugin.vaultEco.getBalance(ntOwner) < 500000.0)
+            plugin.vaultEco.depositPlayer(ntOwner, 500000.0 - plugin.vaultEco.getBalance(ntOwner));
+
         this.amount += amount;
 
         long curTime = System.currentTimeMillis();
@@ -698,15 +705,15 @@ class SystemCommodity {
         //更新价格
         if (shop.getShopType().equals(ShopType.BUYING)) {
             // 收购商店
-            shop.setPrice(DynamicEconomy.getInstance().buyCurrencyIndex * buyValue);
+            shop.setPrice(dynamicEconomy.buyCurrencyIndex * buyValue);
         } else {
             // 售卖商店
-            shop.setPrice(DynamicEconomy.getInstance().sellCurrencyIndex * sellValue);
+            shop.setPrice(dynamicEconomy.sellCurrencyIndex * sellValue);
         }
     }
 
     public void saveCommodityToSection() {
-        ConfigurationSection section = DynamicEconomy.getInstance().commodities.getConfigurationSection(name);
+        ConfigurationSection section = dynamicEconomy.commodities.getConfigurationSection(name);
         assert section != null;
 
         Material type = itemStack.getType();
@@ -724,6 +731,6 @@ class SystemCommodity {
         section.set("buy-response-volume", buyResponseVolume);
         section.set("last-buy-time", lastBuyTime);
 
-        DynamicEconomy.getInstance().commodities.set(name, section);
+        dynamicEconomy.commodities.set(name, section);
     }
 }
