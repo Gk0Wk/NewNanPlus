@@ -4,11 +4,13 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import me.wolfyscript.utilities.api.WolfyUtilities;
+import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
@@ -29,6 +31,8 @@ public class PowerTools implements NewNanPlusModule {
         plugin.commandManager.register("titlemsg", this);
         plugin.commandManager.register("titlebroadcast", this);
         plugin.commandManager.register("whois", this);
+        plugin.commandManager.register("deserializeitem", this);
+        plugin.commandManager.register("serializeitem", this);
     }
 
     /**
@@ -49,12 +53,23 @@ public class PowerTools implements NewNanPlusModule {
      */
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-        if (token.equals("titlemsg"))
-            sendTitleMessage(args);
-        else if (token.equals("titlebroadcast"))
-            sendTitleBroadcast(args);
-        else if (token.equals("whois"))
-            lookupPlayer(sender, args);
+        switch (token) {
+            case "titlemsg":
+                sendTitleMessage(args);
+                break;
+            case "titlebroadcast":
+                sendTitleBroadcast(args);
+                break;
+            case "whois":
+                lookupPlayer(sender, args);
+                break;
+            case "deserializeitem":
+                deserializeItem(sender, args);
+                break;
+            case "serializeitem":
+                serializeItem(sender, args);
+                break;
+        }
     }
 
     private void sendTitleMessage(String[] args) throws Exception {
@@ -156,6 +171,41 @@ public class PowerTools implements NewNanPlusModule {
             plugin.messageManager.sendMessage(sender, MessageFormat.format(
                     plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.power_tools.user_display_format$"),
                     player.getName(), player.getUniqueId().toString()));
+        }
+    }
+
+    private void deserializeItem(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player))
+            return;
+
+        Player player = (Player) sender;
+        if (args.length !=0) {
+            ItemStack itemStack;
+            if (args[0].charAt(0) == '{') {
+                itemStack = ItemUtils.convertJsontoItemStack(args[0]);
+            } else {
+                itemStack = ItemUtils.deserializeNMSItemStack(args[0]);
+            }
+            if (itemStack != null) {
+                player.getInventory().addItem(itemStack);
+            }
+        }
+    }
+
+    private void serializeItem(CommandSender sender, String[] args) {
+        if (!(sender instanceof Player))
+            return;
+
+        Player player = (Player) sender;
+        for (String arg : args) {
+            plugin.messageManager.printINFO(arg);
+        }
+        if (args.length > 0 && args[0].equals("base64")) {
+            plugin.messageManager.sendMessage(sender,
+                    ItemUtils.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
+        } else {
+            plugin.messageManager.sendMessage(sender,
+                    ItemUtils.convertItemStackToJson(player.getInventory().getItemInMainHand()));
         }
     }
 }

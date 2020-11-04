@@ -56,11 +56,11 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     private static final HashMap<Material, Double> valueResourceValueMap = new HashMap<>() {{
         put(Material.COAL, 1.7);             // 煤炭
         put(Material.IRON_INGOT, 3.2);       // 铁锭
-        put(Material.GOLD_INGOT, 12.5);       // 金锭
-        put(Material.REDSTONE, 35.0);         // 红石
-        put(Material.LAPIS_LAZULI, 90.0);     // 青金石
-        put(Material.DIAMOND, 100.0);          // 钻石
-        put(Material.EMERALD, 620.0);          // 绿宝石
+        put(Material.GOLD_INGOT, 12.5);      // 金锭
+        put(Material.REDSTONE, 35.0);        // 红石
+        put(Material.LAPIS_LAZULI, 90.0);    // 青金石
+        put(Material.DIAMOND, 100.0);        // 钻石
+        put(Material.EMERALD, 620.0);        // 绿宝石
         put(Material.QUARTZ, 1.0);           // 下界石英
     }};
 

@@ -9,17 +9,18 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.configuration.ConfigurationSection;
+import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Minecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
-import org.bukkit.metadata.MetadataValue;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 
 /**
  * 矿车加速模块，根据激活铁轨下不同的材质进行加速
@@ -35,6 +36,7 @@ public class RailExpress implements NewNanPlusModule, Listener {
      */
     private final static double DEFAULT_SPEED = 0.4;
     private final HashSet<World> excludeWorlds = new HashSet<>();
+    private final HashMap<Material, Double> blockSpeedMap = new HashMap<>();
 
     public RailExpress() throws Exception {
         plugin = NewNanPlus.getPlugin();
@@ -50,9 +52,16 @@ public class RailExpress implements NewNanPlusModule, Listener {
      */
     @Override
     public void reloadConfig() {
+        FileConfiguration config = plugin.configManager.get("config.yml");
         excludeWorlds.clear();
-        plugin.configManager.get("config.yml").getStringList("module-railexpress.exclude-world")
+        config.getStringList("module-railexpress.exclude-world")
                 .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
+
+        blockSpeedMap.clear();
+        ConfigurationSection blockSpeedSection = config.getConfigurationSection("module-railexpress.block-type");
+        assert blockSpeedSection != null;
+        blockSpeedSection.getKeys(false).forEach(block -> blockSpeedMap.
+                put(Material.valueOf(block.toUpperCase()), blockSpeedSection.getDouble(block, DEFAULT_SPEED)));
     }
 
     /**
@@ -104,20 +113,11 @@ public class RailExpress implements NewNanPlusModule, Listener {
         // 需要是激活铁轨才加速，否则重置成原速
         Block curBlock = e.getVehicle().getLocation().getBlock();
         if (curBlock.getType().equals(Material.POWERED_RAIL)) {
-            // 下面需要是红石块
+            // 看看铁轨下面的方块是什么，赋予相应的速度
             Block belowBlock = curBlock.getRelative(BlockFace.DOWN);
-            if (belowBlock.getType().equals(Material.REDSTONE_BLOCK)) {
-                // 需要有"rail"数据标签来指定速度
-                if (belowBlock.hasMetadata("rail")) {
-                    List<MetadataValue> metaList = belowBlock.getMetadata("rail");
-                    if (metaList.size() != 0) {
-                        ((Minecart) e.getVehicle()).setMaxSpeed(metaList.get(0).asFloat());
-                        return;
-                    }
-                }
-            }
+            ((Minecart) e.getVehicle()).setMaxSpeed(blockSpeedMap.getOrDefault(belowBlock.getType(), DEFAULT_SPEED));
         }
         // 否则设置为默认速度
-        ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
+        else ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
     }
 }

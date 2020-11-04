@@ -115,6 +115,18 @@ commands:
     description: '为全服玩家广播标题通知'
     usage: '/nnp titlebroadcast [title:<title>] [subtitle:<subtitle>] [sound:<sound>]'
     permission-node: 'newnanplus.powertools.titlebroadcast.send'
+  'nnp deserializeitem':
+    description: '从base64或者json字符串逆序列化物品并放于背包'
+    usage: '/nnp deserializeitem <string>'
+    permission-node: 'newnanplus.powertools.itemtools.deserialize'
+    console: false
+    aliases: 'deserializeitem'
+  'nnp serializeitem':
+    description: '将主手上的物品序列化为base64或者json字符串'
+    usage: '/nnp serializeitem [format]'
+    permission-node: 'newnanplus.powertools.itemtools.serialize'
+    console: false
+    aliases: 'serializeitem'
 
 # 权限节点，可选
 permissions:
@@ -179,6 +191,18 @@ permissions:
     default: op
   'newnanplus.powertools.titlebroadcast.bypass':
     description: '忽略广播标题通知的权限'
+    default: false
+  'newnanplus.powertools.itemtools':
+    description: '物品工具箱使用权限'
+    default: false
+    children:
+      'newnanplus.powertools.itemtools.deserialize': true
+      'newnanplus.powertools.itemtools.serialize': true
+  'newnanplus.powertools.itemtools.deserialize':
+    description: '逆序列化物品权限'
+    default: false
+  'newnanplus.powertools.itemtools.serialize':
+    description: '序列化物品权限'
     default: false
   'newnanplus.dynamiceconomy.statics.bypass':
     description: '动态经济在价值资源采集检查时忽略的玩家'
