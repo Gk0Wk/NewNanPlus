@@ -17,12 +17,17 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
+import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scoreboard.DisplaySlot;
+import org.bukkit.scoreboard.Objective;
+import org.bukkit.scoreboard.RenderType;
 import org.jetbrains.annotations.NotNull;
 import org.maxgamer.quickshop.event.*;
 import org.maxgamer.quickshop.shop.Shop;
 import org.maxgamer.quickshop.shop.ShopType;
 
+import java.text.MessageFormat;
 import java.util.*;
 
 public class DynamicEconomy implements NewNanPlusModule, Listener {
@@ -105,6 +110,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         return instance;
     }
 
+    private Objective ecoObjective;
+
     public DynamicEconomy() throws Exception {
         plugin = NewNanPlus.getPlugin();
         if (!plugin.configManager.get("config.yml").getBoolean("module-dynamicaleconomy.enable", false)) {
@@ -121,19 +128,27 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
                         .getString("module-dynamicaleconomy.owner-player"));
 
         // 定时保存配置
+        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAndSave, 600L, 600L);
+
+        ecoObjective = plugin.scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
+
+        // 经济系统信息显示
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
-            FileConfiguration config = plugin.configManager.get("dyneco_cache.yml");
-            config.set("wealth.total", systemTotalWealth);
-            valueResourceCounter.forEach(((material, count) ->
-                    config.set("wealth.valued-resource-count" + material.toString(), count)));
-            config.set("currency-issuance", currencyIssuance);
-            config.set("national-treasury", nationalTreasury);
-            try {
-                plugin.configManager.save("dyneco_cache.yml");
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }, 600L, 600L);
+            ecoObjective.unregister();
+            plugin.scoreboard.clearSlot(DisplaySlot.SIDEBAR);
+            ecoObjective = plugin.scoreboard.registerNewObjective("eco", "dummy", "经济系统统计", RenderType.INTEGER);
+            ecoObjective.setDisplaySlot(DisplaySlot.SIDEBAR);
+
+            ecoObjective.getScore(MessageFormat.format("系统价值总量: {0,number,#.##}", systemTotalWealth)).setScore(9);
+            ecoObjective.getScore(MessageFormat.format("货币发行量: {0,number,#.##}", currencyIssuance)).setScore(8);
+            ecoObjective.getScore(MessageFormat.format("国库货币储量: {0,number,#.##}", nationalTreasury)).setScore(7);
+            ecoObjective.getScore(MessageFormat.format("参考货币指数: {0,number,#.##}", referenceCurrencyIndex)).setScore(6);
+            ecoObjective.getScore(MessageFormat.format("收购货币指数: {0,number,#.##}", buyCurrencyIndex)).setScore(5);
+            ecoObjective.getScore(MessageFormat.format("出售货币指数: {0,number,#.##}", sellCurrencyIndex)).setScore(4);
+            plugin.getServer().getOnlinePlayers().forEach(player -> {
+                player.setScoreboard(plugin.scoreboard);
+            });
+        }, 10L, 10L);
     }
 
     /**
@@ -146,6 +161,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         mainConfig.getStringList("module-dynamicaleconomy.exclude-world").
                 forEach(world -> excludeWorld.add(plugin.getServer().getWorld(world)));
 
+        boolean ifInit = !plugin.configManager.touch("dyneco_cache.yml");
+
         FileConfiguration config = plugin.configManager.reload("dyneco_cache.yml");
         systemTotalWealth = config.getDouble("wealth.total");
 
@@ -154,7 +171,11 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         vrCountMap.getKeys(false).
                 forEach(key -> valueResourceCounter.put(Material.valueOf(key.toUpperCase()), vrCountMap.getLong(key)));
 
-        currencyIssuance = config.getDouble("currency-issuance");
+        if (ifInit) {
+            reloadCurrencyIssuance();
+        } else {
+            currencyIssuance = config.getDouble("currency-issuance");
+        }
         nationalTreasury = config.getDouble("national-treasury");
 
         systemCommodityListMap.forEach((material, systemCommodities) -> {
@@ -178,6 +199,23 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
                 systemCommodityListMap.put(mKey, commoditiesList);
             }
         });
+
+        updateCurrencyIndex();
+    }
+
+    public void updateAndSave() {
+        updateCurrencyIndex();
+        FileConfiguration config = plugin.configManager.get("dyneco_cache.yml");
+        config.set("wealth.total", systemTotalWealth);
+        valueResourceCounter.forEach(((material, count) ->
+                config.set("wealth.valued-resource-count." + material.toString(), count)));
+        config.set("currency-issuance", currencyIssuance);
+        config.set("national-treasury", nationalTreasury);
+        try {
+            plugin.configManager.save("dyneco_cache.yml");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -215,6 +253,23 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
                 break;
             }
         }
+    }
+
+    /**
+     * 玩家将物品从熔炉中取出时，更新系统总价值量
+     * @param event 玩家将物品从熔炉中取出的事件
+     */
+    @EventHandler(priority = EventPriority.LOWEST)
+    public void onFurnaceExtract(FurnaceExtractEvent event) {
+        if (!valueResourceValueMap.containsKey(event.getItemType()))
+            return;
+        if (excludeWorld.contains(event.getBlock().getWorld()))
+            return;
+        if (event.getPlayer().hasPermission("newnanplus.dynamiceconomy.statics.bypass"))
+            return;
+        Material cookedItemMaterial = event.getItemType();
+        systemTotalWealth += event.getItemAmount() * valueResourceValueMap.get(cookedItemMaterial);
+        valueResourceCounter.put(cookedItemMaterial, valueResourceCounter.get(cookedItemMaterial) + event.getItemAmount());
     }
 
     /**
@@ -310,7 +365,11 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      * 更新货币指数
      */
     private void updateCurrencyIndex() {
-        referenceCurrencyIndex = systemTotalWealth / currencyIssuance;
+        if (systemTotalWealth == 0 || currencyIssuance == 0) {
+            referenceCurrencyIndex = 1.0;
+        } else {
+            referenceCurrencyIndex = systemTotalWealth / currencyIssuance;
+        }
         buyCurrencyIndex = Math.pow(referenceCurrencyIndex, 0.691);
         sellCurrencyIndex = Math.pow(referenceCurrencyIndex, 1.309);
     }
