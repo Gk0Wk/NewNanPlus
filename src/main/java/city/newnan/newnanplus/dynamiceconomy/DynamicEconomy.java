@@ -28,6 +28,7 @@ import org.bukkit.scoreboard.RenderType;
 import org.bukkit.scoreboard.Scoreboard;
 import org.jetbrains.annotations.NotNull;
 import org.maxgamer.quickshop.event.*;
+import org.maxgamer.quickshop.shop.ContainerShop;
 import org.maxgamer.quickshop.shop.Shop;
 import org.maxgamer.quickshop.shop.ShopType;
 
@@ -350,9 +351,11 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // 统计国库
         currencyIssuance = nationalTreasury;
 
-        // 统计玩家
-        Arrays.stream(plugin.getServer().getOfflinePlayers()).forEach(
-                oPlayer -> currencyIssuance += plugin.vaultEco.getBalance(oPlayer));
+        // 统计玩家，去掉国库所有者
+        Arrays.stream(plugin.getServer().getOfflinePlayers()).forEach(oPlayer -> {
+            if (!oPlayer.getUniqueId().equals(ntOwner))
+                currencyIssuance += plugin.vaultEco.getBalance(oPlayer);
+        });
 
         // 统计城镇
         if (plugin.getModule(city.newnan.newnanplus.town.TownManager.class) != null)
@@ -371,6 +374,10 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // PAY是玩家之间传递，与国库无关
         // 不过pay会调用两次(付款方、收款方)，两次之后国库是不变的，所以就算检测了也没事(
         if (event.getCause().equals(UserBalanceUpdateEvent.Cause.COMMAND_PAY))
+            return;
+
+        // 屏蔽作为国库的玩家
+        if (event.getPlayer().getUniqueId().equals(ntOwner))
             return;
 
         // 其余的Cause都是玩家和国库的交互
@@ -423,6 +430,9 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         }
         buyCurrencyIndex = Math.pow(referenceCurrencyIndex, 0.691);
         sellCurrencyIndex = Math.pow(referenceCurrencyIndex, 1.309);
+
+        systemCommodityListMap.forEach(((material, systemCommodities) ->
+                systemCommodities.forEach(SystemCommodity::updateShops)));
     }
 
     /**
@@ -507,8 +517,10 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     @EventHandler
     public void onShopDelete(ShopDeleteEvent event) {
         // 检查是否为国库
-        if (event.getShop().getOwner().equals(ntOwner))
+        if (event.getShop().getOwner().equals(ntOwner)) {
+            Objects.requireNonNull(((ContainerShop) event.getShop()).getInventory()).clear();
             removeFromSystemShop(event.getShop());
+        }
     }
 
     /**
@@ -529,9 +541,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
             if (commodity != null && commodity.shopList.contains(shop)) {
                 // 如果在列表中，说明之前是国库，所以要清空库存
                 commodity.shopList.remove(shop);
-                ItemStack itemStack = shop.getItem();
-                itemStack.setAmount(0);
-                shop.setItem(itemStack);
+                Objects.requireNonNull(((ContainerShop) shop).getInventory()).clear();
             }
         }
     }
@@ -669,8 +679,8 @@ class SystemCommodity {
         if (ratio > 10) {
             ratio = 10;
         }
-        else if (ratio < 0.1) {
-            ratio = 0.1;
+        else if (ratio < 1.0) {
+            ratio = 1.0;
         }
         buyValue = value * Math.pow(ratio, 0.8);
         sellValue = value * Math.pow(ratio, 1.2);
@@ -682,9 +692,8 @@ class SystemCommodity {
 
     public void updateShop(Shop shop) {
         // 更新库存
-        ItemStack itemStack  = shop.getItem();
-        itemStack.setAmount(amount);
-        shop.setItem(itemStack);
+        Objects.requireNonNull(((ContainerShop) shop).getInventory()).clear();
+        shop.add(itemStack, amount);
 
         //更新价格
         if (shop.getShopType().equals(ShopType.BUYING)) {
