@@ -54,9 +54,10 @@ module-railexpress:
   block-type:
     # default speed is 0.4
     # max is 1.5
-    REDSTONE_BLOCK: 0.7
-    DIAMOND_BLOCK: 1.1
-    BEACON: 1.5
+    STONE_BRICKS: 0.6
+    REDSTONE_BLOCK: 0.9
+    EMERALD_BLOCK: 1.2
+    BARRIER: 1.5
 module-lagganalyzer:
   enable: false
 module-townmanager:
