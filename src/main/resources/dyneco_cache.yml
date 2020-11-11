@@ -6,12 +6,12 @@
 wealth:
   total: 0.0
   valued-resource-count:
-    COAL: 0
-    IRON_INGOT: 0
-    GOLD_INGOT: 0
-    REDSTONE: 0
-    LAPIS_LAZULI: 0
-    DIAMOND: 0
+    COAL_ORE: 0
+    IRON_ORE: 0
+    GOLD_ORE: 0
+    REDSTONE_ORE: 0
+    LAPIS_ORE: 0
+    DIAMOND_ORE: 0
     EMERALD_ORE: 0
     NETHER_QUARTZ_ORE: 0
 currency-issuance: 0.0

@@ -88,6 +88,11 @@ commands:
     usage: '/nnp allow <player>'
     aliases: 'allow'
     permission-node: 'newnanplus.playermanager.allow'
+  'nnp judgemental':
+    description: '进出风纪委员模式'
+    usage: '/nnp judgemental'
+    aliases: 'judgemental'
+    permission-node: 'newnanplus.judgemental'
   'nnp ctp':
     description: '进入自己的或者别人的创造区域'
     usage: '/nnp ctp [player]'
@@ -171,6 +176,9 @@ permissions:
   'newnanplus.playermanager.allow':
     description: '可以赋予玩家游玩权限的权限'
     default: op
+  'newnanplus.judgemental':
+    description: '进出风纪委员模式的权限'
+    default: false
   'newnanplus.createarea':
     description: '创造区管理权限'
     default: op

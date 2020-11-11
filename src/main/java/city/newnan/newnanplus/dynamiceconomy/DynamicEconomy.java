@@ -6,11 +6,13 @@ import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
 import net.ess3.api.events.UserBalanceUpdateEvent;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
@@ -19,8 +21,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockDropItemEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.ItemDespawnEvent;
-import org.bukkit.event.inventory.FurnaceExtractEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scoreboard.DisplaySlot;
@@ -64,32 +66,34 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         put(Material.NETHER_QUARTZ_ORE, Material.QUARTZ);  // 下界石英矿 -> 下界石英
     }};
 
+    private static final HashMap<Material, Material> valueResourceItemBlockMap = new HashMap<>();
+
     /**
      * 价值资源的价值量
      */
     private static final HashMap<Material, Double> valueResourceValueMap = new HashMap<>() {{
-        put(Material.COAL, 1.7);             // 煤炭
-        put(Material.IRON_INGOT, 3.2);       // 铁锭
-        put(Material.GOLD_INGOT, 12.5);      // 金锭
-        put(Material.REDSTONE, 35.0);        // 红石
-        put(Material.LAPIS_LAZULI, 90.0);    // 青金石
-        put(Material.DIAMOND, 100.0);        // 钻石
-        put(Material.EMERALD, 620.0);        // 绿宝石
-        put(Material.QUARTZ, 7.4);           // 下界石英
+        put(Material.COAL_ORE, 1.7);          // 煤矿石
+        put(Material.IRON_ORE, 3.2);          // 铁矿石
+        put(Material.GOLD_ORE, 12.5);         // 金矿石
+        put(Material.REDSTONE_ORE, 35.0);     // 红石矿石
+        put(Material.LAPIS_ORE, 90.0);        // 青金石矿石
+        put(Material.DIAMOND_ORE, 100.0);     // 钻石矿石
+        put(Material.EMERALD_ORE, 620.0);     // 绿宝石矿石
+        put(Material.NETHER_QUARTZ_ORE, 5.2); // 下界石英矿石
     }};
 
     /**
      * 价值资源的采集总量
      */
     private final HashMap<Material, Long> valueResourceCounter = new HashMap<>() {{
-        put(Material.COAL, 0L);             // 煤炭
-        put(Material.IRON_INGOT, 0L);       // 铁锭
-        put(Material.GOLD_INGOT, 0L);       // 金锭
-        put(Material.REDSTONE, 0L);         // 红石
-        put(Material.LAPIS_LAZULI, 0L);     // 青金石
-        put(Material.DIAMOND, 0L);          // 钻石
-        put(Material.EMERALD, 0L);          // 绿宝石
-        put(Material.QUARTZ, 0L);           // 下界石英
+        put(Material.COAL_ORE, 0L);          // 煤矿石
+        put(Material.IRON_ORE, 0L);          // 铁矿石
+        put(Material.GOLD_ORE, 0L);          // 金矿石
+        put(Material.REDSTONE_ORE, 0L);      // 红石矿石
+        put(Material.LAPIS_ORE, 0L);         // 青金石矿石
+        put(Material.DIAMOND_ORE, 0L);       // 钻石矿石
+        put(Material.EMERALD_ORE, 0L);       // 绿宝石矿石
+        put(Material.NETHER_QUARTZ_ORE, 0L); // 下界石英矿石
     }};
 
     public ConfigurationSection commodities;
@@ -123,6 +127,9 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         }
         reloadConfig();
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+
+        // 反射表
+        valueResourceBlockItemMap.forEach((key,value) -> valueResourceItemBlockMap.put(value, key));
 
         // 国库所有者是 NewNanCity
         ntOwner = ((city.newnan.newnanplus.playermanager.PlayerManager)
@@ -256,6 +263,9 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         if (args.length < 1) {
             throw new CommandExceptions.BadUsageException();
         }
+        if (sender instanceof ConsoleCommandSender) {
+            throw new CommandExceptions.RefuseConsoleException();
+        }
         issueCurrency(Double.parseDouble(args[0]));
         plugin.messageManager.sendMessage(sender, MessageFormat.format(
                 plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.dynamical_economy.issue_complete$"),
@@ -294,33 +304,40 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
             return;
         if (excludeWorld.contains(event.getBlock().getWorld()))
             return;
+        if (!event.getPlayer().getGameMode().equals(GameMode.SURVIVAL))
+            return;
         if (event.getPlayer().hasPermission("newnanplus.dynamiceconomy.statics.bypass"))
             return;
+        Material sourceDropItem = event.getBlockState().getType();
         Material targetDropItem = valueResourceBlockItemMap.get(event.getBlockState().getType());
         for (Item item : event.getItems()) {
-            if (item.getItemStack().getType().equals(targetDropItem)) {
-                systemTotalWealth += item.getItemStack().getAmount() * valueResourceValueMap.get(targetDropItem);
-                valueResourceCounter.put(targetDropItem, valueResourceCounter.get(targetDropItem) + item.getItemStack().getAmount());
+            if (item.getItemStack().getType().equals(targetDropItem) || item.getItemStack().getType().equals(sourceDropItem)) {
+                systemTotalWealth += valueResourceValueMap.get(sourceDropItem);
+                valueResourceCounter.put(sourceDropItem, valueResourceCounter.get(sourceDropItem) + 1);
                 break;
             }
         }
     }
 
     /**
-     * 玩家将物品从熔炉中取出时，更新系统总价值量
-     * @param event 玩家将物品从熔炉中取出的事件
+     * 玩家放置价值资源时，更新系统总价值量
+     * @param event 玩家放置价值资源时的事件
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onFurnaceExtract(FurnaceExtractEvent event) {
-        if (!valueResourceValueMap.containsKey(event.getItemType()))
+    public void onBlockPlace(BlockPlaceEvent event) {
+        if (event.isCancelled() || !event.canBuild())
             return;
-        if (excludeWorld.contains(event.getBlock().getWorld()))
+        if (!valueResourceBlockItemMap.containsKey(event.getBlockPlaced().getType()))
+            return;
+        if (excludeWorld.contains(event.getBlockPlaced().getWorld()))
+            return;
+        if (!event.getPlayer().getGameMode().equals(GameMode.SURVIVAL))
             return;
         if (event.getPlayer().hasPermission("newnanplus.dynamiceconomy.statics.bypass"))
             return;
-        Material cookedItemMaterial = event.getItemType();
-        systemTotalWealth += event.getItemAmount() * valueResourceValueMap.get(cookedItemMaterial);
-        valueResourceCounter.put(cookedItemMaterial, valueResourceCounter.get(cookedItemMaterial) + event.getItemAmount());
+        Material blockType = event.getBlockPlaced().getType();
+        systemTotalWealth -= valueResourceValueMap.get(blockType);
+        valueResourceCounter.put(blockType, valueResourceCounter.get(blockType) - 1);
     }
 
     /**
@@ -331,14 +348,22 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     public void onItemDespawn(ItemDespawnEvent event) {
         if (event.isCancelled())
             return;
-        if (!valueResourceBlockItemMap.containsKey(event.getEntity().getItemStack().getType()))
-            return;
         if (excludeWorld.contains(event.getLocation().getWorld()))
             return;
 
         ItemStack itemStack = event.getEntity().getItemStack();
-        systemTotalWealth -= itemStack.getAmount() * valueResourceValueMap.get(itemStack.getType());
-        valueResourceCounter.put(itemStack.getType(), valueResourceCounter.get(itemStack.getType()) - itemStack.getAmount());
+        if (valueResourceBlockItemMap.containsKey(itemStack.getType())) {
+            Material valueMaterial = itemStack.getType();
+            int amount = itemStack.getAmount();
+            systemTotalWealth -= amount * valueResourceValueMap.get(valueMaterial);
+            valueResourceCounter.put(valueMaterial, valueResourceCounter.get(valueMaterial) - amount);
+        }
+        else if (valueResourceBlockItemMap.containsValue(itemStack.getType())) {
+            Material valueMaterial = valueResourceItemBlockMap.get(itemStack.getType());
+            int amount = itemStack.getAmount();
+            systemTotalWealth -= amount * valueResourceValueMap.get(valueMaterial);
+            valueResourceCounter.put(valueMaterial, valueResourceCounter.get(valueMaterial) - amount);
+        }
     }
 
     // 物品以其他方式消失就不检测了，spigot这种太难做

@@ -2,6 +2,7 @@ package city.newnan.newnanplus.playermanager;
 
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
@@ -9,19 +10,24 @@ import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
+import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
@@ -35,6 +41,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
     private Group newbiesGroup;
     private Group playersGroup;
+    private Group judgementalGroup;
     private OverloadedWorldHolder workWorldsPermissionHandler;
 
     /**
@@ -64,8 +71,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 getWorldData(config.getString("module-playermanager.world-group"));
         newbiesGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.newbies-group"));
         playersGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.player-group"));
+        judgementalGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.judgemental-group"));
 
         plugin.commandManager.register("allow", this);
+        plugin.commandManager.register("judgemental", this);
     }
 
     private void refreshUpdateLog() {
@@ -84,6 +93,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
         if (token.equals("allow"))
             allowNewbieToPlayer(sender, args);
+        else if (token.equals("judgemental"))
+            toggleJudgementalMode(sender);
     }
 
     /**
@@ -206,6 +217,80 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
     }
 
+    /**
+     * 切换风纪委员的状态
+     * @param player 待切换状态的玩家
+     * @param toJudgemental 是否切换至风纪委员状态，false则反之
+     */
+    public void changeJudgementalMode(Player player, boolean toJudgemental) {
+        if (toJudgemental) {
+            player.setGameMode(GameMode.SPECTATOR);
+            player.hidePlayer(plugin, player);
+            player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false));
+            plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
+                    Objects.requireNonNull(plugin.configManager.get("config.yml").
+                            getString("module-playermanager.judgemental-fake-quit-message")),
+                    player.getName()
+            )));
+        } else {
+            player.setGameMode(GameMode.SURVIVAL);
+            player.showPlayer(plugin, player);
+            player.removePotionEffect(PotionEffectType.INVISIBILITY);
+            plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
+                    Objects.requireNonNull(plugin.configManager.get("config.yml").
+                            getString("module-playermanager.judgemental-fake-join-message")),
+                    player.getName()
+            )));
+        }
+    }
+
+    /**
+     * 玩家切换世界时触发，用于让风纪委员与其状态一致
+     * @param event 玩家切换世界的事件
+     */
+    @EventHandler
+    public void onPlayerChangedWorld(PlayerChangedWorldEvent event) {
+        OverloadedWorldHolder sourceWorldsHolder = plugin.groupManager.getWorldsHolder().
+                getWorldData(event.getFrom().toString());
+        OverloadedWorldHolder targetWorldsHolder = plugin.groupManager.getWorldsHolder().
+                getWorldData(Objects.requireNonNull(event.getPlayer().getLocation().getWorld()).toString());
+        boolean sourceJudgemental = sourceWorldsHolder.getUser(
+                event.getPlayer().getUniqueId().toString()).getGroup().equals(judgementalGroup);
+        boolean targetJudgemental = targetWorldsHolder.getUser(
+                event.getPlayer().getUniqueId().toString()).getGroup().equals(judgementalGroup);
+
+        // 风纪 -> 非风纪
+        if (sourceJudgemental && !targetJudgemental) {
+            changeJudgementalMode(event.getPlayer(), false);
+        }
+        // 非风纪 -> 风纪
+        else if (!sourceJudgemental && targetJudgemental) {
+            changeJudgementalMode(event.getPlayer(), true);
+        }
+    }
+
+    /**
+     * 切换玩家风纪委员状态的命令
+     * @param sender 命令执行者
+     * @throws Exception 命令异常
+     */
+    public void toggleJudgementalMode(CommandSender sender) throws Exception {
+        if (sender instanceof ConsoleCommandSender) {
+            throw new CommandExceptions.RefuseConsoleException();
+        }
+        if (sender instanceof Player) {
+            Player player = (Player) sender;
+            // 如果玩家当前是风纪委员组，就切换回玩家组
+            if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(judgementalGroup)) {
+                workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(playersGroup);
+                changeJudgementalMode(player, false);
+            } else {
+                // 否则就进入风纪委员组
+                workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(judgementalGroup);
+                changeJudgementalMode(player, true);
+            }
+        }
+    }
 
     /**
      * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组

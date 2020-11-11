@@ -18,7 +18,10 @@ module-playermanager:
   enable: true
   newbies-group: 'Newbie'
   player-group: 'Player'
+  judgemental-group: 'Judgemental'
   world-group: 'world'
+  judgemental-fake-join-message: "&f&l[&b牛腩小助手&f&l]&r 玩家&e{0}&f加入服务器。"
+  judgemental-fake-quit-message: "&f&l[&b牛腩小助手&f&l]&r 玩家&e{0}&f退出服务器。"
 module-feefly:
   enable: true
   tick-per-count: 20
