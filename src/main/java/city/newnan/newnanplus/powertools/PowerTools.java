@@ -5,12 +5,15 @@ import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
+import org.apache.commons.lang.StringUtils;
+import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
@@ -28,6 +31,7 @@ public class PowerTools implements NewNanPlusModule {
 
     public PowerTools() {
         plugin = NewNanPlus.getPlugin();
+        plugin.commandManager.register("msg", this);
         plugin.commandManager.register("titlemsg", this);
         plugin.commandManager.register("titlebroadcast", this);
         plugin.commandManager.register("whois", this);
@@ -54,6 +58,9 @@ public class PowerTools implements NewNanPlusModule {
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
         switch (token) {
+            case "msg":
+                sendMessage(args);
+                break;
             case "titlemsg":
                 sendTitleMessage(args);
                 break;
@@ -70,6 +77,20 @@ public class PowerTools implements NewNanPlusModule {
                 serializeItem(sender, args);
                 break;
         }
+    }
+
+    private void sendMessage(String[] args) throws Exception {
+        if (args.length < 2) {
+            throw new CommandExceptions.BadUsageException();
+        }
+        // 找到这个玩家，异常将会抛出
+        OfflinePlayer player = ((city.newnan.newnanplus.playermanager.PlayerManager)plugin
+                .getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).findOnePlayerByName(args[0]);
+        if (!player.isOnline()) {
+            throw new CommandExceptions.PlayerOfflineException();
+        }
+        plugin.messageManager.sendMessage(player.getPlayer(),
+                StringUtils.join(args, ' ', 1, args.length));
     }
 
     private void sendTitleMessage(String[] args) throws Exception {
@@ -138,6 +159,41 @@ public class PowerTools implements NewNanPlusModule {
                     player.playSound(player.getLocation(), finalSound, 1.0f, 1.0f);
             }
         });
+    }
+
+    public ItemStack createBook(String title, String author, List<String> lore, BookMeta.Generation generation, List<String> texts) {
+        ItemStack aBook = new ItemStack(Material.WRITTEN_BOOK);
+        BookMeta bookMeta = (BookMeta) aBook.getItemMeta();
+        assert bookMeta != null;
+
+        bookMeta.setTitle(title);
+        bookMeta.setAuthor(author);
+        bookMeta.setLore(lore);
+        bookMeta.setGeneration(generation);
+        int linePointer = 1;
+        StringBuilder pageBuffer = new StringBuilder();
+        List<String> pages = new ArrayList<>();
+        for (String text : texts) {
+            for (String line : text.split("\n")) {
+                linePointer++;
+                if (line.equals("---"))
+                    pageBuffer.append("===================").append('\n');
+                else if (!line.equals("\\p"))
+                    pageBuffer.append(line).append('\n');
+                if (linePointer == 14 || line.equals("\\p")) {
+                    pages.add(pageBuffer.toString());
+                    pageBuffer.delete(0, pageBuffer.length());
+                    linePointer = 0;
+                }
+            }
+        }
+        if (linePointer != 0) {
+            pages.add(pageBuffer.toString());
+            pageBuffer.delete(0, pageBuffer.length());
+        }
+        bookMeta.setPages(pages);
+        aBook.setItemMeta(bookMeta);
+        return aBook;
     }
 
     private void lookupPlayer(CommandSender sender, String[] args) throws Exception {

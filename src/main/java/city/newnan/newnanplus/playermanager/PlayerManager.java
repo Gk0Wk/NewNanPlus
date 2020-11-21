@@ -10,8 +10,8 @@ import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.GameMode;
-import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -24,14 +24,15 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
-import org.bukkit.potion.PotionEffect;
-import org.bukkit.potion.PotionEffectType;
 import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 
 public class PlayerManager implements Listener, NewNanPlusModule {
     /**
@@ -75,10 +76,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
         plugin.commandManager.register("allow", this);
         plugin.commandManager.register("judgemental", this);
-    }
-
-    private void refreshUpdateLog() {
-        plugin.configManager.reload("update_log.yml");
+        plugin.commandManager.register("pushtask", this);
     }
 
     /**
@@ -91,10 +89,17 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-        if (token.equals("allow"))
-            allowNewbieToPlayer(sender, args);
-        else if (token.equals("judgemental"))
-            toggleJudgementalMode(sender);
+        switch (token) {
+            case "allow":
+                allowNewbieToPlayer(sender, args);
+                break;
+            case "judgemental":
+                toggleJudgementalMode(sender);
+                break;
+            case "pushtask":
+                pushTaskCommand(sender, args);
+                break;
+        }
     }
 
     /**
@@ -105,7 +110,9 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
         joinCheck(event.getPlayer());
         touchPlayer(event.getPlayer());
+        emptyTaskQueue(event.getPlayer());
         showUpdateLog(event.getPlayer());
+
     }
 
     /**
@@ -124,21 +131,18 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @return 玩家实例
      * @throws Exception 如果找不到玩家或者找到多个玩家就会抛出的异常
      */
-    public Player findOnePlayerByName(String playerName) throws Exception {
-        // 查找对应的玩家
-        List<Player> players = plugin.getServer().matchPlayer(playerName);
-        // 检查玩家数量
-        if (players.size() == 0) {
-            throw new PlayerNotFountException();
-        } else if (players.size() > 1) {
-            throw new PlayerMoreThanOneException();
-        }
-        return players.get(0);
-    }
-
-    public UUID findOnePlayerUUIDByName(String playerName) throws Exception {
+    public OfflinePlayer findOnePlayerByName(String playerName) throws Exception {
+        OfflinePlayer player;
         try {
-            return findOnePlayerByName(playerName).getUniqueId();
+            // 查找对应的玩家
+            List<Player> players = plugin.getServer().matchPlayer(playerName);
+            // 检查玩家数量
+            if (players.size() == 0) {
+                throw new PlayerNotFountException();
+            } else if (players.size() > 1) {
+                throw new PlayerMoreThanOneException();
+            }
+            player = players.get(0);
         } catch (Exception e) {
             if (e instanceof PlayerNotFountException) {
                 OfflinePlayer[] players = Arrays.stream(plugin.getServer().getOfflinePlayers()).
@@ -149,11 +153,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 if (players.length == 0) {
                     throw new PlayerNotFountException();
                 }
-                return players[0].getUniqueId();
+                player = players[0];
             } else {
                 throw e;
             }
         }
+        return player;
     }
 
     /**
@@ -168,32 +173,16 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
 
         // 寻找目标玩家
-        Player player = plugin.getServer().getPlayer(args[0]);
+        OfflinePlayer player = ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
+                getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).findOnePlayerByName(args[0]);
+
         // 是否需要刷新新人名单
         boolean need_refresh = false;
 
         FileConfiguration newbiesList = plugin.configManager.get("newbies_list.yml");
 
-        // 如果玩家不在线或不存在，就存到配置里
-        if (player == null) {
-            // 获取未通过的新人组的List
-            List<String> list_not = newbiesList.getStringList("not-passed-newbies");
-            if (list_not.contains(args[0])) {
-                list_not.remove(args[0]);
-                newbiesList.set("not-passed-newbies", list_not);
-                need_refresh = true;
-            }
-            // 获取已通过的新人组的List
-            List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
-            if (!list_yet.contains(args[0])) {
-                list_yet.add(args[0]);
-                newbiesList.set("yet-passed-newbies", list_yet);
-                need_refresh = true;
-            }
-            plugin.messageManager.sendMessage(sender,
-                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_later$"));
-        } else {
-            // 如果玩家在线，就直接赋予权限
+        if (player != null) {
+            // 如果能找到玩家，说明玩家至少已经进过一次游戏了，就直接赋予权限
             // 但是要检查一下原来所在的组
             if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(newbiesGroup)) {
                 workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(playersGroup);
@@ -212,6 +201,27 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                         plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.not_newbie_already$"));
             }
         }
+
+        // 如果玩家不在线或不存在，就存到配置里
+        else {
+            // 获取未通过的新人组的List
+            List<String> list_not = newbiesList.getStringList("not-passed-newbies");
+            if (list_not.contains(args[0])) {
+                list_not.remove(args[0]);
+                newbiesList.set("not-passed-newbies", list_not);
+                need_refresh = true;
+            }
+            // 获取已通过的新人组的List
+            List<String> list_yet = newbiesList.getStringList("yet-passed-newbies");
+            if (!list_yet.contains(args[0])) {
+                list_yet.add(args[0]);
+                newbiesList.set("yet-passed-newbies", list_yet);
+                need_refresh = true;
+            }
+            plugin.messageManager.sendMessage(sender,
+                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_later$"));
+        }
+
         if (need_refresh) {
             plugin.configManager.save("newbies_list.yml");
         }
@@ -223,24 +233,19 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param toJudgemental 是否切换至风纪委员状态，false则反之
      */
     public void changeJudgementalMode(Player player, boolean toJudgemental) {
+        plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "vanish " + player.getName());
         if (toJudgemental) {
             player.setGameMode(GameMode.SPECTATOR);
-            player.hidePlayer(plugin, player);
-            player.addPotionEffect(new PotionEffect(PotionEffectType.INVISIBILITY, Integer.MAX_VALUE, 1, false));
             plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
                     Objects.requireNonNull(plugin.configManager.get("config.yml").
                             getString("module-playermanager.judgemental-fake-quit-message")),
-                    player.getName()
-            )));
+                    player.getName())));
         } else {
             player.setGameMode(GameMode.SURVIVAL);
-            player.showPlayer(plugin, player);
-            player.removePotionEffect(PotionEffectType.INVISIBILITY);
             plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
                     Objects.requireNonNull(plugin.configManager.get("config.yml").
                             getString("module-playermanager.judgemental-fake-join-message")),
-                    player.getName()
-            )));
+                    player.getName())));
         }
     }
 
@@ -292,6 +297,55 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
     }
 
+    public void emptyTaskQueue(OfflinePlayer player) throws Exception {
+        final ConsoleCommandSender sender = plugin.getServer().getConsoleSender();
+        String filePath = "player/" + player.getUniqueId().toString() + ".yml";
+        FileConfiguration playerConfig = plugin.configManager.get(filePath);
+        if (playerConfig.isList("login-task-queue")) {
+            List<String> commands = playerConfig.getStringList("login-task-queue");
+            commands.forEach(command -> {
+                plugin.messageManager.printINFO("Run command: " + command);
+                plugin.getServer().dispatchCommand(sender, command);
+            });
+            commands.clear();
+            playerConfig.set("login-task-queue", commands);
+            plugin.configManager.save(filePath);
+        }
+    }
+
+    public void pushTaskCommand(CommandSender sender, String[] args) throws Exception {
+        if (args.length < 2) {
+            throw new BadUsageException();
+        }
+        // 找到这个玩家，异常将会抛出
+        OfflinePlayer player = findOnePlayerByName(args[0]);
+        String command = StringUtils.join(args, ' ', 1, args.length);
+        pushTask(player, command);
+        plugin.messageManager.sendMessage(sender, MessageFormat.format(
+                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.pushtask_succeed$"),
+                player.getName(), command));
+    }
+
+    public void pushTask(OfflinePlayer player, String command) throws Exception {
+        String filePath = "player/" + player.getUniqueId().toString() + ".yml";
+        FileConfiguration playerConfig = plugin.configManager.get(filePath);
+
+        List<String> commands;
+        if (playerConfig.isList("login-task-queue")) {
+            commands = playerConfig.getStringList("login-task-queue");
+        } else {
+            commands = new ArrayList<>();
+        }
+        commands.add(command);
+        playerConfig.set("login-task-queue", commands);
+
+        if (!player.isOnline()) {
+            plugin.configManager.unload(filePath, true);
+        } else {
+            plugin.configManager.save(filePath);
+        }
+    }
+
     /**
      * 检查玩家的权限，如果玩家是新人则通知其去做问卷；如果已在验证新人名单里就直接送入玩家组
      * @param player 待检测的玩家实例
@@ -340,53 +394,36 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     }
 
     public void showUpdateLog(Player player) throws Exception {
+        final String header = plugin.wolfyLanguageAPI.replaceColoredKeys(
+                "$module_message.player_manager.updatelog_head$") + "§r\n";
+        final String title = plugin.wolfyLanguageAPI.
+                replaceColoredKeys("$module_message.player_manager.updatelog_title$");
+
         FileConfiguration updateLog = plugin.configManager.reload("update_log.yml");
         FileConfiguration playerConfig =
                 plugin.configManager.get("player/" + player.getUniqueId().toString() + ".yml");
         long lastTime = playerConfig.getLong("last-login-time", 0);
 
-        StringBuilder pageBuffer = new StringBuilder();
-        pageBuffer.append(plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.player_manager.updatelog_head$")).append("§r\n\n");
-        int line = 1;
-        boolean isEmpty = true;
-        //
-        List<String> pages = new ArrayList<>();
-        ConfigurationSection logs = updateLog.getConfigurationSection("logs");
-        if (logs == null)
+        List<String> logs = new ArrayList<>();
+        logs.add(header);
+
+        ConfigurationSection logsSection = updateLog.getConfigurationSection("logs");
+        if (logsSection == null)
             return;
-        for (String key : logs.getKeys(false)) {
-            if (plugin.dateFormatter.parse(key).getTime() > lastTime) {
-                isEmpty = false;
-                for (String paragraph : Objects.requireNonNull(logs.getString(key)).split("\n")) {
-                    line++;
-                    pageBuffer.append(paragraph).append('\n');
-                    if (line == 14) {
-                        pages.add(pageBuffer.toString());
-                        pageBuffer.delete(0, pageBuffer.length());
-                        line = 0;
-                    }
+        logsSection.getKeys(false).forEach(date -> {
+            try {
+                if (plugin.dateFormatter.parse(date).getTime() > lastTime) {
+                    logs.add(logsSection.getString(date));
                 }
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
+        });
+        if (logs.size() > 1) {
+            player.openBook(((city.newnan.newnanplus.powertools.PowerTools)
+                    plugin.getModule(city.newnan.newnanplus.powertools.PowerTools.class))
+                    .createBook(title, "NewNanCity", null, BookMeta.Generation.ORIGINAL, logs));
         }
-        //
-        if (isEmpty)
-            return;
-        //
-        if (line != 0) {
-            pages.add(pageBuffer.toString());
-            pageBuffer.delete(0, pageBuffer.length());
-        }
-        //
-        ItemStack mailBook = new ItemStack(Material.WRITTEN_BOOK);
-        BookMeta bookMeta = (BookMeta) mailBook.getItemMeta();
-        assert bookMeta != null;
-        bookMeta.setAuthor("NewNanCity");
-        bookMeta.setTitle(plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.player_manager.updatelog_title$"));
-        bookMeta.setPages(pages);
-        mailBook.setItemMeta(bookMeta);
-        player.openBook(mailBook);
         //
         playerConfig.set("last-login-time", System.currentTimeMillis());
         plugin.configManager.save("player/" + player.getUniqueId().toString() + ".yml");
@@ -398,7 +435,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      * @param email 信件名称
      * @return 如果true说明玩家完成阅读，false说明需要回滚到未读状态
      */
-    public boolean showEmail(Player player, String email) {
+    public boolean showEmail(Player player, String email, boolean hasRead) {
         FileConfiguration emailConfig = plugin.configManager.get("email/" + email + ".yml");
         String author = emailConfig.getString("author");
         String title = emailConfig.getString("title");
@@ -418,35 +455,25 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         } else {
             availableTime = 0;
         }
-        String text = emailConfig.getString("text");
-        assert text != null;
         //
-        ItemStack mailBook = new ItemStack(Material.WRITTEN_BOOK);
-        BookMeta bookMeta = (BookMeta) mailBook.getItemMeta();
-        assert bookMeta != null;
-        bookMeta.setAuthor(author);
-        bookMeta.setTitle(title);
-        List<String> pages = new ArrayList<>();
-        //
-        StringBuilder pageBuffer = new StringBuilder();
-        pageBuffer.append("§l").append(title).append("§r\n");
-        pageBuffer.append("§4").append(author).append("§r\n");
-        pageBuffer.append("§7").append(dateString).append("§r\n\n");
-        int line = 4;
-        //
-        if (commands.size() != 0) {
+        List<String> texts = new ArrayList<>();
+        texts.add("§l" + title + "§r");
+        texts.add("§4" + author + "§r");
+        texts.add("§7" + dateString + "§r\n");
+
+        if (commands.size() != 0 && !hasRead) {
             if (availableTime > System.currentTimeMillis()) {
-                pageBuffer.append(plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.player_manager.email_outdated$")).append("§r\n\n");
-                line++;
+                texts.add(plugin.wolfyLanguageAPI.replaceColoredKeys(
+                        "$module_message.player_manager.email_outdated$") + "§r\n");
             } else {
                 if (requireInventory && player.getInventory().firstEmpty() == -1) {
                     // 命令需要玩家物品栏有空位置,否则退回
-                    pages.add(pageBuffer.toString() + plugin.wolfyLanguageAPI.
-                            replaceColoredKeys("$module_message.player_manager.email_require_inventory$"));
-                    bookMeta.setPages(pages);
-                    mailBook.setItemMeta(bookMeta);
-                    player.openBook(mailBook);
+                    texts.add(plugin.wolfyLanguageAPI.replaceColoredKeys
+                            ("$module_message.player_manager.email_require_inventory$"));
+
+                    player.openBook(((city.newnan.newnanplus.powertools.PowerTools)
+                            plugin.getModule(city.newnan.newnanplus.powertools.PowerTools.class))
+                            .createBook(title, author, null, BookMeta.Generation.ORIGINAL, texts));
                     return false;
                 } else {
                     CommandSender sender = plugin.getServer().getConsoleSender();
@@ -459,38 +486,23 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 权限检查
         if (permission != null && !permission.isEmpty() && !player.hasPermission(permission)) {
             if (permissionMessage != null && !permissionMessage.isEmpty()) {
-                pages.add(pageBuffer.toString() + WolfyUtilities.translateColorCodes(permissionMessage));
+                texts.add(WolfyUtilities.translateColorCodes(permissionMessage));
+            } else {
+                texts.add(plugin.wolfyLanguageAPI.
+                        replaceColoredKeys("$module_message.player_manager.email_no_permission$"));
             }
-            pages.add(pageBuffer.toString() + plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.player_manager.email_no_permission$"));
-            bookMeta.setPages(pages);
-            mailBook.setItemMeta(bookMeta);
-            player.openBook(mailBook);
-
+            player.openBook(((city.newnan.newnanplus.powertools.PowerTools)
+                    plugin.getModule(city.newnan.newnanplus.powertools.PowerTools.class))
+                    .createBook(title, author, null, BookMeta.Generation.ORIGINAL, texts));
             return false;
         }
-
-        for (String paragraph : text.split("\n")) {
-            line++;
-            if (paragraph.equals("---"))
-                pageBuffer.append("===================").append('\n');
-            else
-                pageBuffer.append(paragraph).append('\n');
-            if (line == 14) {
-                pages.add(pageBuffer.toString());
-                pageBuffer.delete(0, pageBuffer.length());
-                line = 0;
-            }
-        }
-        if (line != 0) {
-            pages.add(pageBuffer.toString());
-            pageBuffer.delete(0, pageBuffer.length());
-        }
-
-        bookMeta.setPages(pages);
-        mailBook.setItemMeta(bookMeta);
-        player.openBook(mailBook);
-
+        //
+        String text = emailConfig.getString("text");
+        assert text != null;
+        texts.add(text);
+        player.openBook(((city.newnan.newnanplus.powertools.PowerTools)
+                plugin.getModule(city.newnan.newnanplus.powertools.PowerTools.class))
+                .createBook(title, author, null, BookMeta.Generation.ORIGINAL, texts));
         return true;
     }
 

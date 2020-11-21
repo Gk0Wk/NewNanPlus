@@ -83,6 +83,11 @@ commands:
     usage: '/nnp listfly'
     aliases: 'listfly'
     permission-node: 'newnanplus.feefly.list'
+  'nnp pushtask':
+    description: '将一个命令放入某个玩家的登录执行队列中'
+    usage: '/nnp pushtask <command>'
+    permission-node: 'newnanplus.playermanager.logintask.push'
+    hidden: true
   'nnp allow':
     description: '允许某玩家正式进入游戏(获得玩家权限)'
     usage: '/nnp allow <player>'
@@ -93,6 +98,7 @@ commands:
     usage: '/nnp judgemental'
     aliases: 'judgemental'
     permission-node: 'newnanplus.judgemental'
+    hidden: true
   'nnp ctp':
     description: '进入自己的或者别人的创造区域'
     usage: '/nnp ctp [player]'
@@ -112,6 +118,11 @@ commands:
     description: '通过名字或者UUID查找玩家'
     usage: '/nnp whois [name:<name>] [uuid:<uuid>]'
     permission-node: 'newnanplus.powertools.whois'
+  'nnp msg':
+    description: '以插件的名义发送某条消息'
+    usage: '/nnp msg <player> <message>'
+    permission-node: 'newnanplus.powertools.msg.send'
+    hidden: true
   'nnp titlemsg':
     description: '为某个玩家播放标题通知'
     usage: '/nnp titlemsg <player> [title:<title>] [subtitle:<subtitle>] [sound:<sound>]'
@@ -176,6 +187,9 @@ permissions:
   'newnanplus.playermanager.allow':
     description: '可以赋予玩家游玩权限的权限'
     default: op
+  'newnanplus.playermanager.logintask.push':
+    description: '将一个命令放入某个玩家的登录执行队列中的权限'
+    default: false
   'newnanplus.judgemental':
     description: '进出风纪委员模式的权限'
     default: false
@@ -199,9 +213,15 @@ permissions:
   'newnanplus.createarea.teleport.other':
     description: '可以传送到别人的创造区的权限'
     default: op
+  'newnanplus.createarea.bypass':
+    description: '无需创造区也可以保留创造世界权限'
+    default: false
   'newnanplus.powertools.whois':
     description: '通过名字或者UUID查找玩家的权限'
     default: op
+  'newnanplus.powertools.msg.send':
+    description: '以插件的名义发送某条消息的权限'
+    default: false
   'newnanplus.powertools.titlemsg.send':
     description: '为某个玩家播放标题通知的权限'
     default: op

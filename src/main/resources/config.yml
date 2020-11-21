@@ -57,6 +57,7 @@ module-railexpress:
   block-type:
     # default speed is 0.4
     # max is 1.5
+    SOUL_SAND: 0.2
     STONE_BRICKS: 0.6
     REDSTONE_BLOCK: 0.9
     EMERALD_BLOCK: 1.2

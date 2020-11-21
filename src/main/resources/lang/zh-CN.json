@@ -41,7 +41,8 @@
             "email_no_permission": "&c你没有权限打开信件！",
             "email_require_inventory": "&c该信件包含奖励物品，\n请保证您的背包中有\n足够的空间再来领取！",
             "updatelog_title": "更新日志",
-            "updatelog_head": "&l====[&c&l更新日志&r&l]===="
+            "updatelog_head": "&l====[&c&l更新日志&r&l]====",
+            "pushtask_succeed": "已向玩家{0}添加登录时命令：{1}"
         },
         "fee_fly": {
             "in_invalid_gamemode": "玩家在创造或者观察者模式下，不能进入付费飞行。",

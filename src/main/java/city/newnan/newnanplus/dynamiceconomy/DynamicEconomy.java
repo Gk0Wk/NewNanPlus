@@ -134,8 +134,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // 国库所有者是 NewNanCity
         ntOwner = ((city.newnan.newnanplus.playermanager.PlayerManager)
                 plugin.getModule(city.newnan.newnanplus.playermanager.PlayerManager.class))
-                .findOnePlayerUUIDByName(plugin.configManager.get("config.yml")
-                        .getString("module-dynamicaleconomy.owner-player"));
+                .findOnePlayerByName(plugin.configManager.get("config.yml")
+                        .getString("module-dynamicaleconomy.owner-player")).getUniqueId();
 
         SystemCommodity.ntOwner = plugin.getServer().getOfflinePlayer(ntOwner);
         SystemCommodity.plugin = plugin;

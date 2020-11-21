@@ -13,7 +13,7 @@
     <!--name 指定了 maven 工程的名字，可以省略-->
     <name>NewNanPlus</name>
     <!--version 指定了当前工程的版本号-->
-    <version>1.7.3</version>
+    <version>1.7.4</version>
 
     <!--设置编码方式是为了保证跨平台的兼容性，而设置源及目标的JDK版本是为了能够正确的使用某些特性，否则在使用lambda的时候都有可能会编译错误-->
     <properties>
@@ -22,6 +22,7 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <package>city.newnan.newnanplus</package>
     </properties>
+    <url>https://www.newnan.city</url>
 
     <repositories>
         <repository>
@@ -55,14 +56,14 @@
         <dependency>
             <groupId>net.ess3</groupId>
             <artifactId>EssentialsX</artifactId>
-            <version>2.18.1</version>
+            <version>2.18.2</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <!--https://github.com/ElgarL/GroupManager-->
             <groupId>com.github.ElgarL</groupId>
             <artifactId>groupmanager</artifactId>
-            <version>2.8</version>
+            <version>2.9</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -87,16 +88,16 @@
         <dependency>
             <groupId>com.wolfyscript</groupId>
             <artifactId>wolfyutilities</artifactId>
-            <version>1.6.2.15</version>
+            <version>1.6.2.16</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.15.jar</systemPath>
+            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.16.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.maxgamer</groupId>
             <artifactId>QuickShop</artifactId>
-            <version>4.0.4.14</version>
+            <version>4.0.5.1</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/QuickShop-4.0.4.14.jar</systemPath>
+            <systemPath>${project.basedir}/lib/QuickShop-4.0.5.1.jar</systemPath>
         </dependency>
         <dependency>
             <!--https://github.com/webbukkit/dynmap/wiki-->
