@@ -171,9 +171,17 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             throw new BadUsageException();
         }
 
-        // 寻找目标玩家
-        OfflinePlayer player = ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
-                getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).findOnePlayerByName(args[0]);
+        OfflinePlayer player;
+        try {
+            // 寻找目标玩家
+            player = ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
+                    getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).findOnePlayerByName(args[0]);
+        } catch (Exception e) {
+            if (e instanceof PlayerNotFountException)
+                player = null;
+            else
+                throw e;
+        }
 
         // 是否需要刷新新人名单
         boolean need_refresh = false;
