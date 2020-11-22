@@ -8,7 +8,7 @@ public class EnchantmentTranslator {
     public String of(Enchantment enchantment) {
         return translationMap.get(enchantment);
     }
-    private static final HashMap<Enchantment, String> translationMap = new HashMap<>() {{
+    private static final HashMap<Enchantment, String> translationMap = new HashMap<Enchantment, String>() {{
         put(Enchantment.ARROW_DAMAGE            , "力量");
         put(Enchantment.ARROW_FIRE              , "火矢");
         put(Enchantment.ARROW_INFINITE          , "无限");

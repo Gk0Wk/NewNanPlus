@@ -17,7 +17,7 @@ public class CronExpression {
 
     private static final List<Integer> LAST_DAY_OF_MONTH = Arrays.asList(0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31);
 
-    private static final HashMap<String, Integer> MONTH_NAME_MAP = new HashMap<>() {{
+    private static final HashMap<String, Integer> MONTH_NAME_MAP = new HashMap<String, Integer>() {{
         put("jan",  1); put("january",   1); put("1",   1);
         put("feb",  2); put("february",  2); put("2",   2);
         put("mar",  3); put("march",     3); put("3",   3);
@@ -31,7 +31,7 @@ public class CronExpression {
         put("nov", 11); put("november", 11); put("11", 11);
         put("dec", 12); put("december", 12); put("12", 12);
     }};
-    private static final HashMap<String, Integer> DAYOFWEEK_NAME_MAP = new HashMap<>() {{
+    private static final HashMap<String, Integer> DAYOFWEEK_NAME_MAP = new HashMap<String, Integer>() {{
         put("mon", 1); put("monday",    1); put("1", 1);
         put("tue", 2); put("tuesday",   2); put("2", 2);
         put("wed", 3); put("wednesday", 3); put("3", 3);

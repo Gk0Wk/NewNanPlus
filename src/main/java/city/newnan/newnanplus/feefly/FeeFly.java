@@ -109,7 +109,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 不能在遍历的时候删除元组，所以需要暂时记录
             Vector<Player> ToDeleteFlyingPlayer = new Vector<>();
 
-            // 遍历飞行玩家 - 改用Lambda forEach
+            // 遍历飞行玩家
             flyingPlayers.forEach(((player, flyingPlayer) -> {
                 if (player.hasPermission("newnanplus.feefly.free")) {
                     plugin.messageManager.sendPlayerActionBar(

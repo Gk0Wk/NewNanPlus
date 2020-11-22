@@ -55,7 +55,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
      * 价值资源矿与价值资源的对应
      */
-    private static final HashMap<Material, Material> valueResourceBlockItemMap = new HashMap<>() {{
+    private static final HashMap<Material, Material> valueResourceBlockItemMap = new HashMap<Material, Material>() {{
         put(Material.COAL_ORE, Material.COAL);             // 煤矿 -> 煤炭
         put(Material.IRON_ORE, Material.IRON_INGOT);       // 铁矿 -> 铁锭
         put(Material.GOLD_ORE, Material.GOLD_INGOT);       // 金矿 -> 金锭
@@ -71,7 +71,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
      * 价值资源的价值量
      */
-    private static final HashMap<Material, Double> valueResourceValueMap = new HashMap<>() {{
+    private static final HashMap<Material, Double> valueResourceValueMap = new HashMap<Material, Double>() {{
         put(Material.COAL_ORE, 1.7);          // 煤矿石
         put(Material.IRON_ORE, 3.2);          // 铁矿石
         put(Material.GOLD_ORE, 12.5);         // 金矿石
@@ -85,7 +85,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     /**
      * 价值资源的采集总量
      */
-    private final HashMap<Material, Long> valueResourceCounter = new HashMap<>() {{
+    private final HashMap<Material, Long> valueResourceCounter = new HashMap<Material, Long>() {{
         put(Material.COAL_ORE, 0L);          // 煤矿石
         put(Material.IRON_ORE, 0L);          // 铁矿石
         put(Material.GOLD_ORE, 0L);          // 金矿石

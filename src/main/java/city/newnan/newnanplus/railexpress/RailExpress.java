@@ -79,45 +79,45 @@ public class RailExpress implements NewNanPlusModule, Listener {
 
     /**
      * 实体离开交通工具时触发，复原矿车速度，以免追不上车
-     * @param e 实体离开交通工具的事件
+     * @param event 实体离开交通工具的事件
      */
     @EventHandler(priority = EventPriority.NORMAL)
-    public void onVehicleExit(VehicleExitEvent e) {
+    public void onVehicleExit(VehicleExitEvent event) {
         // 是否是矿车
-        if (!(e.getVehicle() instanceof Minecart))
+        if (!(event.getVehicle() instanceof Minecart))
             return;
         // 检查世界
-        if (excludeWorlds.contains(e.getVehicle().getWorld()))
+        if (excludeWorlds.contains(event.getVehicle().getWorld()))
             return;
         // 看矿车只能坐一个实体，所以退出的就是刚才的唯一的实体
-        // if (e.getVehicle().isEmpty())
-        ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
+        // if (event.getVehicle().isEmpty())
+        ((Minecart) event.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
     }
 
     /**
      * 交通工具移动时触发，检测矿车、所在世界，如果跑在激活铁轨上，就根据铁轨下面的方块确定加速比
-     * @param e 交通工具移动事件
+     * @param event 交通工具移动事件
      */
     @EventHandler(priority = EventPriority.NORMAL)
-    void onVehicleMove(VehicleMoveEvent e) {
+    void onVehicleMove(VehicleMoveEvent event) {
         // 是否是矿车
-        if (!(e.getVehicle() instanceof Minecart))
+        if (!(event.getVehicle() instanceof Minecart))
             return;
         // 检查世界
-        if (excludeWorlds.contains(e.getVehicle().getWorld()))
+        if (excludeWorlds.contains(event.getVehicle().getWorld()))
             return;
         // 空车不加速
-        if (e.getVehicle().isEmpty())
+        if (event.getVehicle().isEmpty())
             return;
 
         // 需要是激活铁轨才加速，否则重置成原速
-        Block curBlock = e.getVehicle().getLocation().getBlock();
+        Block curBlock = event.getVehicle().getLocation().getBlock();
         if (curBlock.getType().equals(Material.POWERED_RAIL)) {
             // 看看铁轨下面的方块是什么，赋予相应的速度
             Block belowBlock = curBlock.getRelative(BlockFace.DOWN);
-            ((Minecart) e.getVehicle()).setMaxSpeed(blockSpeedMap.getOrDefault(belowBlock.getType(), DEFAULT_SPEED));
+            ((Minecart) event.getVehicle()).setMaxSpeed(blockSpeedMap.getOrDefault(belowBlock.getType(), DEFAULT_SPEED));
         }
         // 否则设置为默认速度
-        else ((Minecart) e.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
+        else ((Minecart) event.getVehicle()).setMaxSpeed(DEFAULT_SPEED);
     }
 }

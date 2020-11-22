@@ -108,11 +108,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
-        joinCheck(event.getPlayer());
         touchPlayer(event.getPlayer());
+        joinCheck(event.getPlayer());
         emptyTaskQueue(event.getPlayer());
         showUpdateLog(event.getPlayer());
-
     }
 
     /**
@@ -199,6 +198,16 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             } else {
                 plugin.messageManager.sendMessage(sender,
                         plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.not_newbie_already$"));
+                if (player.isOnline()) {
+                    plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
+                            replaceColoredKeys("$module_message.player_manager.you_are_nolonger_newbie$"));
+                } else {
+                    ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
+                            getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).
+                            pushTask(player, MessageFormat.format("nnp msg {0} {1}", player.getName(),
+                                    plugin.wolfyLanguageAPI.
+                                            replaceKeys("$module_message.player_manager.you_are_nolonger_newbie$")));
+                }
             }
         }
 
@@ -364,6 +373,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 list_yet.remove(player.getName());
                 newbiesList.set("yet-passed-newbies", list_yet);
                 need_refresh = true;
+                plugin.messageManager.sendMessage(player, plugin.wolfyLanguageAPI.
+                        replaceColoredKeys("$module_message.player_manager.you_are_nolonger_newbie$"));
             } else {
                 plugin.messageManager.sendPlayerMessage(player, plugin.wolfyLanguageAPI.
                         replaceColoredKeys("$module_message.player_manager.you_are_newbie$"));

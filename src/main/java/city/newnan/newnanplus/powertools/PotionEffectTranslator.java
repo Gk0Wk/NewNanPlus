@@ -8,7 +8,7 @@ public class PotionEffectTranslator {
     public String of(PotionEffectType potionEffectType) {
         return translationMap.get(potionEffectType);
     }
-    private static final HashMap<PotionEffectType, String> translationMap = new HashMap<>() {{
+    private static final HashMap<PotionEffectType, String> translationMap = new HashMap<PotionEffectType, String>() {{
         put(PotionEffectType.ABSORPTION         , "伤害吸收");
         put(PotionEffectType.BAD_OMEN           , "不祥之兆");
         put(PotionEffectType.BLINDNESS          , "失明");

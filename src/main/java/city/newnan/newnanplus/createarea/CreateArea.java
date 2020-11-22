@@ -35,9 +35,21 @@ public class CreateArea implements NewNanPlusModule, Listener {
      */
     private final NewNanPlus plugin;
 
+    /**
+     * 创造世界实例
+     */
     private World createWorld;
+    /**
+     * 创造区标记集对象
+     */
     private MarkerSet createAreaMarkers;
+    /**
+     * GroupManager 创造世界Builder组
+     */
     private Group builderGroup;
+    /**
+     * GroupManager 创造世界实例
+     */
     private OverloadedWorldHolder createWorldPermissionHandler;
 
     /**
@@ -75,7 +87,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
         createWorldPermissionHandler = plugin.groupManager.getWorldsHolder().getWorldData(createWorld.getName());
         builderGroup = createWorldPermissionHandler.getGroup(createArea.getString("builder-group"));
 
-        // 检查有无没有在图中画出的创造区域
+        // 检查有没有在图中画出的创造区域
         ConfigurationSection areas = createArea.getConfigurationSection("areas");
         assert areas != null;
         for (String areaID : areas.getKeys(false)) {
@@ -241,9 +253,16 @@ public class CreateArea implements NewNanPlusModule, Listener {
         // 存储设置
         plugin.configManager.save("create_area.yml");
 
-        if (player.isOnline())
+        if (player.isOnline()) {
             plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
                     replaceColoredKeys("$module_message.create_area.create_area_player_notice$"));
+        } else {
+            ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
+                    getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).
+                    pushTask(player, MessageFormat.format("nnp msg {0} {1}",
+                            player.getName(), plugin.wolfyLanguageAPI.
+                                    replaceKeys("$module_message.create_area.create_area_player_notice$")));
+        }
     }
 
     /**
@@ -278,6 +297,12 @@ public class CreateArea implements NewNanPlusModule, Listener {
         if (player.isOnline()) {
             plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
                     replaceColoredKeys("$module_message.create_area.remove_area_player_notice$"));
+        } else {
+            ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
+                    getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).
+                    pushTask(player, MessageFormat.format("nnp msg {0} {1}",
+                            player.getName(), plugin.wolfyLanguageAPI.
+                                    replaceKeys("$module_message.create_area.remove_area_player_notice$")));
         }
     }
 

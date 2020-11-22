@@ -8,7 +8,7 @@ public class MaterialTranslator {
     public String of(Material material) {
         return translationMap.get(material);
     }
-    private static final HashMap<Material, String> translationMap = new HashMap<>() {{
+    private static final HashMap<Material, String> translationMap = new HashMap<Material, String>() {{
         put(Material.ACACIA_BOAT                   , "金合欢木船");
         put(Material.ACACIA_BUTTON                 , "金合欢木按钮");
         put(Material.ACACIA_DOOR                   , "金合欢木门");
