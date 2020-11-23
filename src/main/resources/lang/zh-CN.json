@@ -1,7 +1,7 @@
 {
     "author": "Sttot",
     "version": "${version}",
-    "chat_prefix": "&f&l[&b牛腩小助手&f&l] &r",
+    "chat_prefix": "&f&l[&4牛腩酱&f&l] &r",
     "console_prefix": "${project.name}",
     "global_message": {
         "no_permission": "你没有这样做的权限！",
@@ -67,6 +67,30 @@
         },
         "dynamical_economy": {
             "issue_complete": "货币发行/销毁成功，当前货币发行量: {0} {1}"
+        },
+        "teleport" : {
+            "tpa_accept_receive": "&a对方接受了你的传送请求",
+            "tpa_accept_send": "&a你接受了 &r{0}&a 的传送请求",
+            "tpa_refuse_receive": "&c对方拒绝了你的传送请求",
+            "tpa_refuse_send": "&c你拒绝了 &r{0}&c 的传送请求",
+            "cooling_down": "传送技能冷却中，还剩{0}",
+            "request_sent": "传送请求已发送",
+            "request_outdated": "&c对方的传送请求已超时",
+            "request_notfound": "&c没有该传送请求，或请求已处理",
+            "tpa_request": "            {0} 想来你这里瞧瞧~",
+            "tpahere_request": "            {0} 邀请你去他那边做客~",
+            "gui_accept_title": "[接受]",
+            "gui_accept_describe_tpa": "&a接受请求，对方将传送到你身边！",
+            "gui_accept_describe_tpahere": "&a接受请求，你将传送到对方身边！",
+            "gui_refuse_title": "[拒绝]",
+            "gui_refuse_describe": "&c拒绝对方的请求！",
+            "gui_block_title": "[拉黑]",
+            "gui_block_describe": "&c该玩家以后的传送消息都将不会提示\n&b使用指令 &6/tpaallow <玩家名> \n&c可以从你的黑名单中删除这个玩家！",
+            "block_tpa_failed_for_same_player": "&c拉黑失败！不能把自己加入黑名单！",
+            "block_tpa_failed_for_file": "&c拉黑失败！文件读写异常，请通知管理员！",
+            "block_tpa_succeed": "&a加入黑名单成功！",
+            "block_tpa_remove_succeed": "&a取消拉黑成功！",
+            "request_failed_for_sane_player": "&c你不可以传送自己！"
         }
     },
     "inventories": {

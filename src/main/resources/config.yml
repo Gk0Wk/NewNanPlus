@@ -66,3 +66,9 @@ module-lagganalyzer:
   enable: false
 module-townmanager:
   enable: false
+module-teleport:
+  tpa:
+    enable: false
+    cooldown-time: 300
+    delay-time: 3
+    outdated-time: 100

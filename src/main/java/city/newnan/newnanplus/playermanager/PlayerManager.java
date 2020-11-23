@@ -57,6 +57,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
 
         // 注册监听函数
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+
+        plugin.commandManager.register("allow", this);
+        plugin.commandManager.register("judgemental", this);
+        plugin.commandManager.register("pushtask", this);
     }
 
     /**
@@ -73,10 +77,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         newbiesGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.newbies-group"));
         playersGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.player-group"));
         judgementalGroup = workWorldsPermissionHandler.getGroup(config.getString("module-playermanager.judgemental-group"));
-
-        plugin.commandManager.register("allow", this);
-        plugin.commandManager.register("judgemental", this);
-        plugin.commandManager.register("pushtask", this);
     }
 
     /**

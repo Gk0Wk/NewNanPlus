@@ -74,6 +74,7 @@ commands:
     usage: '/nnp save'
     permission-node: 'newnanplus.save'
     hidden: true
+  ################### 飞行 模块 ###################
   'nnp fly':
     description: '用它飞起来或者取消飞行模式，记得着落再取消'
     usage: '/nnp fly [player]'
@@ -83,6 +84,7 @@ commands:
     usage: '/nnp listfly'
     aliases: 'listfly'
     permission-node: 'newnanplus.feefly.list'
+  ################### 玩家 模块 ###################
   'nnp pushtask':
     description: '将一个命令放入某个玩家的登录执行队列中'
     usage: '/nnp pushtask <command>'
@@ -99,6 +101,7 @@ commands:
     aliases: 'judgemental'
     permission-node: 'newnanplus.judgemental'
     hidden: true
+  ################### 创造区模块 ###################
   'nnp ctp':
     description: '进入自己的或者别人的创造区域'
     usage: '/nnp ctp [player]'
@@ -114,6 +117,7 @@ commands:
     usage: '/nnp cdel <player>'
     aliases: ['cdel', 'cremove', 'cdelete']
     permission-node: 'newnanplus.createarea.remove'
+  ################### PowerTools ###############T####
   'nnp whois':
     description: '通过名字或者UUID查找玩家'
     usage: '/nnp whois [name:<name>] [uuid:<uuid>]'
@@ -143,6 +147,7 @@ commands:
     permission-node: 'newnanplus.powertools.itemtools.serialize'
     console: false
     aliases: 'serializeitem'
+  ################### 经济 模块 ###################
   'nnp ecosidebar':
     description: '开关经济系统统计数据(侧边排行榜)'
     usage: '/nnp showeco'
@@ -154,6 +159,43 @@ commands:
     usage: '/nnp issue <amount>'
     permission-node: 'newnanplus.dynamicaleconomy.issue'
     console: true
+  ################### TPA 模块 ###################
+  'nnp tpa':
+    description: '向某玩家发送传送到对方的请求'
+    usage: '/nnp tpa <player>'
+    permission-node: 'newnanplus.tpa.tpa'
+    console: false
+    aliases: 'tpa'
+  'nnp tpahere':
+    description: '向某玩家发送传送到自己的请求'
+    usage: '/nnp tpahere <player>'
+    permission-node: 'newnanplus.tpa.tpahere'
+    console: false
+    aliases: 'tpahere'
+  'nnp tpaaccept':
+    description: '同意某玩家的传送请求(tpa或tpahere)'
+    usage: '/nnp tpaaccept <uuid>'
+    permission-node: 'newnanplus.tpa.accept'
+    console: false
+    aliases: 'tpaaccept'
+  'nnp tparefuse':
+    description: '拒绝某玩家的传送请求(tpa或tpahere)'
+    usage: '/nnp tparefuse <uuid>'
+    permission-node: 'newnanplus.tpa.refuse'
+    console: false
+    aliases: 'tparefuse'
+  'nnp tpablock':
+    description: '将某人拉入传送黑名单(不接受其tpa或tpahere请求)'
+    usage: '/nnp tpablock <uuid>'
+    permission-node: 'newnanplus.tpa.block'
+    console: false
+    aliases: 'tpablock'
+  'nnp tpaallow':
+    description: '将某人从传送黑名单移除'
+    usage: '/nnp tpaallow <uuid>'
+    permission-node: 'newnanplus.tpa.allow'
+    console: false
+    aliases: 'tpablock'
 
 # 权限节点，可选
 permissions:
@@ -252,3 +294,27 @@ permissions:
   'newnanplus.dynamicaleconomy.issue':
     description: '调整国库货币量的权限'
     default: false
+  'newnanplus.tpa.tpa':
+    description: '向某玩家发送传送到对方的请求的权限'
+    default: false
+  'newnanplus.tpa.tpahere':
+    description: '向某玩家发送传送到自己的请求的权限'
+    default: false
+  'newnanplus.tpa.accept':
+    description: '同意某玩家的传送请求(tpa或tpahere)的权限'
+    default: false
+  'newnanplus.tpa.refuse':
+    description: '拒绝某玩家的传送请求(tpa或tpahere)的权限'
+    default: false
+  'newnanplus.tpa.block':
+    description: '将某人拉入传送黑名单(不接受其tpa或tpahere请求)的权限'
+    default: false
+  'newnanplus.tpa.allow':
+    description: '将某人从传送黑名单移除的权限'
+    default: false
+  'newnanplus.tpa.bypassblock':
+    description: '无视黑名单的权限'
+    default: op
+  'newnanplus.teleport.free':
+    description: '在拥有该权限的世界的传输距离免费'
+    default: op

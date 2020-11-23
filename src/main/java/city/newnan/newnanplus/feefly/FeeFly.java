@@ -195,7 +195,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      * @param second 待格式化的秒数
      * @return 格式化的字符串
      */
-    private static String formatSecond(int second) {
+    public static String formatSecond(int second) {
         if (second < 60) {
             return second + "秒";
         }else if (second < 3600) {
