@@ -23,11 +23,26 @@ import java.util.List;
 import java.util.UUID;
 
 public class Tpa implements NewNanPlusModule {
+    /**
+     * 插件实例
+     */
     private final NewNanPlus plugin;
+    /**
+     * 会话缓存实例
+     */
     SessionCache sessionCache;
 
+    /**
+     * 传送邀请指令冷却时间(对方接受传送起开始冷却)
+     */
     public long tpCoolDownTime;
+    /**
+     * 传送执行延迟
+     */
     public long tpDelayTime;
+    /**
+     * 传送会话过期时间
+     */
     public long tpOutdatedTime;
 
     public Tpa() throws Exception {
@@ -93,19 +108,30 @@ public class Tpa implements NewNanPlusModule {
         }
     }
 
+    /**
+     * 拒绝传送
+     * @param targetPlayer 拒绝者(被邀请人)
+     * @param sourcePlayer 被拒绝者(邀请人)
+     */
     public void refuseTpa(Player targetPlayer, Player sourcePlayer)
     {
         Boolean tpaHere = checkSession(targetPlayer, sourcePlayer);
         if (tpaHere == null)
             return;
 
-        sessionCache.del(sourcePlayer.getUniqueId());
+        sessionCache.remove(sourcePlayer.getUniqueId());
         plugin.messageManager.sendMessage(targetPlayer, MessageFormat.format(plugin.wolfyLanguageAPI.
                 replaceColoredKeys("$module_message.teleport.tpa_refuse_send$"), sourcePlayer.getName()));
         plugin.messageManager.sendMessage(sourcePlayer,
                 plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.tpa_refuse_receive$"));
     }
 
+    /**
+     * 检查指定两个玩家之间是否有传送请求
+     * @param targetPlayer 被邀请人
+     * @param sourcePlayer 邀请人
+     * @return 如果是TPAHere则返回true，反之为false，如果没有找到请求就返回null
+     */
     private Boolean checkSession(final Player targetPlayer, final Player sourcePlayer) {
         long time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPA");
         if (time < 0) {
@@ -128,6 +154,11 @@ public class Tpa implements NewNanPlusModule {
         return null;
     }
 
+    /**
+     * 接受传送邀请
+     * @param targetPlayer 被邀请人
+     * @param sourcePlayer 邀请人
+     */
     public void acceptTpa(final Player targetPlayer, final Player sourcePlayer)
     {
         Boolean tpaHere = checkSession(targetPlayer, sourcePlayer);
@@ -162,7 +193,13 @@ public class Tpa implements NewNanPlusModule {
         plugin.messageManager.sendMessage(sourcePlayer,
                 plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.tpa_accept_receive$"));
 
-        sessionCache.set(sourcePlayer.getUniqueId(), null, "CoolDown", tpCoolDownTime);
+        // 设置冷却
+        if (sourcePlayer.hasPermission("newnanplus.teleport.nocooldown")) {
+            sessionCache.remove(sourcePlayer.getUniqueId());
+        } else {
+            sessionCache.set(sourcePlayer.getUniqueId(), null, "CoolDown", tpCoolDownTime);
+        }
+
         boolean finalTpaHere = tpaHere;
         (new BukkitRunnable() {
             public void run()
@@ -176,6 +213,12 @@ public class Tpa implements NewNanPlusModule {
         }).runTaskLater(plugin, tpDelayTime);
     }
 
+    /**
+     * 发送传送邀请
+     * @param sourcePlayer 邀请人
+     * @param targetPlayer 被邀请人
+     * @param tpaHere 是否为tpahere
+     */
     public void requestTpa(Player sourcePlayer, Player targetPlayer, boolean tpaHere)
     {
         // 检查冷却
@@ -188,7 +231,8 @@ public class Tpa implements NewNanPlusModule {
         }
 
         // 如果在黑名单里，就不给对方发消息了
-        if (!isInBlackList(targetPlayer, sourcePlayer)) {
+        // 但如果有权限就依然可以
+        if (!isInBlackList(targetPlayer, sourcePlayer) || sourcePlayer.hasPermission("newnanplus.tpa.bypassblock")) {
             final TextComponent spaceText = new TextComponent(" ");
             TextComponent requestText = new TextComponent(MessageFormat.format(
                     plugin.wolfyLanguageAPI.replaceColoredKeys(tpaHere ?
@@ -246,6 +290,12 @@ public class Tpa implements NewNanPlusModule {
                 plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.request_sent$"));
     }
 
+    /**
+     * 检查某个玩家是不是在另一个玩家的传送请求黑名单里
+     * @param hostPlayer 检查者
+     * @param operatedPlayer 被检查者
+     * @return
+     */
     public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer)
     {
         List<String> blockList = plugin.configManager.get("player/" + hostPlayer.getUniqueId().toString() + ".yml")
@@ -253,6 +303,11 @@ public class Tpa implements NewNanPlusModule {
         return blockList.contains(operatedPlayer.getUniqueId().toString());
     }
 
+    /**
+     * 将一个玩家添加到另一个玩家的传送请求黑名单里
+     * @param hostPlayer 添加者
+     * @param operatedPlayer 被添加者
+     */
     public void addToBlackList(Player hostPlayer, OfflinePlayer operatedPlayer)
     {
         try {
@@ -263,7 +318,7 @@ public class Tpa implements NewNanPlusModule {
             } else {
                 // 找一下本来存在的会话
                 if (sessionCache.test(hostPlayer.getUniqueId(), operatedPlayerUUID, null) >= 0) {
-                    sessionCache.del(hostPlayer.getUniqueId());
+                    sessionCache.remove(hostPlayer.getUniqueId());
                 }
 
                 String configPath = "player/" + hostPlayer.getUniqueId().toString() + ".yml";
@@ -283,6 +338,12 @@ public class Tpa implements NewNanPlusModule {
         }
     }
 
+    /**
+     * 将一个玩家从另一个玩家的传送请求黑名单里移除
+     * @param hostPlayer 移除者
+     * @param operatedPlayer 被移除者
+     * @throws Exception
+     */
     public void removeFromBlackList(Player hostPlayer, OfflinePlayer operatedPlayer) throws Exception {
         UUID operatedPlayerUUID = operatedPlayer.getUniqueId();
 

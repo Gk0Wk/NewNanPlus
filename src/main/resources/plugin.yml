@@ -307,13 +307,16 @@ permissions:
     description: '拒绝某玩家的传送请求(tpa或tpahere)的权限'
     default: false
   'newnanplus.tpa.block':
-    description: '将某人拉入传送黑名单(不接受其tpa或tpahere请求)的权限'
+    description: '将某人拉入传送请求黑名单(不接受其tpa或tpahere请求)的权限'
     default: false
   'newnanplus.tpa.allow':
-    description: '将某人从传送黑名单移除的权限'
+    description: '将某人从传送请求黑名单移除的权限'
     default: false
   'newnanplus.tpa.bypassblock':
-    description: '无视黑名单的权限'
+    description: '无视传送请求黑名单的权限'
+    default: op
+  'newnanplus.teleport.nocooldown':
+    description: '传送无冷却'
     default: op
   'newnanplus.teleport.free':
     description: '在拥有该权限的世界的传输距离免费'
