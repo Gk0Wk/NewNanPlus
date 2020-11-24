@@ -13,7 +13,8 @@
         "bad_usage": "命令使用不正确！(使用方法：{0})",
         "only_console": "该指令只允许控制台输入！",
         "custom_command_error": "指令执行出错：{0}",
-        "access_file_error": "无法访问文件：{0}"
+        "access_file_error": "无法访问文件：{0}",
+        "no_more_space_in_inventory": "背包空间不足！"
     },
     "module_message": {
         "create_area": {
@@ -63,7 +64,8 @@
             "death_message_to_console": "玩家 {0} 死亡，扣除 {1,number,#.##} ₦。"
         },
         "power_tools": {
-            "user_display_format": "玩家名称: {0} UUID: {1}"
+            "user_display_format": "玩家名称: {0} UUID: {1}",
+            "skull_create_succeed": "头颅获取成功，请自行命名或进行其他编辑。"
         },
         "dynamical_economy": {
             "issue_complete": "货币发行/销毁成功，当前货币发行量: {0} {1}"

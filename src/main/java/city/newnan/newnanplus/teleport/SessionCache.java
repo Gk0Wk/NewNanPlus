@@ -1,4 +1,4 @@
-package city.newnan.newnanplus.tpa;
+package city.newnan.newnanplus.teleport;
 
 import java.util.HashMap;
 import java.util.UUID;

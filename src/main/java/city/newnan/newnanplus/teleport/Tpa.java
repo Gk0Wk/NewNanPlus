@@ -1,4 +1,4 @@
-package city.newnan.newnanplus.tpa;
+package city.newnan.newnanplus.teleport;
 
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;

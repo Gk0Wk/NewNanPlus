@@ -37,6 +37,7 @@ public class PowerTools implements NewNanPlusModule {
         plugin.commandManager.register("whois", this);
         plugin.commandManager.register("deserializeitem", this);
         plugin.commandManager.register("serializeitem", this);
+        plugin.commandManager.register("skull", this);
     }
 
     /**
@@ -75,6 +76,9 @@ public class PowerTools implements NewNanPlusModule {
                 break;
             case "serializeitem":
                 serializeItem(sender, args);
+                break;
+            case "skull":
+                SkullKits.skullCommand(sender, args);
                 break;
         }
     }

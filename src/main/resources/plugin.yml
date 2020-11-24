@@ -147,6 +147,11 @@ commands:
     permission-node: 'newnanplus.powertools.itemtools.serialize'
     console: false
     aliases: 'serializeitem'
+  'nnp skull':
+    description: '通过给定的材质code(从http://textures.minecraft.net/texture/获取)创建头颅'
+    usage: '/nnp skull <code>'
+    permission-node: 'newnanplus.powertools.skullkits.create'
+    console: false
   ################### 经济 模块 ###################
   'nnp ecosidebar':
     description: '开关经济系统统计数据(侧边排行榜)'
@@ -159,6 +164,7 @@ commands:
     usage: '/nnp issue <amount>'
     permission-node: 'newnanplus.dynamicaleconomy.issue'
     console: true
+    hidden: true
   ################### TPA 模块 ###################
   'nnp tpa':
     description: '向某玩家发送传送到对方的请求'
@@ -178,6 +184,7 @@ commands:
     permission-node: 'newnanplus.tpa.accept'
     console: false
     aliases: 'tpaaccept'
+    hidden: true
   'nnp tparefuse':
     description: '拒绝某玩家的传送请求(tpa或tpahere)'
     usage: '/nnp tparefuse <uuid>'
@@ -196,6 +203,18 @@ commands:
     permission-node: 'newnanplus.tpa.allow'
     console: false
     aliases: 'tpablock'
+  'nnp city':
+    description: '传送回到主城'
+    usage: '/nnp city'
+    permission-node: 'newnanplus.teleport.city'
+    console: false
+    aliases: 'city'
+  'nnp home':
+    description: '传送回家(床)'
+    usage: '/nnp home'
+    permission-node: 'newnanplus.teleport.home'
+    console: false
+    aliases: 'home'
 
 # 权限节点，可选
 permissions:
@@ -281,10 +300,13 @@ permissions:
       'newnanplus.powertools.itemtools.serialize': true
   'newnanplus.powertools.itemtools.deserialize':
     description: '逆序列化物品权限'
-    default: false
+    default: op
   'newnanplus.powertools.itemtools.serialize':
     description: '序列化物品权限'
-    default: false
+    default: op
+  'newnanplus.powertools.skullkits.create':
+    description: '通过给定的材质code(从http://textures.minecraft.net/texture/获取)创建头颅的权限'
+    default: op
   'newnanplus.dynamiceconomy.statics.bypass':
     description: '动态经济在价值资源采集检查时忽略的玩家'
     default: false

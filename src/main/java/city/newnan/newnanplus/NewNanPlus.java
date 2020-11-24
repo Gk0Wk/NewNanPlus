@@ -170,6 +170,8 @@ public class NewNanPlus extends JavaPlugin {
             loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
             loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
             loadModule(city.newnan.newnanplus.dynamiceconomy.DynamicEconomy.class, "动态经济模块");
+            loadModule(city.newnan.newnanplus.teleport.Tpa.class, "TPA模块");
+            loadModule(city.newnan.newnanplus.teleport.Teleport.class, "传送模块");
             messageManager.printINFO("§6---------------------------------------------------");
         }
 
