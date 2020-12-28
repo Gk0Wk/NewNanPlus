@@ -13,7 +13,7 @@
     <!--name 指定了 maven 工程的名字，可以省略-->
     <name>NewNanPlus</name>
     <!--version 指定了当前工程的版本号-->
-    <version>1.7.4</version>
+    <version>1.7.5</version>
     <url>https://www.newnan.city</url>
 
     <repositories>
@@ -84,16 +84,16 @@
         <dependency>
             <groupId>com.wolfyscript</groupId>
             <artifactId>wolfyutilities</artifactId>
-            <version>1.6.2.18</version>
+            <version>1.6.2.19</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.18.jar</systemPath>
+            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.2.19.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.maxgamer</groupId>
             <artifactId>QuickShop</artifactId>
-            <version>4.0.5.3</version>
+            <version>4.0.5.9</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/QuickShop-4.0.5.3.jar</systemPath>
+            <systemPath>${project.basedir}/lib/QuickShop-4.0.5.9.jar</systemPath>
         </dependency>
         <dependency>
             <!--https://github.com/webbukkit/dynmap/wiki-->

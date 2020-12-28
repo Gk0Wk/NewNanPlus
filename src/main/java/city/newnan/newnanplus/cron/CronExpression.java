@@ -78,16 +78,16 @@ public class CronExpression {
         String[] expressionSplits = expressionString.split(" ");
 
         // 秒解析
-        this.secondList = parseToArray(expressionSplits[0], 60, LEGAL_SECOND_INTERVAL_LIST, null);
+        this.secondList = parseToArray(expressionSplits[0], 60, LEGAL_SECOND_INTERVAL_LIST, null, false);
 
         // 分解析
-        this.minuteList = parseToArray(expressionSplits[1], 60, LEGAL_MINUTE_INTERVAL_LIST, null);
+        this.minuteList = parseToArray(expressionSplits[1], 60, LEGAL_MINUTE_INTERVAL_LIST, null, false);
 
         // 时解析
-        this.hourList = parseToArray(expressionSplits[2], 24, LEGAL_HOUR_INTERVAL_LIST, null);
+        this.hourList = parseToArray(expressionSplits[2], 24, LEGAL_HOUR_INTERVAL_LIST, null, false);
 
         // 月解析
-        this.monthList = parseToArray(expressionSplits[4], 12, LEGAL_MONTH_INTERVAL_LIST, MONTH_NAME_MAP);
+        this.monthList = parseToArray(expressionSplits[4], 13, LEGAL_MONTH_INTERVAL_LIST, MONTH_NAME_MAP, true);
 
         // 常规周解析
         this.availableRegularDayOfWeek = parseRegularDayOfWeekList(expressionSplits[5]);
@@ -505,13 +505,13 @@ public class CronExpression {
      * @param valueLimit 数值上线，排除非法数值，如秒是60，时是24
      * @return int[]实例
      */
-    private int[] parseToArray(String subExpression, int valueLimit, List<Integer> legalIntervalList, Map<String, Integer> optionalMap) {
+    private int[] parseToArray(String subExpression, int valueLimit, List<Integer> legalIntervalList, Map<String, Integer> optionalMap, boolean startFromOne) {
         ArrayList<Integer> tmpList = new ArrayList<>();
         // 按 ',' 分割
         for (String splits : subExpression.split(",")) {
             // 识别 '*' 通配符
             if (splits.equals("*")) {
-                for (int i = 0; i < valueLimit; i++) {
+                for (int i = (startFromOne ? 1 : 0); i < valueLimit; i++) {
                     atomicListAdd(tmpList, i);
                 }
                 break;
@@ -521,7 +521,7 @@ public class CronExpression {
             if (splits.matches("\\*/\\d+")) {
                 int interval = parseInt(splits.split("/")[1], optionalMap);
                 if (legalIntervalList.contains(interval)) {
-                    for (int i = 0; i < valueLimit; i+=interval) {
+                    for (int i = (startFromOne ? 1 : 0); i < valueLimit; i+=interval) {
                         atomicListAdd(tmpList, i);
                     }
                 }

@@ -1,17 +1,31 @@
 package city.newnan.newnanplus.teleport;
 
+import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
+import city.newnan.newnanplus.exception.ModuleExeptions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.jetbrains.annotations.NotNull;
 
 public class Teleport implements NewNanPlusModule {
+    private final NewNanPlus plugin;
+    /**
+     * 会话缓存实例
+     */
+    SessionCache sessionCache;
+
+    public Teleport() throws Exception {
+        plugin = NewNanPlus.getPlugin();
+        if (!plugin.configManager.get("config.yml").getBoolean("module-teleport.enable.enable", false))
+            throw new ModuleExeptions.ModuleOffException();
+        sessionCache = new SessionCache();
+    }
+
     /**
      * 重新加载模块的配置
      */
     @Override
     public void reloadConfig() {
-
     }
 
     /**

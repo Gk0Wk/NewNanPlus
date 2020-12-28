@@ -4,7 +4,9 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
+import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
@@ -44,6 +46,22 @@ public class SkullKits {
     }
 
     /**
+     * 通过指定玩家来获取对应的头颅
+     * @param player 要获取头颅的所属玩家
+     * @return 一个拥有材质的头颅
+     */
+    public static ItemStack getSkull(OfflinePlayer player) {
+        // 创建一个头
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1);
+        SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
+        assert skullMeta != null;
+        // 指定头的主人
+        skullMeta.setOwningPlayer(player);
+        skull.setItemMeta(skullMeta);
+        return skull;
+    }
+
+    /**
      * /nnp skull指令
      * @param sender 指令发送者
      * @param args 指令参数
@@ -55,7 +73,7 @@ public class SkullKits {
         }
 
         Player player = (Player) sender;
-        if (player.getInventory().addItem(getSkull("http://textures.minecraft.net/texture/" + args[0])).size() > 0) {
+        if (player.getInventory().addItem(PlayerHeadUtils.getViaValue(args[0])).size() > 0) {
             throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().
                     wolfyLanguageAPI.replaceColoredKeys("$global_message.no_more_space_in_inventory$"));
         }

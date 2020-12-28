@@ -7,6 +7,9 @@ permission-message: ''
 require-inventory: false
 # Will replace @s to the user reading this email.
 commands: []
+# 大写就为Material(参考https://bukkit.windit.net/javadoc/org/bukkit/Material.html)
+# 否则就是头颅材质链接
+icon:
 text: |-
   Blah
   Blah

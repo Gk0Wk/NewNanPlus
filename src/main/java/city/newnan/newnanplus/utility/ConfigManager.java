@@ -6,8 +6,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 配置文件管理器，管理包括config.yml、plugin.yml等在内的配置文件
@@ -24,12 +23,42 @@ public class ConfigManager {
     private final HashMap<String, FileConfiguration> configMap = new HashMap<>();
 
     /**
+     * 配置文件访问时间戳
+     */
+    private final HashMap<String, Long> configTimestampMap = new HashMap<>();
+
+    /**
+     * 持久化保存的配置文件
+     */
+    private final HashSet<String> persistentConfigSet = new HashSet<String>() {{
+        add("config.yml");
+    }};
+
+    /**
      * 构造函数
      * @param plugin 要绑定的插件
      */
     public ConfigManager(Plugin plugin) {
         this.plugin = plugin;
         assert get("config.yml") != null;
+
+        // 自动卸载长时间未使用的配置文件
+        plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, () -> {
+            long outdatedTime = System.currentTimeMillis() - 1800000;
+            List<String> outdatedConfigFiles = new ArrayList<>();
+            configTimestampMap.forEach((config, time) -> {
+                if (time <= outdatedTime && persistentConfigSet.contains(config)) {
+                    outdatedConfigFiles.add(config);
+                }
+            });
+            outdatedConfigFiles.forEach(config -> {
+                try {
+                    unload(config, true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+        }, 36000L, 36000L);
     }
 
     /**
@@ -74,7 +103,7 @@ public class ConfigManager {
             BufferedOutputStream output = new BufferedOutputStream(new FileOutputStream(file));
             int len;
             byte[] bytes = new byte[1024];
-            while ((len=input.read(bytes)) != -1) {
+            while ((len = input.read(bytes)) != -1) {
                 output.write(bytes, 0, len);
             }
             input.close();
@@ -99,6 +128,7 @@ public class ConfigManager {
         FileConfiguration config = configFile.equals("config.yml") ? plugin.getConfig() :
                 YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), configFile));
         this.configMap.put(configFile, config);
+        this.configTimestampMap.put(configFile, System.currentTimeMillis());
         return config;
     }
 
@@ -117,6 +147,7 @@ public class ConfigManager {
         touchOrCopyTemplate(targetFile, templateFile);
         FileConfiguration config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), targetFile));
         this.configMap.put(targetFile, config);
+        this.configTimestampMap.put(targetFile, System.currentTimeMillis());
         return config;
     }
 
@@ -137,6 +168,7 @@ public class ConfigManager {
                     plugin.saveConfig();
                 } else {
                     this.configMap.get(configFile).save(new File(plugin.getDataFolder(), configFile));
+                    this.configTimestampMap.put(configFile, System.currentTimeMillis());
                 }
             } catch (IOException e) {
                 e.printStackTrace();
@@ -156,6 +188,7 @@ public class ConfigManager {
         if (configFile.equals("config.yml"))
             return;
         FileConfiguration config = this.configMap.remove(configFile);
+        this.persistentConfigSet.remove(configFile);
         if (config == null || !save)
             return;
         try {
@@ -187,6 +220,7 @@ public class ConfigManager {
             config = YamlConfiguration.loadConfiguration(new File(plugin.getDataFolder(), configFile));
         }
         this.configMap.put(configFile, config);
+        this.configTimestampMap.put(configFile, System.currentTimeMillis());
         return config;
     }
 
@@ -211,5 +245,21 @@ public class ConfigManager {
                 e.printStackTrace();
             }
         });
+    }
+
+    /**
+     * 将某个文件设置为持久化保存的，即不会因为长久未访问就从内存中卸载
+     * @param configFile 要持久化保存的配置文件名
+     */
+    public void setPersistent(String configFile) {
+        persistentConfigSet.add(configFile);
+    }
+
+    /**
+     * 取消持久化保存
+     * @param configFile 要取消持久化保存的配置文件名
+     */
+    public void unsetPersistent(String configFile) {
+        persistentConfigSet.remove(configFile);
     }
 }

@@ -69,8 +69,10 @@ module-townmanager:
 module-teleport:
   tpa:
     enable: false
-    cooldown-time: 300
+    cooldown-time: 10
     delay-time: 3
     outdated-time: 100
   teleport:
     enable: false
+    cooldown-time: 300
+    delay-time: 3

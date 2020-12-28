@@ -1,6 +1,6 @@
 {
-    "author": "Sttot",
     "version": "${version}",
+    "author": "Sttot",
     "chat_prefix": "&f&l[&4牛腩酱&f&l] &r",
     "console_prefix": "${project.name}",
     "global_message": {
@@ -14,7 +14,13 @@
         "only_console": "该指令只允许控制台输入！",
         "custom_command_error": "指令执行出错：{0}",
         "access_file_error": "无法访问文件：{0}",
-        "no_more_space_in_inventory": "背包空间不足！"
+        "no_more_space_in_inventory": "背包空间不足！",
+        "save_all_config_succeed": "配置保存完毕。",
+        "save_config_succeed": "配置文件 {0} 保存完毕。",
+        "plugin_reload_succeed": "插件重载完毕。",
+        "module_reload_succeed": "模块 {0} 重载完毕。",
+        "function_not_open": "功能未开放，敬请期待!",
+        "page_number": "&7第{0}页"
     },
     "module_message": {
         "create_area": {
@@ -36,9 +42,9 @@
             "welcome_subtitle": "&b请加QQ群并跟随官网指引完成入服仪式",
             "you_are_newbie": "&c欢迎你！请加QQ群(1037840198)并跟随官网(newnan.city)指引完成入服仪式！",
             "you_are_nolonger_newbie": "&c你已通过申请，获得游玩权限，快和大家打个招呼吧！",
-            "allow_later": "操作成功，玩家未上线，稍后玩家登录后将自动获得权限。",
-            "allow_succeed": "操作成功，赋予玩家权限。",
-            "not_newbie_already": "该玩家已不是新人。",
+            "allow_later": "操作成功，玩家({0})未上线，稍后玩家登录后将自动获得权限。",
+            "allow_succeed": "操作成功，赋予玩家({0})权限。",
+            "not_newbie_already": "该玩家({0})已不是新人。",
             "email_outdated": "&c[信件过期无法领取奖励]",
             "email_no_permission": "&c你没有权限打开信件！",
             "email_require_inventory": "&c该信件包含奖励物品，\n请保证您的背包中有\n足够的空间再来领取！",
@@ -97,22 +103,162 @@
     },
     "inventories": {
         "none": {
+            "global_messages": {},
             "global_items": {
+                "background": {
+                    "name": "&4"
+                },
+                "back": {
+                    "name": "&b返回上一页",
+                    "help": ["&7返回至前一个页面"]
+                },
+                "home": {
+                    "name": "&2返回主界面",
+                    "help": ["&7直接返回到主界面"]
+                },
+                "close": {
+                    "name": "&c关闭",
+                    "help": ["&7关闭窗口，输入指令 &e&l/nnp&r &7可重新打开"]
+                },
+                "help_on": {
+                    "name": "&3帮助",
+                    "lore": ["&7[&a已开启&7] &e点击关闭按钮解释"],
+                    "help": [
+                        "&7在鼠标移动到按钮上时",
+                        "&7按钮描述会显示功能解释"
+                    ]
+                },
+                "help_off": {
+                    "name": "&3帮助",
+                    "lore": ["&7[&c已关闭&7] &e点击启用按钮解释"],
+                    "help": [
+                        "&7在鼠标移动到按钮上时",
+                        "&7按钮描述会显示功能解释"
+                    ]
+                },
+                "previous_page": {
+                    "name": "&6上一页",
+                    "help": [
+                        "&7翻到菜单的上一页"
+                    ]
+                },
+                "nest_page": {
+                    "name": "&6下一页",
+                    "help": [
+                        "&7翻到菜单的下一页"
+                    ]
+                },
+                "first_page": {
+                    "name": "&6第一页",
+                    "help": [
+                        "&7翻到菜单的第一页"
+                    ]
+                },
+                "last_page": {
+                    "name": "&6最后页",
+                    "help": [
+                        "&7翻到菜单的最后页"
+                    ]
+                }
             },
-            "main_menu": {
+            "main": {
                 "gui_name": "主菜单",
-                "gui_help": [
-                    "&7帮助内容"
-                ],
+                "messages": {},
                 "items": {
                     "settings": {
-                        "name": "&7&l按钮的名字",
-                        "lore": [
-                            "&e备注"
-                        ],
-                        "help": [
-                            "帮助"
-                        ]
+                        "name": "&r偏好设置",
+                        "help": ["&7设置与你相关的游戏设置"]
+                    },
+                    "guide": {
+                        "name": "&r玩家手册",
+                        "help": ["&7玩家指南和网站快速入口"]
+                    },
+                    "info": {
+                        "name": "&r玩家",
+                        "help": ["&7查看你的游戏信息"]
+                    },
+                    "mail": {
+                        "name": "&r邮箱",
+                        "help": ["&7查看你的邮箱"]
+                    },
+                    "title": {
+                        "name": "&r称号",
+                        "help": ["&7查看、选择你的称号"]
+                    },
+                    "town": {
+                        "name": "&r小镇",
+                        "help": ["&7查看、管理你的小镇"]
+                    },
+                    "achievement": {
+                        "name": "&r成就",
+                        "help": ["&7查看你已完成和未完成的成就"]
+                    },
+                    "rank": {
+                        "name": "&r排行榜",
+                        "help": ["&7与其他玩家一争高下吧"]
+                    },
+                    "task": {
+                        "name": "&r任务",
+                        "help": ["&7查看你的任务进程"]
+                    },
+                    "toolkit": {
+                        "name": "&r常用指令",
+                        "help": ["&7实用指令集锦"]
+                    },
+                    "report": {
+                        "name": "&r举报",
+                        "help": ["&7一键举报恶意行为"],
+                        "book": {
+                            "entrance_title": "&8[&c举报入口&8]&r",
+                            "entrance_description": "一键举报恶意行为",
+                            "url": "https://wj.qq.com/s2/7503914/7fed",
+                            "back_title": "&8[&c返回&8]&r",
+                            "back_description": "返回主界面"
+                        }
+                    }
+                }
+            },
+            "ranks": {
+                "gui_name": "排行榜",
+                "messages": {},
+                "items": {
+                    "balance": {
+                        "name": "&r财富总榜",
+                        "help": ["&7看看服务器内你有多有钱呢？"]
+                    },
+                    "achievement_total": {
+                        "name": "&r成就总榜",
+                        "help": ["&7看看谁才是头号玩家！"]
+                    },
+                    "achievement_monthly": {
+                        "name": "&r成就月榜",
+                        "help": ["&7每月成就榜！"]
+                    },
+                    "achievement_weekly": {
+                        "name": "&r成就周榜",
+                        "help": ["&7每周成就榜！"]
+                    }
+                }
+            },
+            "toolkits": {
+                "gui_name": "常用指令",
+                "messages": {},
+                "items": {
+                    "home": {
+                        "name": "&r家",
+                        "help": ["&7家是你的床的位置。"]
+                    },
+                    "city": {
+                        "name": "&r主城",
+                        "help": ["&7回到主城。"]
+                    },
+                    "ctp": {
+                        "name": "&r创造区",
+                        "help": ["&7传送到你的创造区。"]
+                    },
+                    "resource": {
+                        "name": "&r资源区",
+                        "help": ["&7传送至本周的资源区。"]
                     }
                 }
             }

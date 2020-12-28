@@ -215,6 +215,13 @@ commands:
     permission-node: 'newnanplus.teleport.home'
     console: false
     aliases: 'home'
+  'nnp test':
+    description: '测试用'
+    usage: '/nnp test'
+  'nnp lscron':
+    description: '列出当前所有及时任务及下一次执行时间'
+    usage: '/nnp lscron'
+    permission-node: 'newnanplus.cron.list'
 
 # 权限节点，可选
 permissions:
@@ -342,4 +349,7 @@ permissions:
     default: op
   'newnanplus.teleport.free':
     description: '在拥有该权限的世界的传输距离免费'
+    default: op
+  'newnanplus.cron.list':
+    description: '列出当前所有及时任务及下一次执行时间的权限'
     default: op

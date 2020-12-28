@@ -7,6 +7,7 @@ import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import city.newnan.newnanplus.utility.PlayerConfig;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
@@ -44,7 +45,6 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     private Group playersGroup;
     private Group judgementalGroup;
     private OverloadedWorldHolder workWorldsPermissionHandler;
-
     /**
      * 构造函数
      */
@@ -108,10 +108,12 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
-        touchPlayer(event.getPlayer());
-        joinCheck(event.getPlayer());
-        emptyTaskQueue(event.getPlayer());
-        showUpdateLog(event.getPlayer());
+        Player player = event.getPlayer();
+        PlayerConfig playerConfig = new PlayerConfig(player);
+        joinCheck(player);
+        executeTaskQueue(player);
+        showUpdateLog(player);
+        playerConfig.commit();
     }
 
     /**
@@ -120,8 +122,8 @@ public class PlayerManager implements Listener, NewNanPlusModule {
      */
     @EventHandler
     public void onPlayerQuit(PlayerQuitEvent event) throws Exception {
-        String playerConfigPath = "player/" + event.getPlayer().getUniqueId().toString() + ".yml";
-        plugin.configManager.unload(playerConfigPath, true);
+        // 将缓存文件卸载
+        PlayerConfig.unloadPlayerConfig(event.getPlayer());
     }
 
     /**
@@ -202,10 +204,14 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                     need_refresh = true;
                 }
                 plugin.messageManager.sendMessage(sender,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_succeed$"));
+                        plugin.wolfyLanguageAPI.replaceColoredKeys(MessageFormat.format(
+                                "$module_message.player_manager.allow_succeed$", player.getName()
+                        )));
             } else {
                 plugin.messageManager.sendMessage(sender,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.not_newbie_already$"));
+                        plugin.wolfyLanguageAPI.replaceColoredKeys(MessageFormat.format(
+                                "$module_message.player_manager.not_newbie_already$", player.getName()
+                        )));
                 if (player.isOnline()) {
                     plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.player_manager.you_are_nolonger_newbie$"));
@@ -236,7 +242,9 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 need_refresh = true;
             }
             plugin.messageManager.sendMessage(sender,
-                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.player_manager.allow_later$"));
+                    plugin.wolfyLanguageAPI.replaceColoredKeys(MessageFormat.format(
+                            "$module_message.player_manager.allow_later$", args[0]
+                    )));
         }
 
         if (need_refresh) {
@@ -314,20 +322,14 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         }
     }
 
-    public void emptyTaskQueue(OfflinePlayer player) throws Exception {
+    public void executeTaskQueue(Player player) throws Exception {
         final ConsoleCommandSender sender = plugin.getServer().getConsoleSender();
-        String filePath = "player/" + player.getUniqueId().toString() + ".yml";
-        FileConfiguration playerConfig = plugin.configManager.get(filePath);
-        if (playerConfig.isList("login-task-queue")) {
-            List<String> commands = playerConfig.getStringList("login-task-queue");
-            commands.forEach(command -> {
-                plugin.messageManager.printINFO("Run command: " + command);
-                plugin.getServer().dispatchCommand(sender, command);
-            });
-            commands.clear();
-            playerConfig.set("login-task-queue", commands);
-            plugin.configManager.save(filePath);
-        }
+        PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
+        playerConfig.getLoginTaskQueue().forEach(command -> {
+            plugin.messageManager.printINFO("Run command: " + command);
+            plugin.getServer().dispatchCommand(sender, command);
+        });
+        playerConfig.getLoginTaskQueue().clear();
     }
 
     public void pushTaskCommand(CommandSender sender, String[] args) throws Exception {
@@ -344,23 +346,15 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     }
 
     public void pushTask(OfflinePlayer player, String command) throws Exception {
-        String filePath = "player/" + player.getUniqueId().toString() + ".yml";
-        FileConfiguration playerConfig = plugin.configManager.get(filePath);
+        PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
+        playerConfig.getLoginTaskQueue().add(command);
+        playerConfig.commit();
+    }
 
-        List<String> commands;
-        if (playerConfig.isList("login-task-queue")) {
-            commands = playerConfig.getStringList("login-task-queue");
-        } else {
-            commands = new ArrayList<>();
-        }
-        commands.add(command);
-        playerConfig.set("login-task-queue", commands);
-
-        if (!player.isOnline()) {
-            plugin.configManager.unload(filePath, true);
-        } else {
-            plugin.configManager.save(filePath);
-        }
+    public void pushTask(OfflinePlayer player, List<String> commands) throws Exception {
+        PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
+        commands.forEach(command -> playerConfig.getLoginTaskQueue().add(command));
+        playerConfig.commit();
     }
 
     /**
@@ -418,11 +412,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         final String title = plugin.wolfyLanguageAPI.
                 replaceColoredKeys("$module_message.player_manager.updatelog_title$");
 
-        FileConfiguration updateLog = plugin.configManager.reload("update_log.yml");
-        FileConfiguration playerConfig =
-                plugin.configManager.get("player/" + player.getUniqueId().toString() + ".yml");
-        long lastTime = playerConfig.getLong("last-login-time", 0);
+        PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
+        long lastTime = playerConfig.getLastLoginTime();
 
+        FileConfiguration updateLog = plugin.configManager.reload("update_log.yml");
         List<String> logs = new ArrayList<>();
         logs.add(header);
 
@@ -444,8 +437,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                     .createBook(title, "NewNanCity", null, BookMeta.Generation.ORIGINAL, logs));
         }
         //
-        playerConfig.set("last-login-time", System.currentTimeMillis());
-        plugin.configManager.save("player/" + player.getUniqueId().toString() + ".yml");
+        playerConfig.setLastLoginTime(System.currentTimeMillis());
     }
 
     /**
@@ -523,17 +515,5 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                 plugin.getModule(city.newnan.newnanplus.powertools.PowerTools.class))
                 .createBook(title, author, null, BookMeta.Generation.ORIGINAL, texts));
         return true;
-    }
-
-    public void touchPlayer(Player player) throws Exception {
-        String playerConfigPath = "player/" + player.getUniqueId().toString() + ".yml";
-        // 如果玩家配置文件是新被创建的
-        if (!plugin.configManager.touchOrCopyTemplate(playerConfigPath, "player/template.yml")) {
-            plugin.messageManager.printINFO(MessageFormat.format("New player file added: {0}({1})",
-                    player.getName(), player.getUniqueId()));
-            FileConfiguration playerConfig = plugin.configManager.get(playerConfigPath);
-            playerConfig.set("name", player.getName());
-            plugin.configManager.save(playerConfigPath);
-        }
     }
 }

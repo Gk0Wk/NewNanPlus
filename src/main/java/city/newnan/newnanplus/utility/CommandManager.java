@@ -123,19 +123,19 @@ public class CommandManager implements CommandExecutor {
         // 如果没有找到指令
         if (container == null) {
             messageManager.sendMessage(sender, NoSuchCommandException.message);
-            return false;
+            return true;
         }
         // 检查权限
         if (sender instanceof ConsoleCommandSender) {
             if (!container.consoleAllowable) {
                 messageManager.sendMessage(sender, RefuseConsoleException.message);
-                return false;
+                return true;
             }
         }
         else if (container.permission != null && !sender.hasPermission(container.permission)) {
             messageManager.sendMessage(sender, (container.permissionMessage == null) ?
                     NoPermissionException.message : container.permissionMessage);
-            return false;
+            return true;
         }
 
         String[] newArgs = (args.length == 0 || isAlias) ? args : new String[args.length - 1];

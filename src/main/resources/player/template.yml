@@ -4,6 +4,8 @@ last-login-time: 0
 emails:
   unread:
     - welcome_to_newnan_city
-  readed: []
+  read: []
 login-task-queue: []
 tpa-blocklist: []
+settings:
+  help: true

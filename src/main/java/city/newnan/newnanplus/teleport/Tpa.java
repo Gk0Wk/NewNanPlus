@@ -4,11 +4,13 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
+import city.newnan.newnanplus.utility.PlayerConfig;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
@@ -201,13 +203,14 @@ public class Tpa implements NewNanPlusModule {
         }
 
         boolean finalTpaHere = tpaHere;
+        Location target = finalTpaHere ? sourcePlayer.getLocation() : targetPlayer.getLocation();
         (new BukkitRunnable() {
             public void run()
             {
                 if (finalTpaHere) {
-                    targetPlayer.teleport(sourcePlayer.getLocation());
+                    targetPlayer.teleport(target);
                 } else {
-                    sourcePlayer.teleport(targetPlayer.getLocation());
+                    sourcePlayer.teleport(target);
                 }
             }
         }).runTaskLater(plugin, tpDelayTime);
@@ -296,11 +299,13 @@ public class Tpa implements NewNanPlusModule {
      * @param operatedPlayer 被检查者
      * @return
      */
-    public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer)
-    {
-        List<String> blockList = plugin.configManager.get("player/" + hostPlayer.getUniqueId().toString() + ".yml")
-                .getStringList("tpa-blocklist");
-        return blockList.contains(operatedPlayer.getUniqueId().toString());
+    public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer){
+        try {
+            return PlayerConfig.getPlayerConfig(hostPlayer).getTpaBlockList().contains(operatedPlayer.getUniqueId().toString());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     /**
@@ -321,13 +326,11 @@ public class Tpa implements NewNanPlusModule {
                     sessionCache.remove(hostPlayer.getUniqueId());
                 }
 
-                String configPath = "player/" + hostPlayer.getUniqueId().toString() + ".yml";
-                FileConfiguration config = plugin.configManager.get(configPath);
-                List<String> blockList = config.getStringList("tpa-blocklist");
+                PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(hostPlayer);
+                List<String> blockList = playerConfig.getTpaBlockList();
                 if (!blockList.contains(operatedPlayerUUID.toString())) {
                     blockList.add(operatedPlayerUUID.toString());
-                    config.set("tpa-blocklist", blockList);
-                    plugin.configManager.save(configPath);
+                    playerConfig.commit();
                 }
                 plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
                         "$module_message.teleport.block_tpa_succeed$"));
@@ -357,5 +360,9 @@ public class Tpa implements NewNanPlusModule {
         }
         plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
                 "$module_message.teleport.block_tpa_remove_succeed$"));
+    }
+
+    private double calculateTransportFee(Location location1, Location location2) {
+        return 0.0;
     }
 }

@@ -16,6 +16,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.text.MessageFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -41,6 +42,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         runTaskTimer(plugin, 0, 20);
         // 注册监听函数
         plugin.getServer().getPluginManager().registerEvents(this, plugin);
+        plugin.commandManager.register("lscron", this);
     }
 
     /**
@@ -71,7 +73,11 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      */
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-
+        if (token.equals("lscron")) {
+            tasks.forEach(task -> {
+                plugin.messageManager.sendMessage(sender, task.expression.expressionString + "  |  " + task.commands[0] + "  |  " + plugin.dateFormatter.format(new Date(task.expression.getNextTime())));
+            });
+        }
     }
 
     /**

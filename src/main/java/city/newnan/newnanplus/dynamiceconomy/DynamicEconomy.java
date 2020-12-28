@@ -141,6 +141,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         SystemCommodity.plugin = plugin;
         SystemCommodity.dynamicEconomy = this;
 
+        // 设置缓存文件持久化
+        plugin.configManager.setPersistent("dyneco_cache.yml");
         // 定时保存配置
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAndSave, 600L, 600L);
 
