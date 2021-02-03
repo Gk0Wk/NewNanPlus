@@ -2,10 +2,9 @@ title: '欢迎来到牛腩小镇！'
 author: '牛腩管理组'
 date: '2020-02-02 8:00:00'
 permission: ''
-require-inventory: false
 # Will replace @s to the user reading this email.
 commands:
-  - eco give @p 50
+  - COMMAND eco give @s 50
 text: |-
   这位小伙伴你好呀！欢迎来到
   牛腩小镇服务器！无论你是经

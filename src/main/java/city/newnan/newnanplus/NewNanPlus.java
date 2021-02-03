@@ -3,24 +3,30 @@ package city.newnan.newnanplus;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.maingui.*;
+import city.newnan.newnanplus.teleport.TPABlockList;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import city.newnan.newnanplus.utility.MessageManager;
 import city.newnan.newnanplus.utility.PlayerConfig;
 import me.wolfyscript.utilities.api.WolfyUtilities;
 import me.wolfyscript.utilities.api.inventory.GuiCluster;
+import me.wolfyscript.utilities.api.inventory.GuiHandler;
 import me.wolfyscript.utilities.api.inventory.InventoryAPI;
 import me.wolfyscript.utilities.api.language.Language;
 import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
+import settingsgui.SettingsMenu;
 
 import java.lang.reflect.Constructor;
 import java.text.MessageFormat;
@@ -85,13 +91,12 @@ public class NewNanPlus extends JavaPlugin {
             // 初始化玩家配置管理
             PlayerConfig.init(this);
             // 日期格式化形式
-            dateFormatter = new SimpleDateFormat(
-                    Objects.requireNonNull(configManager.
-                    get("config.yml").
-                            getString("global-settings.date-formatter", "yyyy-MM-dd HH:mm:ss")));
+            dateFormatter = new SimpleDateFormat(Objects.requireNonNull(configManager.get("config.yml").
+                    getString("global-settings.date-formatter", "yyyy-MM-dd HH:mm:ss")));
             // 初始化WolfyAPI
-            bindWolfyUtilities();
-            // globalData.wolfyInventoryAPI = globalData.wolfyAPI.getInventoryAPI();
+            if (!bindWolfyUtilities()) {
+                throw new Exception("WolfyUtilities 绑定失败");
+            }
             // 初始化消息管理器
             messageManager = new MessageManager(getLogger(),  wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$"));
             // 初始化命令管理器
@@ -99,6 +104,7 @@ public class NewNanPlus extends JavaPlugin {
                     YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
             // 错误消息初始化
             CommandExceptions.init(this);
+            verbose = configManager.get("config.yml").getBoolean("verbose", false);
         } catch (Exception e) {
             getLogger().info("§cPlugin initialize failed!");
             // 打印错误栈
@@ -177,8 +183,8 @@ public class NewNanPlus extends JavaPlugin {
             loadModule(city.newnan.newnanplus.playermanager.PlayerManager.class, "玩家管理模块");
             loadModule(city.newnan.newnanplus.deathtrigger.DeathTrigger.class, "死亡触发器模块");
             loadModule(city.newnan.newnanplus.dynamiceconomy.DynamicEconomy.class, "动态经济模块");
+            loadModule(city.newnan.newnanplus.playermanager.MailSystem.class, "邮件系统模块");
             loadModule(city.newnan.newnanplus.teleport.Tpa.class, "TPA模块");
-            loadModule(city.newnan.newnanplus.teleport.Teleport.class, "传送模块");
             messageManager.printINFO("§6---------------------------------------------------");
         }
 
@@ -197,7 +203,7 @@ public class NewNanPlus extends JavaPlugin {
     @Override
     public void onDisable(){
         if (messageManager != null) {
-            messageManager.printINFO("§aSaving configuration files...");
+            messageManager.printINFO("§aDisabling NewNanPlus...");
         }
 
         if (modules.containsKey(city.newnan.newnanplus.cron.Cron.class)) {
@@ -223,18 +229,13 @@ public class NewNanPlus extends JavaPlugin {
      */
     private <T extends NewNanPlusModule> void loadModule(Class<T> moduleClass, String moduleName) {
         try {
-            // 检测接口实现情况
-            if (NewNanPlusModule.class.isAssignableFrom(moduleClass)) {
-                // 获取构造器并构造
-                Constructor<?> constructor = moduleClass.getConstructor();
-                constructor.setAccessible(true);
-                NewNanPlusModule module = (NewNanPlusModule) constructor.newInstance();
-                modules.put(moduleClass, module);
-                // 成功则打印结果
-                messageManager.printINFO("§f[ §aO N §f] " + moduleName);
-            } else {
-                throw new Exception("Illegal module！");
-            }
+            // 获取构造器并构造
+            Constructor<?> constructor = moduleClass.getConstructor();
+            constructor.setAccessible(true);
+            NewNanPlusModule module = (NewNanPlusModule) constructor.newInstance();
+            modules.put(moduleClass, module);
+            // 成功则打印结果
+            messageManager.printINFO("§f[ §aO N §f] " + moduleName);
         } catch (Exception e) {
             if (e.getCause() instanceof ModuleOffException) {
                 messageManager.printINFO("§f[ §7OFF §f] " + moduleName);
@@ -273,19 +274,26 @@ public class NewNanPlus extends JavaPlugin {
         if (groupManager != null && groupManager.isEnabled())
         {
             this.groupManager = (GroupManager) groupManager;
+            return true;
         } else {
             return false;
         }
-        return true;
     }
 
     /**
      * 绑定WolfyAPI
      * @throws Exception 各种可能遇到的异常
      */
-    private void bindWolfyUtilities() throws Exception {
+    private boolean bindWolfyUtilities() throws Exception {
+        if (getServer().getPluginManager().getPlugin("WolfyUtilities") == null) {
+            return false;
+        }
+
         // 创建API实例
         wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
+        if (wolfyAPI == null) {
+            return false;
+        }
 
         // 多语言模块
         wolfyLanguageAPI = wolfyAPI.getLanguageAPI();
@@ -314,6 +322,7 @@ public class NewNanPlus extends JavaPlugin {
         wolfyAPI.setInventoryAPI(new InventoryAPI<>(this, wolfyAPI, GuiCache.class));
         inventoryAPI = wolfyAPI.getInventoryAPI(GuiCache.class);
         GuiUtils.init(this);
+        return true;
     }
 
     /**
@@ -321,10 +330,13 @@ public class NewNanPlus extends JavaPlugin {
      * @return 绑定成功则返回true，反之
      */
     private boolean bindDynmapAPI() {
-        Plugin dynmap = Bukkit.getPluginManager().getPlugin("dynmap");
-        assert dynmap != null;
-        dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
-        return true;
+        final Plugin dynmap = getServer().getPluginManager().getPlugin("dynmap");
+        if (dynmap != null && dynmap.isEnabled()) {
+            dynmapAPI = (org.dynmap.DynmapAPI) dynmap;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     /**
@@ -335,27 +347,62 @@ public class NewNanPlus extends JavaPlugin {
     }
 
     public void printWelcome(CommandSender sender) {
-        messageManager.sendMessage(sender, "NewNanPlus " + getDescription().getVersion() + " 牛腩服务器专供插件", false);
-        messageManager.sendMessage(sender, "牛腩网站: " + getDescription().getWebsite(), false);
-        messageManager.sendMessage(sender, "作者(欢迎一起来开发): ", false);
-        getDescription().getAuthors().forEach(author -> messageManager.sendMessage(sender, "  " + author, false));
-        messageManager.sendMessage(sender, "输入 /nnp help 获得更多帮助", false);
+        printf(sender, false, "NewNanPlus v{0} 牛腩服务器专供插件", getDescription().getVersion());
+        printf(sender, false, "牛腩网站: {0}", getDescription().getWebsite());
+        printf(sender, false, "作者(欢迎一起来开发): ");
+        getDescription().getAuthors().forEach(author -> printf(sender, false, "  " + author));
+        printf(sender, false, "输入 /nnp help 获得更多帮助");
     }
 
     public void reloadModule(@NotNull CommandSender sender, @NotNull String[] args) {
         if (args.length == 0) {
             reloadPluginConfig();
-            messageManager.sendMessage(sender,
-                    wolfyLanguageAPI.replaceColoredKeys("$global_message.plugin_reload_succeed$"));
+            printf(sender, "$global_message.plugin_reload_succeed$");
         }
         else {
             modules.forEach((moduleClass, module) -> {
-                if (moduleClass.getSimpleName().equals(args[0])) {
+                if (moduleClass.getSimpleName().equalsIgnoreCase(args[0])) {
                     module.reloadConfig();
-                    messageManager.sendMessage(sender, MessageFormat.format(wolfyLanguageAPI.
-                            replaceColoredKeys("$global_message.module_reload_succeed$"), args[0]));
+                    printf(sender, "$global_message.module_reload_succeed$", args[0]);
                 }
             });
+        }
+    }
+
+    /**
+     * 给对象发送一条格式化消息，可以包含i18n路径
+     * @param sender 发送的对象
+     * @param prefix 是否包括前缀(只对玩家有效)
+     * @param formatString 发送的消息的格式化字符串，可以包含i18n路径
+     * @param param 格式化参数
+     */
+    public void printf(CommandSender sender, boolean prefix, String formatString, Object... param) {
+        String text = ChatColor.translateAlternateColorCodes('&',
+                MessageFormat.format(wolfyLanguageAPI.replaceKeys(formatString), param));
+        if (sender instanceof Player) {
+            messageManager.sendPlayerMessage((Player) sender, text, prefix);
+        } else if (sender instanceof ConsoleCommandSender) {
+            messageManager.printINFO(text);
+        } else {
+            messageManager.printINFO("§e" + sender.getName() + "§r tried to get message but refused: " + text);
+        }
+    }
+
+    /**
+     * 给对象发送一条格式化消息，可以包含i18n路径
+     * @param sender 发送的对象
+     * @param formatString 发送的消息的格式化字符串，可以包含i18n路径
+     * @param param 格式化参数
+     */
+    public void printf(CommandSender sender, String formatString, Object... param) {
+        printf(sender, true, formatString, param);
+    }
+
+    static private boolean verbose;
+    public static void debug(String formatString, Object... param) {
+        if (verbose) {
+            plugin.messageManager.printINFO(" <" + Thread.currentThread().getStackTrace()[2].getMethodName() + "> " +
+                    MessageFormat.format(formatString, param));
         }
     }
 }
@@ -370,11 +417,14 @@ class GlobalModule implements NewNanPlusModule {
         plugin.commandManager.register("save", this);
         plugin.commandManager.register("reloadconfig", this);
         plugin.commandManager.register("test", this);
+        plugin.commandManager.register("version", this);
 
         GuiCluster noneCluster = plugin.inventoryAPI.getOrRegisterGuiCluster("none");
         noneCluster.registerGuiWindow(new MainMenu(plugin.inventoryAPI));
         noneCluster.registerGuiWindow(new Ranks(plugin.inventoryAPI));
         noneCluster.registerGuiWindow(new ToolKits(plugin.inventoryAPI));
+        noneCluster.registerGuiWindow(new SettingsMenu(plugin.inventoryAPI));
+        noneCluster.registerGuiWindow(new TPABlockList(plugin.inventoryAPI));
     }
 
     /**
@@ -397,30 +447,30 @@ class GlobalModule implements NewNanPlusModule {
                                @NotNull String token, @NotNull String[] args) throws Exception {
         switch (token) {
             case "":
-                plugin.printWelcome(sender);
-                // if (sender instanceof Player) {
-                //     GuiHandler<GuiCache> guiHandler = plugin.inventoryAPI.getGuiHandler((Player) sender);
-                //     if (guiHandler.getCurrentGuiCluster().isEmpty()) {
-                //         guiHandler.openCluster("none");
-                //     } else {
-                //         guiHandler.openCluster();
-                //     }
-                // }
+                if (sender instanceof Player) {
+                    GuiHandler<GuiCache> guiHandler = plugin.inventoryAPI.getGuiHandler((Player) sender);
+                    if (guiHandler.getCurrentGuiCluster().isEmpty()) {
+                        guiHandler.openCluster("none");
+                    } else {
+                        guiHandler.openCluster();
+                    }
+                }
                 break;
             case "reload":
                 plugin.reloadModule(sender, args);
                 break;
             case "save":
                 plugin.configManager.saveAll();
-                plugin.messageManager.sendMessage(sender,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$global_message.save_all_config_succeed$"));
+                plugin.printf(sender, "$global_message.save_all_config_succeed$");
                 break;
             case "reloadconfig":
                 plugin.configManager.reload(args[0]);
-                plugin.messageManager.sendMessage(sender, MessageFormat.format(
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$global_message.save_config_succeed$"), args[0]));
+                plugin.printf(sender, "$global_message.save_config_succeed$", args[0]);
                 break;
             case "test":
+                break;
+            case "version":
+                plugin.printWelcome(sender);
                 break;
         }
     }

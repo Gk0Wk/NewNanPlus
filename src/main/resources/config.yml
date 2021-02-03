@@ -5,6 +5,7 @@
 # GitHub: Gk0Wk
 
 version: ${project.version}
+verbose: false
 global-settings:
   major-language: 'zh-CN'
   fallback-language: 'zh-CN'
@@ -66,13 +67,11 @@ module-lagganalyzer:
   enable: false
 module-townmanager:
   enable: false
+module-mail:
+  enable: true
 module-teleport:
   tpa:
     enable: false
     cooldown-time: 10
     delay-time: 3
     outdated-time: 100
-  teleport:
-    enable: false
-    cooldown-time: 300
-    delay-time: 3

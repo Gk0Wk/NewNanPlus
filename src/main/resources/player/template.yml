@@ -7,5 +7,4 @@ emails:
   read: []
 login-task-queue: []
 tpa-blocklist: []
-settings:
-  help: true
+settings: {}

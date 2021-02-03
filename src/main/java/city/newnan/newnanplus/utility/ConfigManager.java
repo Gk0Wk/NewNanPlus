@@ -47,7 +47,7 @@ public class ConfigManager {
             long outdatedTime = System.currentTimeMillis() - 1800000;
             List<String> outdatedConfigFiles = new ArrayList<>();
             configTimestampMap.forEach((config, time) -> {
-                if (time <= outdatedTime && persistentConfigSet.contains(config)) {
+                if (time <= outdatedTime && !persistentConfigSet.contains(config)) {
                     outdatedConfigFiles.add(config);
                 }
             });
@@ -70,10 +70,17 @@ public class ConfigManager {
         // 不存在就创建
         if (!new File(plugin.getDataFolder(), configFile).exists()) {
             // config.yml要特殊处理一下
-            if (configFile.equals("config.yml"))
+            if (configFile.equals("config.yml")) {
                 plugin.saveDefaultConfig();
-            else
-                plugin.saveResource(configFile, false);
+            }
+            else {
+                try {
+                    plugin.saveResource(configFile, false);
+                } catch (IllegalArgumentException e) {
+                    // jar包中没有这个资源文件
+                    return false;
+                }
+            }
             return false;
         }
         return true;

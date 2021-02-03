@@ -2,6 +2,7 @@ package city.newnan.newnanplus.teleport;
 
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.exception.CommandExceptions;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
@@ -66,8 +67,9 @@ public class TpaCommand {
      */
     public static void TpaResponseCommand(CommandSender sender, String[] args, boolean accept) throws Exception {
         if (sender instanceof Player) {
-            Player sourcePlayer = (Player) sender;
-            Player targetPlayer = NewNanPlus.getPlugin().getServer().getPlayer(UUID.fromString(args[0]));
+            // A向B发送了TPA请求，那么在接受的时候，sender就是B，参数的uuid是A
+            Player sourcePlayer = NewNanPlus.getPlugin().getServer().getPlayer(UUID.fromString(args[0]));
+            Player targetPlayer = (Player) sender;
 
             checkPlayer(targetPlayer);
             if (sourcePlayer.equals(targetPlayer)) {
@@ -84,7 +86,7 @@ public class TpaCommand {
     }
 
     /**
-     * 处理tpablockt和tpaallow命令
+     * 处理tpablock和tpaallow命令
      * @param sender 命令发送者
      * @param args 命令参数
      * @param allow 是否为tpaallow指令，是则为true，反之为false
@@ -93,9 +95,18 @@ public class TpaCommand {
     public static void TpaBlockListCommand(CommandSender sender, String[] args, boolean allow) throws Exception {
         if (sender instanceof Player) {
             Player sourcePlayer = (Player) sender;
-            Player targetPlayer = NewNanPlus.getPlugin().getServer().getPlayer(UUID.fromString(args[0]));
+            OfflinePlayer targetPlayer;
+            try {
+                targetPlayer = NewNanPlus.getPlugin().getServer().getOfflinePlayer(UUID.fromString(args[0]));
+            } catch (IllegalArgumentException e) {
+                targetPlayer = ((city.newnan.newnanplus.playermanager.PlayerManager)
+                        NewNanPlus.getPlugin().getModule(city.newnan.newnanplus.playermanager.PlayerManager.class))
+                        .findOnePlayerByName(args[0]);
+            }
 
-            checkPlayer(targetPlayer);
+            if (targetPlayer == null) {
+                throw new CommandExceptions.PlayerNotFountException();
+            }
 
             if (allow) {
                 tpaInstance.removeFromBlackList(sourcePlayer, targetPlayer);

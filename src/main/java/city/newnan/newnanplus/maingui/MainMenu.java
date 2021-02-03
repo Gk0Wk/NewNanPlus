@@ -5,6 +5,7 @@ import city.newnan.newnanplus.powertools.SkullKits;
 import me.wolfyscript.utilities.api.inventory.GuiUpdate;
 import me.wolfyscript.utilities.api.inventory.GuiWindow;
 import me.wolfyscript.utilities.api.inventory.InventoryAPI;
+import me.wolfyscript.utilities.api.inventory.button.Button;
 import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
 import me.wolfyscript.utilities.api.utils.chat.ClickData;
 import me.wolfyscript.utilities.api.utils.chat.ClickEvent;
@@ -12,6 +13,7 @@ import me.wolfyscript.utilities.api.utils.chat.HoverEvent;
 import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 
+import java.util.HashMap;
 import java.util.Objects;
 
 public class MainMenu extends GuiWindow {
@@ -24,7 +26,7 @@ public class MainMenu extends GuiWindow {
         registerButton(new ActionButton("settings",
                 PlayerHeadUtils.getViaURL("5949a18cb52c293fe7de7ba1014671340ed7ff8e5d705b2d60bf84d53148e04"),
                 (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-
+                    guiHandler.changeToInv("none", "settings");
                     return true;
                 }));
         // 玩家手册
@@ -43,9 +45,8 @@ public class MainMenu extends GuiWindow {
         // 称号
         registerButton(new ActionButton("title", Material.NAME_TAG,
                 (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    NewNanPlus.getPlugin().messageManager.sendMessage(Objects.requireNonNull(guiHandler.getPlayer()),
-                            NewNanPlus.getPlugin().wolfyLanguageAPI.replaceColoredKeys(
-                                    "$global_message.function_not_open$"));
+                    NewNanPlus.getPlugin().printf(Objects.requireNonNull(guiHandler.getPlayer()),
+                            "$global_message.function_not_open$");
                     return true;
                 }));
         // 成就
@@ -72,9 +73,8 @@ public class MainMenu extends GuiWindow {
         registerButton(new ActionButton("town",
                 PlayerHeadUtils.getViaURL("cf7cdeefc6d37fecab676c584bf620832aaac85375e9fcbff27372492d69f"),
                 (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    NewNanPlus.getPlugin().messageManager.sendMessage(Objects.requireNonNull(guiHandler.getPlayer()),
-                            NewNanPlus.getPlugin().wolfyLanguageAPI.replaceColoredKeys(
-                                    "$global_message.function_not_open$"));
+                    NewNanPlus.getPlugin().printf(Objects.requireNonNull(guiHandler.getPlayer()),
+                            "$global_message.function_not_open$");
                     return true;
                 }));
         // 工具箱
@@ -117,14 +117,23 @@ public class MainMenu extends GuiWindow {
         for (int i = 9; i < 18; i++) {
             update.setButton(i, "none", "bg_brown");
         }
+
         // 左侧：玩家设置
-        ActionButton playerInfoButton = new ActionButton("info",
-                SkullKits.getSkull(update.getPlayer()),
-                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    return true;
-                });
-        playerInfoButton.init(this);
-        update.setButton(18, playerInfoButton);
+        HashMap<String, Button> buttons = GuiUtils.getWindowButtons(this);
+        String uuidString = update.getPlayer().getUniqueId().toString();
+        if (buttons.containsKey(uuidString)) {
+            update.setButton(18, buttons.get(uuidString));
+        } else {
+            ActionButton playerInfoButton = new ActionButton("info",
+                    SkullKits.getSkull(update.getPlayer()),
+                    (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                        NewNanPlus.debug("QAQ");
+                        return true;
+                    });
+            playerInfoButton.init(this);
+            buttons.put(uuidString, playerInfoButton);
+            update.setButton(18, playerInfoButton);
+        }
         update.setButton(19, "mail");
         update.setButton(20, "town");
         update.setButton(27, "title");

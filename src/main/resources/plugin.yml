@@ -54,8 +54,11 @@ commands:
 
   # 命令名称，不带'/'
   'nnp':
-    description: 'NewNanPlus插件介绍'
+    description: 'NewNanPlus GUI界面'
     usage: '/nnp'
+  'nnp version':
+    description: 'NewNanPlus插件信息'
+    usage: '/nnp version'
   'nnp help':
     description: 'NewNanPlus命令帮助'
     usage: '/nnp help'
@@ -202,19 +205,7 @@ commands:
     usage: '/nnp tpaallow <uuid>'
     permission-node: 'newnanplus.tpa.allow'
     console: false
-    aliases: 'tpablock'
-  'nnp city':
-    description: '传送回到主城'
-    usage: '/nnp city'
-    permission-node: 'newnanplus.teleport.city'
-    console: false
-    aliases: 'city'
-  'nnp home':
-    description: '传送回家(床)'
-    usage: '/nnp home'
-    permission-node: 'newnanplus.teleport.home'
-    console: false
-    aliases: 'home'
+    aliases: 'tpaallow'
   'nnp test':
     description: '测试用'
     usage: '/nnp test'
@@ -351,5 +342,5 @@ permissions:
     description: '在拥有该权限的世界的传输距离免费'
     default: op
   'newnanplus.cron.list':
-    description: '列出当前所有及时任务及下一次执行时间的权限'
+    description: '列出当前所有计时任务及下一次执行时间的权限'
     default: op

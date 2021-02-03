@@ -20,7 +20,8 @@
         "plugin_reload_succeed": "插件重载完毕。",
         "module_reload_succeed": "模块 {0} 重载完毕。",
         "function_not_open": "功能未开放，敬请期待!",
-        "page_number": "&7第{0}页"
+        "page_number": "&7第{0}页",
+        "page_empty": "&7页面为空"
     },
     "module_message": {
         "create_area": {
@@ -259,6 +260,39 @@
                     "resource": {
                         "name": "&r资源区",
                         "help": ["&7传送至本周的资源区。"]
+                    }
+                }
+            },
+            "settings": {
+                "gui_name": "设置",
+                "messages": {},
+                "items": {
+                    "tpa_blocklist": {
+                        "name": "&rTPA屏蔽名单",
+                        "help": ["&7你不会收到来自这些玩家的传送请求。"]
+                    }
+                }
+            },
+            "tpa_blocklist": {
+                "gui_name": "TPA屏蔽名单",
+                "messages": {},
+                "items": {
+                    "head": {
+                        "help": ["&7这是一个被你屏蔽的玩家的头"],
+                        "lore": ["&e右键取消该玩家的屏蔽"]
+                    }
+                }
+            },
+            "mail_list": {
+                "gui_name": "牛腩邮箱",
+                "messages": {},
+                "items": {
+                    "mail": {
+                        "help": ["&7这是一个被你屏蔽的玩家的头"],
+                        "lore": ["&e点击打开信件"],
+                        "read": " &7&l[已读]&r",
+                        "unread": " &a&l[未读]&r",
+                        "deleted": " &c&l[已删除]&r"
                     }
                 }
             }

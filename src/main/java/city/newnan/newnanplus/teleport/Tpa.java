@@ -15,7 +15,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
@@ -51,6 +50,7 @@ public class Tpa implements NewNanPlusModule {
         plugin = NewNanPlus.getPlugin();
         if (!plugin.configManager.get("config.yml").getBoolean("module-teleport.tpa.enable", false))
             throw new ModuleExeptions.ModuleOffException();
+        reloadConfig();
         sessionCache = new SessionCache();
         TpaCommand.init(this);
 
@@ -67,7 +67,8 @@ public class Tpa implements NewNanPlusModule {
      */
     @Override
     public void reloadConfig() {
-        ConfigurationSection section = plugin.configManager.get("config.yml").getConfigurationSection("module-teleport.tpa");
+        ConfigurationSection section =
+                plugin.configManager.get("config.yml").getConfigurationSection("module-teleport.tpa");
         assert section != null;
         tpCoolDownTime = section.getLong("cooldown-time", 0) * 1000;
         tpDelayTime = section.getLong("delay-time", 0) * 20;
@@ -122,10 +123,8 @@ public class Tpa implements NewNanPlusModule {
             return;
 
         sessionCache.remove(sourcePlayer.getUniqueId());
-        plugin.messageManager.sendMessage(targetPlayer, MessageFormat.format(plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.teleport.tpa_refuse_send$"), sourcePlayer.getName()));
-        plugin.messageManager.sendMessage(sourcePlayer,
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.tpa_refuse_receive$"));
+        plugin.printf(targetPlayer, "$module_message.teleport.tpa_refuse_send$", sourcePlayer.getName());
+        plugin.printf(sourcePlayer, "$module_message.teleport.tpa_refuse_receive$");
     }
 
     /**
@@ -139,17 +138,14 @@ public class Tpa implements NewNanPlusModule {
         if (time < 0) {
             time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPAHere");
             if (time < 0) {
-                plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_notfound$"));
+                plugin.printf(targetPlayer, "$module_message.teleport.request_notfound$");
             } else if (time == 0) {
-                plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_outdated$"));
+                plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
             } else {
                 return Boolean.TRUE;
             }
         } else if (time == 0) {
-            plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.teleport.request_outdated$"));
+            plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
         } else {
             return Boolean.FALSE;
         }
@@ -172,28 +168,23 @@ public class Tpa implements NewNanPlusModule {
         if (time < 0) {
             time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPAHere");
             if (time < 0) {
-                plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_notfound$"));
+                plugin.printf(targetPlayer, "$module_message.teleport.request_notfound$");
                 return;
             } else if (time == 0) {
-                plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_outdated$"));
+                plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
                 return;
             } else {
                 tpaHere = true;
             }
         } else if (time == 0) {
-            plugin.messageManager.sendMessage(targetPlayer, plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.teleport.request_outdated$"));
+            plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
             return;
         } else {
             tpaHere = false;
         }
 
-        plugin.messageManager.sendMessage(targetPlayer, MessageFormat.format(plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.teleport.tpa_accept_send$"), sourcePlayer.getName()));
-        plugin.messageManager.sendMessage(sourcePlayer,
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.tpa_accept_receive$"));
+        plugin.printf(targetPlayer, "$module_message.teleport.tpa_accept_send$", sourcePlayer.getName());
+        plugin.printf(sourcePlayer, "$module_message.teleport.tpa_accept_receive$");
 
         // 设置冷却
         if (sourcePlayer.hasPermission("newnanplus.teleport.nocooldown")) {
@@ -205,6 +196,7 @@ public class Tpa implements NewNanPlusModule {
         boolean finalTpaHere = tpaHere;
         Location target = finalTpaHere ? sourcePlayer.getLocation() : targetPlayer.getLocation();
         (new BukkitRunnable() {
+            @Override
             public void run()
             {
                 if (finalTpaHere) {
@@ -227,9 +219,8 @@ public class Tpa implements NewNanPlusModule {
         // 检查冷却
         long time = sessionCache.test(sourcePlayer.getUniqueId(), null, "CoolDown");
         if (time > 0) {
-            plugin.messageManager.sendMessage(sourcePlayer, MessageFormat.format(plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.teleport.cooling_down$"),
-                    city.newnan.newnanplus.feefly.FeeFly.formatSecond((int)(time / 1000))));
+            plugin.printf(sourcePlayer, "$module_message.teleport.cooling_down$",
+                    city.newnan.newnanplus.feefly.FeeFly.formatSecond((int)(time / 1000)));
             return;
         }
 
@@ -239,7 +230,7 @@ public class Tpa implements NewNanPlusModule {
             final TextComponent spaceText = new TextComponent(" ");
             TextComponent requestText = new TextComponent(MessageFormat.format(
                     plugin.wolfyLanguageAPI.replaceColoredKeys(tpaHere ?
-                            "$module_message.teleport.tpa_request$" : "$module_message.teleport.tpahere_request$"),
+                            "$module_message.teleport.tpahere_request$" : "$module_message.teleport.tpa_request$"),
                     sourcePlayer.getName()));
 
             TextComponent acceptButton = new TextComponent(
@@ -280,24 +271,23 @@ public class Tpa implements NewNanPlusModule {
             requestText.addExtra(spaceText);
             requestText.addExtra(blockButton);
 
-            plugin.messageManager.sendMessage(targetPlayer, "&7&l&m---------------------------------------------");
+            plugin.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
             targetPlayer.spigot().sendMessage(requestText);
-            plugin.messageManager.sendMessage(targetPlayer, "&7&l&m---------------------------------------------");
+            plugin.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
 
             // 创建会话
             sessionCache.set(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), tpaHere ? "TPAHere" : "TPA", tpOutdatedTime);
         }
 
         // 发送反馈
-        plugin.messageManager.sendMessage(sourcePlayer,
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.teleport.request_sent$"));
+        plugin.printf(sourcePlayer, "$module_message.teleport.request_sent$");
     }
 
     /**
      * 检查某个玩家是不是在另一个玩家的传送请求黑名单里
      * @param hostPlayer 检查者
      * @param operatedPlayer 被检查者
-     * @return
+     * @return 如果在黑名单就返回true，反之为false
      */
     public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer){
         try {
@@ -315,12 +305,11 @@ public class Tpa implements NewNanPlusModule {
      */
     public void addToBlackList(Player hostPlayer, OfflinePlayer operatedPlayer)
     {
-        try {
-            UUID operatedPlayerUUID = operatedPlayer.getUniqueId();
-            if (hostPlayer.getUniqueId().equals(operatedPlayerUUID)) {
-                plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
-                        "$module_message.teleport.block_tpa_failed_for_same_player$"));
-            } else {
+        UUID operatedPlayerUUID = operatedPlayer.getUniqueId();
+        if (hostPlayer.getUniqueId().equals(operatedPlayerUUID)) {
+            plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_same_player$");
+        } else {
+            try {
                 // 找一下本来存在的会话
                 if (sessionCache.test(hostPlayer.getUniqueId(), operatedPlayerUUID, null) >= 0) {
                     sessionCache.remove(hostPlayer.getUniqueId());
@@ -332,12 +321,10 @@ public class Tpa implements NewNanPlusModule {
                     blockList.add(operatedPlayerUUID.toString());
                     playerConfig.commit();
                 }
-                plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
-                        "$module_message.teleport.block_tpa_succeed$"));
+                plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_succeed$");
+            } catch (Exception e) {
+                plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_file$");
             }
-        } catch (Exception e) {
-            plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
-                    "$module_message.teleport.block_tpa_failed_for_file$"));
         }
     }
 
@@ -345,21 +332,13 @@ public class Tpa implements NewNanPlusModule {
      * 将一个玩家从另一个玩家的传送请求黑名单里移除
      * @param hostPlayer 移除者
      * @param operatedPlayer 被移除者
-     * @throws Exception
+     * @throws Exception 移除时发生的异常
      */
     public void removeFromBlackList(Player hostPlayer, OfflinePlayer operatedPlayer) throws Exception {
-        UUID operatedPlayerUUID = operatedPlayer.getUniqueId();
-
-        String configPath = "player/" + hostPlayer.getUniqueId().toString() + ".yml";
-        FileConfiguration config = plugin.configManager.get(configPath);
-        List<String> blockList = config.getStringList("tpa-blocklist");
-        if (blockList.contains(operatedPlayerUUID.toString())) {
-            blockList.remove(operatedPlayerUUID.toString());
-            config.set("tpa-blocklist", blockList);
-            plugin.configManager.save(configPath);
-        }
-        plugin.messageManager.sendMessage(hostPlayer, plugin.wolfyLanguageAPI.replaceColoredKeys(
-                "$module_message.teleport.block_tpa_remove_succeed$"));
+        PlayerConfig playerConfig = city.newnan.newnanplus.utility.PlayerConfig.getPlayerConfig(hostPlayer);
+        playerConfig.getTpaBlockList().remove(operatedPlayer.getUniqueId().toString());
+        playerConfig.commit();
+        plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_remove_succeed$");
     }
 
     private double calculateTransportFee(Location location1, Location location2) {

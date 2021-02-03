@@ -74,9 +74,9 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     @Override
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
         if (token.equals("lscron")) {
-            tasks.forEach(task -> {
-                plugin.messageManager.sendMessage(sender, task.expression.expressionString + "  |  " + task.commands[0] + "  |  " + plugin.dateFormatter.format(new Date(task.expression.getNextTime())));
-            });
+            tasks.forEach(task -> plugin.messageManager.sendMessage(sender, task.expression.expressionString +
+                    "  |  " + task.commands[0] + "  |  §r" +
+                    plugin.dateFormatter.format(new Date(task.expression.getNextTime()))));
         }
     }
 
@@ -331,14 +331,15 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         });
         this.inTimeTasks.clear();
     }
-}
 
-class CronCommand {
-    public final CronExpression expression;
-    public final String[] commands;
+    static class CronCommand {
+        public final CronExpression expression;
+        public final String[] commands;
 
-    public CronCommand(String expression, String[] commands) {
-        this.expression = new CronExpression(expression);
-        this.commands = commands;
+        public CronCommand(String expression, String[] commands) {
+            this.expression = new CronExpression(expression);
+            this.commands = commands;
+        }
     }
 }
+

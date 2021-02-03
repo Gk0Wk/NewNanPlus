@@ -15,9 +15,10 @@ public class PlayerConfig {
     @Deprecated
     private static int[] pluginVersion;
 
-    public static void init(NewNanPlus plugin) {
+    public static void init(@NotNull NewNanPlus plugin) {
         PlayerConfig.plugin = plugin;
-        pluginVersion = Arrays.stream(plugin.getDescription().getVersion().split("\\.")).mapToInt(Integer::parseInt).toArray();
+        pluginVersion = Arrays.stream(plugin.getDescription().getVersion().split("\\.")).
+                mapToInt(Integer::parseInt).toArray();
     }
 
     private static final HashMap<OfflinePlayer, PlayerConfig> playerConfigs = new HashMap<>();
@@ -82,7 +83,6 @@ public class PlayerConfig {
                 readEmails = config.getStringList("emails.read");
                 loginTaskQueue = config.getStringList("login-task-queue");
                 tpaBlockList = config.getStringList("tpa-blocklist");
-                guiHelp = config.getBoolean("settings.help", true);
         }
         commit();
     }
@@ -108,11 +108,6 @@ public class PlayerConfig {
     public List<String> getTpaBlockList() {return this.tpaBlockList;}
     public void setTpaBlockList(List<String> list) {this.tpaBlockList = list;}
 
-    private boolean guiHelp;
-    public boolean getGuiHelp() {return this.guiHelp;}
-    public void setGuiHelp(boolean help) {this.guiHelp = help;
-    plugin.messageManager.printINFO("setGuiHelp: " + help);}
-
     /**
      * 保存更改
      */
@@ -126,7 +121,6 @@ public class PlayerConfig {
         config.set("emails.read", readEmails);
         config.set("login-task-queue", loginTaskQueue);
         config.set("tpa-blocklist", tpaBlockList);
-        config.set("settings.help", guiHelp);
 
         plugin.configManager.save(configFilePath);
     }

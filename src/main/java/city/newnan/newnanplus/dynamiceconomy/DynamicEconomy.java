@@ -410,7 +410,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // 这里特别注意城镇。玩家->城镇这一步并不是玩家和国库的交互但是却是COMMAND_API
         // 所以后面要自己用adjustNationalTreasury做一些调整
 
-        // 有必要用BigDecimal吗？暂时不用
+        // 有必要用BigDecimal吗？没有
         // 国库的增量 = -玩家的增量 = 玩家的减量
         adjustNationalTreasury(event.getOldBalance().subtract(event.getNewBalance()).doubleValue());
     }

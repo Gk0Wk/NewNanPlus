@@ -9,14 +9,15 @@ import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
 import me.wolfyscript.utilities.api.inventory.cache.CustomCache;
 import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 public class Ranks extends GuiWindow implements Listable {
     public Ranks(InventoryAPI<?> inventoryAPI) { super("ranks", inventoryAPI, 54); }
 
     private final ArrayList<Button> rankList = new ArrayList<>();
     private int pageCount;
-    private final HashMap<UUID, Integer> pageIndexMap = new HashMap<>();
 
     public void onInit() {
         // 财富总榜
@@ -65,11 +66,7 @@ public class Ranks extends GuiWindow implements Listable {
     @Override
     public <T extends CustomCache> List<Button> getPage(GuiHandler<T> handler) {
         int index = getPageIndex(handler);
-        if (index < 0)
-            index = 0;
-        else if (index > pageCount)
-            index = pageCount - 1;
-        return rankList.subList(index * 36, ((pageCount - index) <= 1) ? (rankList.size() - 1) : (36 * (index + 1)));
+        return rankList.subList(index * 36, ((pageCount - index) <= 1) ? rankList.size() : (36 * (index + 1)));
     }
 
     /**
@@ -80,10 +77,15 @@ public class Ranks extends GuiWindow implements Listable {
      */
     @Override
     public <T extends CustomCache> int getPageIndex(GuiHandler<T> handler) {
-        Integer index = pageIndexMap.get(Objects.requireNonNull(handler.getPlayer()).getUniqueId());
-        if (index == null) {
-            pageIndexMap.put(Objects.requireNonNull(handler.getPlayer()).getUniqueId(), 0);
-            return 0;
+        Integer index = (Integer) handler.getCustomCache().getWindowCache(this).
+                get(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString());
+        if (index == null || index < 0) {
+            setPageIndex(index = 0, handler);
+        } else if (index > pageCount) {
+            index = getPageCount(handler) - 1;
+            if (index < 0)
+                index = 0;
+            setPageIndex(index, handler);
         }
         return index;
     }
@@ -107,6 +109,7 @@ public class Ranks extends GuiWindow implements Listable {
      */
     @Override
     public <T extends CustomCache> void setPageIndex(int index, GuiHandler<T> handler) {
-        pageIndexMap.put(Objects.requireNonNull(handler.getPlayer()).getUniqueId(), index);
+        handler.getCustomCache().getWindowCache(this).
+                put(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString(), index);
     }
 }

@@ -1,14 +1,14 @@
 package city.newnan.newnanplus.maingui;
 
 import city.newnan.newnanplus.NewNanPlus;
-import city.newnan.newnanplus.utility.PlayerConfig;
 import me.wolfyscript.utilities.api.inventory.GuiHandler;
 import me.wolfyscript.utilities.api.inventory.GuiUpdate;
+import me.wolfyscript.utilities.api.inventory.GuiWindow;
 import me.wolfyscript.utilities.api.inventory.InventoryAPI;
+import me.wolfyscript.utilities.api.inventory.button.Button;
 import me.wolfyscript.utilities.api.inventory.button.ButtonState;
 import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
 import me.wolfyscript.utilities.api.inventory.button.buttons.DummyButton;
-import me.wolfyscript.utilities.api.inventory.button.buttons.ToggleButton;
 import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
@@ -16,10 +16,7 @@ import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GuiUtils {
@@ -27,7 +24,6 @@ public class GuiUtils {
     private static NewNanPlus plugin;
     private static Field historyField;
 
-    private static ToggleButton helpButton;
     private static final List<ItemStack> pageNumberButton = new ArrayList<>();
 
     public static void init(NewNanPlus plugin) throws NoSuchFieldException {
@@ -36,6 +32,9 @@ public class GuiUtils {
 
         historyField = GuiHandler.class.getDeclaredField("clusterHistory");
         historyField.setAccessible(true);
+
+        buttonsField = GuiWindow.class.getDeclaredField("buttons");
+        buttonsField.setAccessible(true);
 
         inventoryAPI.getOrRegisterGuiCluster("none");
 
@@ -72,37 +71,6 @@ public class GuiUtils {
                     guiHandler.openCluster(guiHandler.getCurrentGuiCluster());
                     return true;
                 }));
-        // 帮助
-        inventoryAPI.registerButton("none", helpButton = new ToggleButton("help", true,
-                new ButtonState("help_on",
-                        PlayerHeadUtils.getViaURL("5359d91277242fc01c309accb87b533f1929be176ecba2cde63bf635e05e699b"),
-                        (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                            NewNanPlus.getPlugin().messageManager.printINFO("[set to false]");
-                            guiHandler.setHelpEnabled(false);
-                            try {
-                                PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
-                                playerConfig.setGuiHelp(false);
-                                playerConfig.commit();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            return true;
-                        }),
-                new ButtonState("help_off",
-                        PlayerHeadUtils.getViaURL("26e1191ddfc694157bb093d9997ee1b677409ed9cdeb856a33aa6f437e58fd2"),
-                        (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                            NewNanPlus.getPlugin().messageManager.printINFO("[set to true]");
-                            guiHandler.setHelpEnabled(true);
-                            try {
-                                PlayerConfig playerConfig = PlayerConfig.getPlayerConfig(player);
-                                playerConfig.setGuiHelp(true);
-                                playerConfig.commit();
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
-                            return true;
-                        }
-                )));
         // 关闭
         inventoryAPI.registerButton("none", new ActionButton("close",
                 PlayerHeadUtils.getViaURL("16c60da414bf037159c8be8d09a8ecb919bf89a1a21501b5b2ea75963918b7b"),
@@ -144,8 +112,13 @@ public class GuiUtils {
             ItemStack pageNumber = PlayerHeadUtils.getViaURL(urls[i]);
             SkullMeta meta = (SkullMeta) pageNumber.getItemMeta();
             assert meta != null;
-            meta.setDisplayName(MessageFormat.format(
-                    plugin.wolfyLanguageAPI.replaceColoredKeys("$global_message.page_number$"), i));
+            if (i != 0)
+            {
+                meta.setDisplayName(MessageFormat.format(
+                        plugin.wolfyLanguageAPI.replaceColoredKeys("$global_message.page_number$"), i));
+            } else {
+                meta.setDisplayName(plugin.wolfyLanguageAPI.replaceColoredKeys("$global_message.page_empty$"));
+            }
             pageNumber.setItemMeta(meta);
             pageNumberButton.add(pageNumber);
         }
@@ -168,7 +141,17 @@ public class GuiUtils {
         return false;
     }
 
+    private static Field buttonsField;
+    public static <T extends GuiWindow> HashMap<String, Button> getWindowButtons(T window) {
+        try {
+            return (HashMap<String, Button>) buttonsField.get(window);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public static void setTopBar(GuiUpdate update) {
+        update.getGuiHandler().setHelpEnabled(true);
         // 上一页按钮
         if (isHistoryEmpty(update.getGuiHandler(), update.getGuiHandler().getCurrentGuiCluster())) {
             update.setButton(0, "none", "bg_black");
@@ -183,20 +166,9 @@ public class GuiUtils {
             update.setButton(1, "none", "home");
         }
         // 顶栏填充
-        for (int i = 2; i < 7; i++) {
+        for (int i = 2; i < 8; i++) {
             update.setButton(i, "none", "bg_black");
         }
-        // 帮助按钮
-        boolean help = true;
-        try {
-            help = PlayerConfig.getPlayerConfig(update.getPlayer()).getGuiHelp();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        helpButton.setState(update.getGuiHandler(), help);
-        update.getGuiHandler().setHelpEnabled(help);
-        NewNanPlus.getPlugin().messageManager.printINFO("help: " + help);
-        update.setButton(7, helpButton);
         // 关闭按钮
         update.setButton(8, "none", "close");
     }
@@ -275,8 +247,11 @@ public class GuiUtils {
         window.getPage(update.getGuiHandler()).forEach(button -> {
             if (slot.get() > 44)
                 return;
+            NewNanPlus.debug("放置按钮");
             update.setButton(slot.get(), button);
             slot.getAndIncrement();
         });
     }
+
+    public static final HashMap<Object, SkullMeta> globalHeadMetaMap = new HashMap<>();
 }
