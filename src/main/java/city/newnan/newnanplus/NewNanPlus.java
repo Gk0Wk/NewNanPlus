@@ -3,6 +3,7 @@ package city.newnan.newnanplus;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.maingui.*;
+import city.newnan.newnanplus.settingsgui.SettingsMenu;
 import city.newnan.newnanplus.teleport.TPABlockList;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
@@ -26,7 +27,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
-import settingsgui.SettingsMenu;
 
 import java.lang.reflect.Constructor;
 import java.text.MessageFormat;

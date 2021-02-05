@@ -31,7 +31,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
      * 构造函数
      */
-    public Cron() throws Exception {
+    public Cron() throws Exception
+    {
         plugin = NewNanPlus.getPlugin();
         // 是否禁用
         if (!plugin.configManager.get("cron.yml").getBoolean("enable", false)) {
@@ -49,7 +50,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 重载模块配置
      */
     @Override
-    public void reloadConfig() {
+    public void reloadConfig()
+    {
         FileConfiguration config = plugin.configManager.reload("cron.yml");
         this.tasks.clear();
         this.cacheInTimeTasks.clear();
@@ -72,11 +74,10 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * @param args    指令的参数
      */
     @Override
-    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception
+    {
         if (token.equals("lscron")) {
-            tasks.forEach(task -> plugin.messageManager.sendMessage(sender, task.expression.expressionString +
-                    "  |  " + task.commands[0] + "  |  §r" +
-                    plugin.dateFormatter.format(new Date(task.expression.getNextTime()))));
+            tasks.forEach(task -> plugin.messageManager.sendMessage(sender, task.expression.expressionString + "  |  " + task.commands[0] + "§r  |  " + plugin.dateFormatter.format(new Date(task.expression.getNextTime()))));
         }
     }
 
@@ -85,7 +86,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * @param event 事件实例
      */
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onServerLoad(ServerLoadEvent event) {
+    public void onServerLoad(ServerLoadEvent event)
+    {
         List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-server-ready");
         CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
@@ -98,7 +100,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 执行在插件加载完毕时执行的命令，即on-plugin-ready
      * 和on-server-ready不同，后者只会在服务器开启时执行
      */
-    public void onPluginReady() {
+    public void onPluginReady()
+    {
         List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-ready");
         CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
@@ -110,7 +113,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
      * 执行在插件禁用时执行的命令，即on-plugin-disable
      */
-    public void onPluginDisable() {
+    public void onPluginDisable()
+    {
         List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-disable");
         CommandSender sender = plugin.getServer().getConsoleSender();
         commands.forEach(command -> {
@@ -133,14 +137,13 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * @param cronExpression cron表达式
      * @param commands 任务要执行的指令
      */
-    public void addTask(String cronExpression, String[] commands) {
+    public void addTask(String cronExpression, String[] commands)
+    {
         try {
             CronCommand task = new CronCommand(cronExpression, commands);
             this.tasks.add(task);
-        }
-        catch (Exception e) {
-            plugin.messageManager.printWARN(MessageFormat.format(plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.cron.invalid_expression$"), cronExpression));
+        } catch (Exception e) {
+            plugin.messageManager.printWARN(MessageFormat.format(plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.cron.invalid_expression$"), cronExpression));
         }
     }
 
@@ -157,7 +160,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 定时任务检查，每秒运行
      */
     @Override
-    public void run() {
+    public void run()
+    {
         // 小于计数上限，继续休眠
         if (secondsCounter < counterBorder) {
             secondsCounter++;
@@ -237,39 +241,40 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      * 一段时间所对应的秒数
      */
     private static final int SECONDS_OF_12HOUR = 43200;
-    private static final int SECONDS_OF_6HOUR  = 21600;
-    private static final int SECONDS_OF_3HOUR  = 10800;
-    private static final int SECONDS_OF_1HOUR  = 3600;
-    private static final int SECONDS_OF_30MIN  = 1800;
-    private static final int SECONDS_OF_15MIN  = 900;
-    private static final int SECONDS_OF_8MIN   = 480;
-    private static final int SECONDS_OF_4MIN   = 240;
+    private static final int SECONDS_OF_6HOUR = 21600;
+    private static final int SECONDS_OF_3HOUR = 10800;
+    private static final int SECONDS_OF_1HOUR = 3600;
+    private static final int SECONDS_OF_30MIN = 1800;
+    private static final int SECONDS_OF_15MIN = 900;
+    private static final int SECONDS_OF_8MIN = 480;
+    private static final int SECONDS_OF_4MIN = 240;
     private static final int SECONDS_OF_MINUTE = 60;
-    private static final int SECONDS_OF_15SEC  = 15;
-    private static final int SECONDS_OF_5SEC   = 5;
+    private static final int SECONDS_OF_15SEC = 15;
+    private static final int SECONDS_OF_5SEC = 5;
     private static final int SECONDS_OF_SECOND = 1;
 
     /**
      * 一段时间所对应的毫秒数
      */
-    private static final long MILLISECOND_OF_2DAY   = 172800000;
-    private static final long MILLISECOND_OF_1DAY   = 86400000;
+    private static final long MILLISECOND_OF_2DAY = 172800000;
+    private static final long MILLISECOND_OF_1DAY = 86400000;
     private static final long MILLISECOND_OF_12HOUR = 43200000;
-    private static final long MILLISECOND_OF_4HOUR  = 14400000;
-    private static final long MILLISECOND_OF_2HOUR  = 7200000;
-    private static final long MILLISECOND_OF_HOUR   = 3600000;
-    private static final long MILLISECOND_OF_30MIN  = 1800000;
-    private static final long MILLISECOND_OF_15MIN  = 900000;
-    private static final long MILLISECOND_OF_5MIN   = 300000;
+    private static final long MILLISECOND_OF_4HOUR = 14400000;
+    private static final long MILLISECOND_OF_2HOUR = 7200000;
+    private static final long MILLISECOND_OF_HOUR = 3600000;
+    private static final long MILLISECOND_OF_30MIN = 1800000;
+    private static final long MILLISECOND_OF_15MIN = 900000;
+    private static final long MILLISECOND_OF_5MIN = 300000;
     private static final long MILLISECOND_OF_MINUTE = 60000;
-    private static final long MILLISECOND_OF_30SEC  = 30000;
+    private static final long MILLISECOND_OF_30SEC = 30000;
 
     /**
      * 根据毫秒差获得合适的休眠间隔(秒为单位)
      * @param delta 毫秒差
      * @return 休眠间隔(秒为单位)
      */
-    private int getIntervalSeconds(long delta) {
+    private int getIntervalSeconds(long delta)
+    {
         // 小于30秒   - 每秒
         if (delta < MILLISECOND_OF_30SEC)
             return SECONDS_OF_SECOND;
@@ -321,8 +326,9 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     /**
      * 执行inTimeTask中的那些一秒内即将执行的任务
      */
-    public void runInSecond() {
-        CommandSender sender =  plugin.getServer().getConsoleSender();
+    public void runInSecond()
+    {
+        CommandSender sender = plugin.getServer().getConsoleSender();
         this.inTimeTasks.forEach(task -> {
             for (String command : task.commands) {
                 plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
@@ -336,10 +342,10 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         public final CronExpression expression;
         public final String[] commands;
 
-        public CronCommand(String expression, String[] commands) {
+        public CronCommand(String expression, String[] commands)
+        {
             this.expression = new CronExpression(expression);
             this.commands = commands;
         }
     }
 }
-

@@ -1,4 +1,4 @@
-package settingsgui;
+package city.newnan.newnanplus.settingsgui;
 
 import city.newnan.newnanplus.maingui.GuiCache;
 import city.newnan.newnanplus.maingui.GuiUtils;
