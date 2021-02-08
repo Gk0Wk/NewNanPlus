@@ -23,7 +23,7 @@ public class MailSystem implements NewNanPlusModule {
      */
     private final NewNanPlus plugin;
 
-    private Map<String, Mail> mails = new HashMap<>();
+    private final Map<String, Mail> mails = new HashMap<>();
     public Mail getMail(String mailName) {
         return mails.get(mailName);
     }
