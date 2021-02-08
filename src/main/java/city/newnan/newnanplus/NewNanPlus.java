@@ -2,17 +2,15 @@ package city.newnan.newnanplus;
 
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
-import city.newnan.newnanplus.maingui.*;
-import city.newnan.newnanplus.settingsgui.SettingsMenu;
-import city.newnan.newnanplus.teleport.TPABlockList;
+import city.newnan.newnanplus.maingui.GuiCache;
+import city.newnan.newnanplus.maingui.NoneCluster;
 import city.newnan.newnanplus.utility.CommandManager;
 import city.newnan.newnanplus.utility.ConfigManager;
 import city.newnan.newnanplus.utility.MessageManager;
 import city.newnan.newnanplus.utility.PlayerConfig;
 import me.wolfyscript.utilities.api.WolfyUtilities;
-import me.wolfyscript.utilities.api.inventory.GuiCluster;
-import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import me.wolfyscript.utilities.api.inventory.InventoryAPI;
+import me.wolfyscript.utilities.api.inventory.gui.GuiHandler;
+import me.wolfyscript.utilities.api.inventory.gui.InventoryAPI;
 import me.wolfyscript.utilities.api.language.Language;
 import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
@@ -74,7 +72,7 @@ public class NewNanPlus extends JavaPlugin {
     public city.newnan.newnanplus.utility.MessageManager messageManager;
     public me.wolfyscript.utilities.api.WolfyUtilities wolfyAPI;
     public me.wolfyscript.utilities.api.language.LanguageAPI wolfyLanguageAPI;
-    public me.wolfyscript.utilities.api.inventory.InventoryAPI<GuiCache> inventoryAPI;
+    public me.wolfyscript.utilities.api.inventory.gui.InventoryAPI<GuiCache> inventoryAPI;
     public org.anjocaido.groupmanager.GroupManager groupManager;
     public net.milkbowl.vault.economy.Economy vaultEco;
     public org.dynmap.DynmapAPI dynmapAPI;
@@ -290,7 +288,7 @@ public class NewNanPlus extends JavaPlugin {
         }
 
         // 创建API实例
-        wolfyAPI = WolfyUtilities.getOrCreateAPI(this);
+        wolfyAPI = WolfyUtilities.get(this, GuiCache.class);
         if (wolfyAPI == null) {
             return false;
         }
@@ -314,14 +312,9 @@ public class NewNanPlus extends JavaPlugin {
             wolfyLanguageAPI.setFallbackLanguage(fallbackLanguage);
         }
 
-        // 设置前缀
-        wolfyAPI.setCHAT_PREFIX(wolfyLanguageAPI.replaceColoredKeys("$chat_prefix$"));
-        wolfyAPI.setCONSOLE_PREFIX(wolfyLanguageAPI.replaceColoredKeys("$console_prefix$"));
-
         // 初始化GUI
         wolfyAPI.setInventoryAPI(new InventoryAPI<>(this, wolfyAPI, GuiCache.class));
         inventoryAPI = wolfyAPI.getInventoryAPI(GuiCache.class);
-        GuiUtils.init(this);
         return true;
     }
 
@@ -419,12 +412,7 @@ class GlobalModule implements NewNanPlusModule {
         plugin.commandManager.register("test", this);
         plugin.commandManager.register("version", this);
 
-        GuiCluster noneCluster = plugin.inventoryAPI.getOrRegisterGuiCluster("none");
-        noneCluster.registerGuiWindow(new MainMenu(plugin.inventoryAPI));
-        noneCluster.registerGuiWindow(new Ranks(plugin.inventoryAPI));
-        noneCluster.registerGuiWindow(new ToolKits(plugin.inventoryAPI));
-        noneCluster.registerGuiWindow(new SettingsMenu(plugin.inventoryAPI));
-        noneCluster.registerGuiWindow(new TPABlockList(plugin.inventoryAPI));
+        plugin.inventoryAPI.registerCluster(new NoneCluster("none", plugin));
     }
 
     /**
@@ -449,7 +437,7 @@ class GlobalModule implements NewNanPlusModule {
             case "":
                 if (sender instanceof Player) {
                     GuiHandler<GuiCache> guiHandler = plugin.inventoryAPI.getGuiHandler((Player) sender);
-                    if (guiHandler.getCurrentGuiCluster().isEmpty()) {
+                    if (guiHandler.getCluster() == null) {
                         guiHandler.openCluster("none");
                     } else {
                         guiHandler.openCluster();

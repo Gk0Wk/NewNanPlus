@@ -1,8 +1,7 @@
 package city.newnan.newnanplus.maingui;
 
-import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import me.wolfyscript.utilities.api.inventory.button.Button;
-import me.wolfyscript.utilities.api.inventory.cache.CustomCache;
+import me.wolfyscript.utilities.api.inventory.gui.GuiHandler;
+import me.wolfyscript.utilities.api.inventory.gui.button.Button;
 
 import java.util.List;
 
@@ -12,26 +11,26 @@ public interface Listable {
      * @param handler 会话对象
      * @return 本页面的按钮List
      */
-    <T extends CustomCache> List<Button> getPage(GuiHandler<T> handler);
+    List<Button<GuiCache>> getPage(GuiHandler<GuiCache> handler);
 
     /**
      * 获取某个会话当前页面的页码，从0开始
      * @param handler 会话对象
      * @return 页码，从0开始
      */
-    <T extends CustomCache> int getPageIndex(GuiHandler<T> handler);
+    int getPageIndex(GuiHandler<GuiCache> handler);
 
     /**
      * 获得某个会话该界面共有多少页
      * @param handler 会话对象
      * @return 总页数
      */
-    <T extends CustomCache> int getPageCount(GuiHandler<T> handler);
+    int getPageCount(GuiHandler<GuiCache> handler);
 
     /**
      * 设置某个会话当前界面的页号
      * @param index 要设置的页号
      * @param handler 会话对象
      */
-    <T extends CustomCache> void setPageIndex(int index, GuiHandler<T> handler);
+    void setPageIndex(int index, GuiHandler<GuiCache> handler);
 }

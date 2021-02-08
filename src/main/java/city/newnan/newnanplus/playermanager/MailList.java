@@ -5,30 +5,27 @@ import city.newnan.newnanplus.maingui.GuiCache;
 import city.newnan.newnanplus.maingui.GuiUtils;
 import city.newnan.newnanplus.maingui.Listable;
 import city.newnan.newnanplus.utility.PlayerConfig;
-import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import me.wolfyscript.utilities.api.inventory.GuiUpdate;
-import me.wolfyscript.utilities.api.inventory.GuiWindow;
-import me.wolfyscript.utilities.api.inventory.InventoryAPI;
-import me.wolfyscript.utilities.api.inventory.button.Button;
-import me.wolfyscript.utilities.api.inventory.button.ButtonState;
-import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
-import me.wolfyscript.utilities.api.inventory.button.buttons.DummyButton;
-import me.wolfyscript.utilities.api.inventory.cache.CustomCache;
-import org.bukkit.Server;
+import me.wolfyscript.utilities.api.inventory.gui.GuiCluster;
+import me.wolfyscript.utilities.api.inventory.gui.GuiHandler;
+import me.wolfyscript.utilities.api.inventory.gui.GuiUpdate;
+import me.wolfyscript.utilities.api.inventory.gui.GuiWindow;
+import me.wolfyscript.utilities.api.inventory.gui.button.Button;
+import me.wolfyscript.utilities.api.inventory.gui.button.ButtonState;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.ActionButton;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.DummyButton;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
-public class MailList extends GuiWindow implements Listable {
-    public MailList(InventoryAPI<GuiCache> inventoryAPI) { super("tpa_blocklist", inventoryAPI, 54); }
+public class MailList extends GuiWindow<GuiCache> implements Listable {
+    public MailList(GuiCluster<GuiCache> cluster) { super(cluster, "tpa_blocklist", 54); }
 
     public void onInit() {
         loreString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceKey(
                 "$inventories.none.mail_list.items.mail.lore$").toArray(new String[0]);
-        helpString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceKey(
-                "$inventories.none.mail_list.items.mail.help$").toArray(new String[0]);
         readTitleString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceColoredKeys(
                 "$inventories.none.mail_list.items.mail.read$");
         unreadTitleString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceColoredKeys(
@@ -37,13 +34,19 @@ public class MailList extends GuiWindow implements Listable {
                 "$inventories.none.mail_list.items.mail.deleted$");
     }
 
-    public void onUpdateAsync(GuiUpdate update) {
+    @Override
+    public void onUpdateSync(GuiUpdate<GuiCache> guiUpdate) {
         // 顶栏
-        GuiUtils.setTopBar(update);
-        GuiUtils.setListPage(update, this);
+        GuiUtils.setTopBar(guiUpdate);
+        GuiUtils.setListPage(guiUpdate, this);
     }
 
-    private String[] loreString, helpString;
+    @Override
+    public void onUpdateAsync(GuiUpdate<GuiCache> guiUpdate) {
+
+    }
+
+    private String[] loreString;
     private String readTitleString, unreadTitleString, deletedTitleString;
 
     /**
@@ -53,7 +56,7 @@ public class MailList extends GuiWindow implements Listable {
      * @return 本页面的按钮List
      */
     @Override
-    public <T extends CustomCache> List<Button> getPage(GuiHandler<T> handler) {
+    public List<Button<GuiCache>> getPage(GuiHandler<GuiCache> handler) {
         int index = getPageIndex(handler);
         try {
             List<String> mails = new ArrayList<>();
@@ -63,13 +66,12 @@ public class MailList extends GuiWindow implements Listable {
             mails.addAll(readMailList);
             List<String> subMailList = mails.subList(index * 36, ((getPageCount(handler) - index) <= 1) ?
                     mails.size() : (36 * (index + 1)));
-            List<Button> mailButtons = new ArrayList<>();
-            Server server =  NewNanPlus.getPlugin().getServer();
+            List<Button<GuiCache>> mailButtons = new ArrayList<>();
 
             MailSystem instance = (city.newnan.newnanplus.playermanager.MailSystem) NewNanPlus.getPlugin()
                     .getModule(city.newnan.newnanplus.playermanager.MailSystem.class);
 
-            HashMap<String, Button> buttons = GuiUtils.getWindowButtons(this);
+            HashMap<String, Button<GuiCache>> buttons = GuiUtils.getWindowButtons(this);
             assert buttons != null;
             subMailList.forEach(mailName -> {
                 Mail mail = instance.getMail(mailName);
@@ -77,9 +79,9 @@ public class MailList extends GuiWindow implements Listable {
                     if (buttons.containsKey(mailName)) {
                         mailButtons.add(buttons.get(mailName));
                     } else {
-                        ButtonState state = new ButtonState(Mail.defaultIcon, mailName + deletedTitleString,
-                                null, null, null);
-                        DummyButton button = new DummyButton(mailName, state);
+                        ButtonState<GuiCache> state = new ButtonState<>(Mail.defaultIcon,
+                                mailName + deletedTitleString, null, null);
+                        DummyButton<GuiCache> button = new DummyButton<>(mailName, state);
                         buttons.put(mailName, button);
                         mailButtons.add(button);
                     }
@@ -90,24 +92,25 @@ public class MailList extends GuiWindow implements Listable {
                         mailButtons.add(buttons.get(mailName));
                     } else {
                         String finalMailName = mailName;
-                        ButtonState state = new ButtonState(mail.icon,
+                        ButtonState<GuiCache> state = new ButtonState<>(mail.icon,
                                 "§r" + mail.title + (ifRead ? readTitleString : unreadTitleString),
-                                helpString, loreString,
-                                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                                    if (inventoryClickEvent.isLeftClick()) {
-                                        try {
-                                            boolean resultRead = instance.showEmail(player, mail, ifRead);
-                                            if (ifRead ^ resultRead) {
-                                                unreadMailList.remove(finalMailName);
-                                                readMailList.add(finalMailName);
+                                loreString, (cache, guiHandler, player, inventory, slot, event) -> {
+                                    if (event instanceof InventoryClickEvent) {
+                                        if (((InventoryClickEvent)event).getClick().isRightClick()) {
+                                            try {
+                                                boolean resultRead = instance.showEmail(player, mail, ifRead);
+                                                if (ifRead ^ resultRead) {
+                                                    unreadMailList.remove(finalMailName);
+                                                    readMailList.add(finalMailName);
+                                                }
+                                            } catch (Exception e) {
+                                                e.printStackTrace();
                                             }
-                                        } catch (Exception e) {
-                                            e.printStackTrace();
                                         }
                                     }
                                     return true;
                                 });
-                        ActionButton button = new ActionButton(mailName, state);
+                        ActionButton<GuiCache> button = new ActionButton<>(mailName, state);
                         buttons.put(mailName, button);
                         mailButtons.add(button);
                     }
@@ -127,7 +130,7 @@ public class MailList extends GuiWindow implements Listable {
      * @return 页码，从0开始
      */
     @Override
-    public <T extends CustomCache> int getPageIndex(GuiHandler<T> handler) {
+    public int getPageIndex(GuiHandler<GuiCache> handler) {
         Integer index = (Integer) handler.getCustomCache().getWindowCache(this).
                 get(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString());
         if (index == null || index < 0) {
@@ -148,7 +151,7 @@ public class MailList extends GuiWindow implements Listable {
      * @return 总页数
      */
     @Override
-    public <T extends CustomCache> int getPageCount(GuiHandler<T> handler) {
+    public int getPageCount(GuiHandler<GuiCache> handler) {
         try {
             PlayerConfig config = PlayerConfig.getPlayerConfig(Objects.requireNonNull(handler.getPlayer()));
             return (config.getReadEmails().size() + config.getUnreadEmails().size() + 35) / 36;
@@ -165,7 +168,7 @@ public class MailList extends GuiWindow implements Listable {
      * @param handler 会话对象
      */
     @Override
-    public <T extends CustomCache> void setPageIndex(int index, GuiHandler<T> handler) {
+    public void setPageIndex(int index, GuiHandler<GuiCache> handler) {
         handler.getCustomCache().getWindowCache(this).
                 put(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString(), index);
     }

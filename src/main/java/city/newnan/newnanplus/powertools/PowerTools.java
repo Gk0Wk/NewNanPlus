@@ -3,9 +3,9 @@ package city.newnan.newnanplus.powertools;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
-import me.wolfyscript.utilities.api.WolfyUtilities;
-import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
+import city.newnan.newnanplus.utility.ItemKit;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Sound;
@@ -114,10 +114,10 @@ public class PowerTools implements NewNanPlusModule {
         Sound sound = null;
         for (int i = 1; i < args.length; i++) {
             if (args[i].matches("^title:.*")) {
-                title = WolfyUtilities.translateColorCodes(args[i].replaceFirst("^title:", ""));
+                title = ChatColor.translateAlternateColorCodes('&', args[i].replaceFirst("^title:", ""));
             }
             else if (args[i].matches("^subtitle:.*")) {
-                subTitle = WolfyUtilities.translateColorCodes(args[i].replaceFirst("^subtitle:", ""));
+                subTitle = ChatColor.translateAlternateColorCodes('&', args[i].replaceFirst("^subtitle:", ""));
             }
             else if (args[i].matches("^sound:.*")) {
                 sound = Sound.valueOf(args[i].replaceFirst("^sound:", ""));
@@ -142,10 +142,11 @@ public class PowerTools implements NewNanPlusModule {
         Sound sound = null;
         for (String arg : args) {
             if (arg.matches("^title:.*")) {
-                title = WolfyUtilities.translateColorCodes(arg.replaceFirst("^title:", ""));
+                title = ChatColor.translateAlternateColorCodes('&', arg.replaceFirst("^title:", ""));
+
             }
             else if (arg.matches("^subtitle:.*")) {
-                subTitle = WolfyUtilities.translateColorCodes(arg.replaceFirst("^subtitle:", ""));
+                subTitle = ChatColor.translateAlternateColorCodes('&', arg.replaceFirst("^subtitle:", ""));
             }
             else if (arg.matches("^sound:.*")) {
                 sound = Sound.valueOf(arg.replaceFirst("^sound:", ""));
@@ -242,9 +243,9 @@ public class PowerTools implements NewNanPlusModule {
         if (args.length !=0) {
             ItemStack itemStack;
             if (args[0].charAt(0) == '{') {
-                itemStack = ItemUtils.convertJsontoItemStack(args[0]);
+                itemStack = ItemKit.convertJsontoItemStack(args[0]);
             } else {
-                itemStack = ItemUtils.deserializeNMSItemStack(args[0]);
+                itemStack = ItemKit.deserializeNMSItemStack(args[0]);
             }
             if (itemStack != null) {
                 player.getInventory().addItem(itemStack);
@@ -262,10 +263,10 @@ public class PowerTools implements NewNanPlusModule {
         }
         if (args.length > 0 && args[0].equals("base64")) {
             plugin.messageManager.sendMessage(sender,
-                    ItemUtils.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
+                    ItemKit.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
         } else {
             plugin.messageManager.sendMessage(sender,
-                    ItemUtils.convertItemStackToJson(player.getInventory().getItemInMainHand()));
+                    ItemKit.convertItemStackToJson(player.getInventory().getItemInMainHand()));
         }
     }
 }

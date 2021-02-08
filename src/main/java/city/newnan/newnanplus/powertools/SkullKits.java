@@ -4,7 +4,7 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
+import me.wolfyscript.utilities.util.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;

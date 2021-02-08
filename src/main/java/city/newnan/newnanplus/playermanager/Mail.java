@@ -1,7 +1,7 @@
 package city.newnan.newnanplus.playermanager;
 
-import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
-import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
+import city.newnan.newnanplus.utility.ItemKit;
+import me.wolfyscript.utilities.util.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.inventory.ItemStack;
@@ -93,9 +93,9 @@ public class Mail {
                 action.type = ActionType.ITEM;
                 // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
                 if (splits[1].charAt(0) == '{') {
-                    action.item = ItemUtils.convertJsontoItemStack(splits[1]);
+                    action.item = ItemKit.convertJsontoItemStack(splits[1]);
                 } else {
-                    action.item = ItemUtils.deserializeNMSItemStack(splits[1]);
+                    action.item = ItemKit.deserializeNMSItemStack(splits[1]);
                 }
                 return action;
             } else if (splits[0].equalsIgnoreCase("COMMAND")) {

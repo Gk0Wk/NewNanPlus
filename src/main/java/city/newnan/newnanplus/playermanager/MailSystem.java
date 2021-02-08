@@ -3,7 +3,7 @@ package city.newnan.newnanplus.playermanager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
-import me.wolfyscript.utilities.api.WolfyUtilities;
+import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -87,7 +87,7 @@ public class MailSystem implements NewNanPlusModule {
             // 权限检查
             if (mail.permission != null && !player.hasPermission(mail.permission)) {
                 if (mail.permissionMessage != null) {
-                    texts.add(WolfyUtilities.translateColorCodes(mail.permissionMessage));
+                    texts.add(ChatColor.translateAlternateColorCodes('&', mail.permissionMessage));
                 } else {
                     texts.add(plugin.wolfyLanguageAPI.
                             replaceColoredKeys("$module_message.player_manager.email_no_permission$"));

@@ -6,36 +6,39 @@ import city.newnan.newnanplus.maingui.GuiUtils;
 import city.newnan.newnanplus.maingui.Listable;
 import city.newnan.newnanplus.powertools.SkullKits;
 import city.newnan.newnanplus.utility.PlayerConfig;
-import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import me.wolfyscript.utilities.api.inventory.GuiUpdate;
-import me.wolfyscript.utilities.api.inventory.GuiWindow;
-import me.wolfyscript.utilities.api.inventory.InventoryAPI;
-import me.wolfyscript.utilities.api.inventory.button.Button;
-import me.wolfyscript.utilities.api.inventory.button.ButtonState;
-import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
-import me.wolfyscript.utilities.api.inventory.cache.CustomCache;
+import me.wolfyscript.utilities.api.inventory.gui.GuiCluster;
+import me.wolfyscript.utilities.api.inventory.gui.GuiHandler;
+import me.wolfyscript.utilities.api.inventory.gui.GuiUpdate;
+import me.wolfyscript.utilities.api.inventory.gui.GuiWindow;
+import me.wolfyscript.utilities.api.inventory.gui.button.Button;
+import me.wolfyscript.utilities.api.inventory.gui.button.ButtonState;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.ActionButton;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.Server;
+import org.bukkit.event.inventory.InventoryClickEvent;
 
 import java.util.*;
 
-public class TPABlockList extends GuiWindow implements Listable {
-    public TPABlockList(InventoryAPI<GuiCache> inventoryAPI) { super("tpa_blocklist", inventoryAPI, 54); }
+public class TPABlockList extends GuiWindow<GuiCache> implements Listable {
+    public TPABlockList(GuiCluster<GuiCache> cluster) { super(cluster, "tpa_blocklist",  54); }
 
     public void onInit() {
         loreString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceKey(
                 "$inventories.none.tpa_blocklist.items.head.lore$").toArray(new String[0]);
-        helpString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceKey(
-                "$inventories.none.tpa_blocklist.items.head.help$").toArray(new String[0]);
     }
 
-    public void onUpdateAsync(GuiUpdate update) {
+    @Override
+    public void onUpdateSync(GuiUpdate<GuiCache> guiUpdate) {
+
+    }
+
+    public void onUpdateAsync(GuiUpdate<GuiCache> update) {
         // 顶栏
         GuiUtils.setTopBar(update);
         GuiUtils.setListPage(update, this);
     }
 
-    private String[] loreString, helpString;
+    private String[] loreString;
     /**
      * 获取某个会话当前页项目(最多36个)
      *
@@ -43,39 +46,41 @@ public class TPABlockList extends GuiWindow implements Listable {
      * @return 本页面的按钮List
      */
     @Override
-    public <T extends CustomCache> List<Button> getPage(GuiHandler<T> handler) {
+    public List<Button<GuiCache>> getPage(GuiHandler<GuiCache> handler) {
         int index = getPageIndex(handler);
         try {
             List<String> blockUUIDList =
                     PlayerConfig.getPlayerConfig(Objects.requireNonNull(handler.getPlayer())).getTpaBlockList();
             List<String> subBlockList = blockUUIDList.subList(index * 36, ((getPageCount(handler) - index) <= 1) ?
                     blockUUIDList.size() : (36 * (index + 1)));
-            List<Button> playerButtons = new ArrayList<>();
+            List<Button<GuiCache>> playerButtons = new ArrayList<>();
             Server server =  NewNanPlus.getPlugin().getServer();
 
             Tpa instance = (city.newnan.newnanplus.teleport.Tpa) NewNanPlus.getPlugin().getModule(
                     city.newnan.newnanplus.teleport.Tpa.class);
 
-            HashMap<String, Button> buttons = GuiUtils.getWindowButtons(this);
+            HashMap<String, Button<GuiCache>> buttons = GuiUtils.getWindowButtons(this);
             assert buttons != null;
             subBlockList.forEach(uuidString -> {
                 if (buttons.containsKey(uuidString)) {
                     playerButtons.add(buttons.get(uuidString));
                 } else {
                     OfflinePlayer _player = server.getOfflinePlayer(UUID.fromString(uuidString));
-                    ButtonState state = new ButtonState(SkullKits.getSkull(_player), "§r§l" + _player.getName(),
-                            helpString, loreString,
-                            (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                                if (inventoryClickEvent.isRightClick()) {
-                                    try {
-                                        instance.removeFromBlackList(player, _player);
-                                    } catch (Exception e) {
-                                        e.printStackTrace();
+                    ButtonState<GuiCache> state = new ButtonState<>(SkullKits.getSkull(_player),
+                            "§r§l" + _player.getName(), loreString,
+                            (cache, guiHandler, player, inventory, slot, event) -> {
+                                if (event instanceof InventoryClickEvent) {
+                                    if (((InventoryClickEvent)event).getClick().isRightClick()) {
+                                        try {
+                                            instance.removeFromBlackList(player, _player);
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                        }
                                     }
                                 }
                                 return true;
                             });
-                    ActionButton blockedPlayer = new ActionButton(uuidString, state);
+                    ActionButton<GuiCache> blockedPlayer = new ActionButton<>(uuidString, state);
                     buttons.put(uuidString, blockedPlayer);
                     playerButtons.add(blockedPlayer);
                 }
@@ -94,7 +99,7 @@ public class TPABlockList extends GuiWindow implements Listable {
      * @return 页码，从0开始
      */
     @Override
-    public <T extends CustomCache> int getPageIndex(GuiHandler<T> handler) {
+    public int getPageIndex(GuiHandler<GuiCache> handler) {
         Integer index = (Integer) handler.getCustomCache().getWindowCache(this).
                 get(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString());
         if (index == null || index < 0) {
@@ -115,7 +120,7 @@ public class TPABlockList extends GuiWindow implements Listable {
      * @return 总页数
      */
     @Override
-    public <T extends CustomCache> int getPageCount(GuiHandler<T> handler) {
+    public int getPageCount(GuiHandler<GuiCache> handler) {
         try {
             return (PlayerConfig.getPlayerConfig(Objects.requireNonNull(handler.getPlayer())).
                     getTpaBlockList().size() + 35) / 36;
@@ -132,7 +137,7 @@ public class TPABlockList extends GuiWindow implements Listable {
      * @param handler 会话对象
      */
     @Override
-    public <T extends CustomCache> void setPageIndex(int index, GuiHandler<T> handler) {
+    public void setPageIndex(int index, GuiHandler<GuiCache> handler) {
         handler.getCustomCache().getWindowCache(this).
                 put(Objects.requireNonNull(handler.getPlayer()).getUniqueId().toString(), index);
     }

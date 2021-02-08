@@ -8,10 +8,10 @@ import city.newnan.newnanplus.exception.CommandExceptions.PlayerMoreThanOneExcep
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerNotFountException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.utility.PlayerConfig;
-import me.wolfyscript.utilities.api.WolfyUtilities;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.apache.commons.lang.StringUtils;
+import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
@@ -261,13 +261,13 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         plugin.getServer().dispatchCommand(plugin.getServer().getConsoleSender(), "vanish " + player.getName());
         if (toJudgemental) {
             player.setGameMode(GameMode.SPECTATOR);
-            plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
+            plugin.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', MessageFormat.format(
                     Objects.requireNonNull(plugin.configManager.get("config.yml").
                             getString("module-playermanager.judgemental-fake-quit-message")),
                     player.getName())));
         } else {
             player.setGameMode(GameMode.SURVIVAL);
-            plugin.getServer().broadcastMessage(WolfyUtilities.translateColorCodes(MessageFormat.format(
+            plugin.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', MessageFormat.format(
                     Objects.requireNonNull(plugin.configManager.get("config.yml").
                             getString("module-playermanager.judgemental-fake-join-message")),
                     player.getName())));

@@ -1,80 +1,75 @@
 package city.newnan.newnanplus.maingui;
 
 import city.newnan.newnanplus.NewNanPlus;
-import me.wolfyscript.utilities.api.inventory.GuiHandler;
-import me.wolfyscript.utilities.api.inventory.GuiUpdate;
-import me.wolfyscript.utilities.api.inventory.GuiWindow;
-import me.wolfyscript.utilities.api.inventory.InventoryAPI;
-import me.wolfyscript.utilities.api.inventory.button.Button;
-import me.wolfyscript.utilities.api.inventory.button.ButtonState;
-import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
-import me.wolfyscript.utilities.api.inventory.button.buttons.DummyButton;
-import me.wolfyscript.utilities.api.utils.inventory.PlayerHeadUtils;
+import me.wolfyscript.utilities.api.inventory.gui.*;
+import me.wolfyscript.utilities.api.inventory.gui.button.Button;
+import me.wolfyscript.utilities.api.inventory.gui.button.ButtonState;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.ActionButton;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.DummyButton;
+import me.wolfyscript.utilities.api.inventory.gui.cache.CustomCache;
+import me.wolfyscript.utilities.util.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.SkullMeta;
 
 import java.lang.reflect.Field;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class GuiUtils {
     private static InventoryAPI<GuiCache> inventoryAPI;
     private static NewNanPlus plugin;
-    private static Field historyField;
 
     private static final List<ItemStack> pageNumberButton = new ArrayList<>();
 
-    public static void init(NewNanPlus plugin) throws NoSuchFieldException {
+    public static void init(NewNanPlus plugin, NoneCluster noneCluster) throws NoSuchFieldException {
         GuiUtils.plugin = plugin;
         inventoryAPI = plugin.inventoryAPI;
-
-        historyField = GuiHandler.class.getDeclaredField("clusterHistory");
-        historyField.setAccessible(true);
 
         buttonsField = GuiWindow.class.getDeclaredField("buttons");
         buttonsField.setAccessible(true);
 
-        inventoryAPI.getOrRegisterGuiCluster("none");
-
         // 背景玻璃板
-        inventoryAPI.registerButton("none", new DummyButton("bg_white", new ButtonState("none", "background", Material.WHITE_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_orange", new ButtonState("none", "background", Material.ORANGE_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_magenta", new ButtonState("none", "background", Material.MAGENTA_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_lightblue", new ButtonState("none", "background", Material.LIGHT_BLUE_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_yellow", new ButtonState("none", "background", Material.YELLOW_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_lime", new ButtonState("none", "background", Material.LIME_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_pink", new ButtonState("none", "background", Material.PINK_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_gray", new ButtonState("none", "background", Material.GRAY_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_lightgray", new ButtonState("none", "background", Material.LIGHT_GRAY_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_cyan", new ButtonState("none", "background", Material.CYAN_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_purple", new ButtonState("none", "background", Material.PURPLE_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_blue", new ButtonState("none", "background", Material.BLUE_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_brown", new ButtonState("none", "background", Material.BROWN_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_green", new ButtonState("none", "background", Material.GREEN_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_red", new ButtonState("none", "background", Material.RED_STAINED_GLASS_PANE, 8999)));
-        inventoryAPI.registerButton("none", new DummyButton("bg_black", new ButtonState("none", "background", Material.BLACK_STAINED_GLASS_PANE, 8999)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_white", new ButtonState<>("none", "background", Material.WHITE_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_orange", new ButtonState<>("none", "background", Material.ORANGE_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_magenta", new ButtonState<>("none", "background", Material.MAGENTA_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_lightblue", new ButtonState<>("none", "background", Material.LIGHT_BLUE_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_yellow", new ButtonState<>("none", "background", Material.YELLOW_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_lime", new ButtonState<>("none", "background", Material.LIME_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_pink", new ButtonState<>("none", "background", Material.PINK_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_gray", new ButtonState<>("none", "background", Material.GRAY_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_lightgray", new ButtonState<>("none", "background", Material.LIGHT_GRAY_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_cyan", new ButtonState<>("none", "background", Material.CYAN_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_purple", new ButtonState<>("none", "background", Material.PURPLE_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_blue", new ButtonState<>("none", "background", Material.BLUE_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_brown", new ButtonState<>("none", "background", Material.BROWN_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_green", new ButtonState<>("none", "background", Material.GREEN_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_red", new ButtonState<>("none", "background", Material.RED_STAINED_GLASS_PANE)));
+        noneCluster.myRegisterButton(new DummyButton<>("bg_black", new ButtonState<>("none", "background", Material.BLACK_STAINED_GLASS_PANE)));
 
         // 上一页
-        inventoryAPI.registerButton("none", new ActionButton("back",
+        noneCluster.myRegisterButton(new ActionButton<>("back",
                 PlayerHeadUtils.getViaURL("864f779a8e3ffa231143fa69b96b14ee35c16d669e19c75fd1a7da4bf306c"),
-                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    guiHandler.openPreviousInv();
+                (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.openPreviousWindow();
                     return true;
                 }));
         // 主页
-        inventoryAPI.registerButton("none", new ActionButton("home",
+        noneCluster.myRegisterButton(new ActionButton<>("home",
                 PlayerHeadUtils.getViaURL("c5a35b5ca15268685c4660535e5883d21a5ec57c55d397234269acb5dc2954f"),
-                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    clearHistory(guiHandler, guiHandler.getCurrentGuiCluster());
-                    guiHandler.openCluster(guiHandler.getCurrentGuiCluster());
+                (cache, guiHandler, player, inventory, slot, event) -> {
+                    clearHistory(guiHandler, guiHandler.getCluster());
+                    guiHandler.openCluster(guiHandler.getCluster());
                     return true;
                 }));
         // 关闭
-        inventoryAPI.registerButton("none", new ActionButton("close",
+        noneCluster.myRegisterButton(new ActionButton<>("close",
                 PlayerHeadUtils.getViaURL("16c60da414bf037159c8be8d09a8ecb919bf89a1a21501b5b2ea75963918b7b"),
-                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                (cache, guiHandler, player, inventory, slot, event) -> {
                     guiHandler.close();
                     return true;
                 }));
@@ -124,17 +119,17 @@ public class GuiUtils {
         }
     }
 
-    public static void clearHistory(GuiHandler<?> guiHandler, String clusterID) {
+    public static <T extends CustomCache> void clearHistory(GuiHandler<?> guiHandler, GuiCluster<T> cluster) {
         try {
-            ((List<?>) ((Map<?,?>) historyField.get(guiHandler)).get(clusterID)).clear();
+            guiHandler.getClusterHistory().get(cluster).clear();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static boolean isHistoryEmpty(GuiHandler<?> guiHandler, String clusterID) {
+    public static <T extends CustomCache> boolean isHistoryEmpty(GuiHandler<?> guiHandler, GuiCluster<T> cluster) {
         try {
-            return ((List<?>) ((Map<?,?>) historyField.get(guiHandler)).get(clusterID)).size() < 2;
+            return guiHandler.getClusterHistory().get(cluster).size() < 2;
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -142,25 +137,25 @@ public class GuiUtils {
     }
 
     private static Field buttonsField;
-    public static <T extends GuiWindow> HashMap<String, Button> getWindowButtons(T window) {
+    public static <T extends CustomCache> HashMap<String, Button<T>> getWindowButtons(GuiWindow<T> window) {
         try {
-            return (HashMap<String, Button>) buttonsField.get(window);
+            return (HashMap<String, Button<T>>) buttonsField.get(window);
         } catch (Exception e) {
             return null;
         }
     }
 
-    public static void setTopBar(GuiUpdate update) {
+    public static <T extends CustomCache> void setTopBar(GuiUpdate<T> update) {
         update.getGuiHandler().setHelpEnabled(true);
         // 上一页按钮
-        if (isHistoryEmpty(update.getGuiHandler(), update.getGuiHandler().getCurrentGuiCluster())) {
+        if (isHistoryEmpty(update.getGuiHandler(), update.getGuiHandler().getCluster())) {
             update.setButton(0, "none", "bg_black");
         } else {
             update.setButton(0, "none", "back");
         }
         // 主页按钮
-        if (plugin.inventoryAPI.getGuiCluster(update.getGuiHandler().getCurrentGuiCluster()).getMainMenu()
-                .equals(Objects.requireNonNull(update.getGuiHandler().getCurrentInv()).getNamespace())) {
+        if (update.getGuiHandler().getCluster().getEntry()
+                .equals(Objects.requireNonNull(update.getGuiHandler().getWindow()).getNamespacedKey())) {
             update.setButton(1, "none", "bg_black");
         } else {
             update.setButton(1, "none", "home");
@@ -173,7 +168,7 @@ public class GuiUtils {
         update.setButton(8, "none", "close");
     }
 
-    public static void setListPage(GuiUpdate update, Listable window) {
+    public static void setListPage(GuiUpdate<GuiCache> update, Listable window) {
         int index = window.getPageIndex(update.getGuiHandler());
         int pageCount = window.getPageCount(update.getGuiHandler());
 
@@ -182,18 +177,18 @@ public class GuiUtils {
             update.setButton(45, "none", "bg_brown");
             update.setButton(47, "none", "bg_brown");
         } else {
-            ActionButton firstPageButton = new ActionButton("first_page",
+            ActionButton<GuiCache> firstPageButton = new ActionButton<>("first_page",
                     PlayerHeadUtils.getViaURL("118a2dd5bef0b073b13271a7eeb9cfea7afe8593c57a93821e43175572461812"),
-                    (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                    (cache, guiHandler, player, inventory, slot, event) -> {
                         window.setPageIndex(0, guiHandler);
                         return true;
                     });
             firstPageButton.init("none", inventoryAPI.getWolfyUtilities());
             update.setButton(45, firstPageButton);
 
-            ActionButton previousPageButton = new ActionButton("previous_page",
+            ActionButton<GuiCache> previousPageButton = new ActionButton<>("previous_page",
                     PlayerHeadUtils.getViaURL("864f779a8e3ffa231143fa69b96b14ee35c16d669e19c75fd1a7da4bf306c"),
-                    (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                    (cache, guiHandler, player, inventory, slot, event) -> {
                         window.setPageIndex(index - 1, guiHandler);
                         return true;
                     });
@@ -224,18 +219,18 @@ public class GuiUtils {
             update.setButton(51, "none", "bg_brown");
             update.setButton(53, "none", "bg_brown");
         } else {
-            ActionButton lastPageButton = new ActionButton("last_page",
+            ActionButton<GuiCache> lastPageButton = new ActionButton<>("last_page",
                     PlayerHeadUtils.getViaURL("d99f28332bcc349f42023c29e6e641f4b10a6b1e48718cae557466d51eb922"),
-                    (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                    (cache, guiHandler, player, inventory, slot, event) -> {
                         window.setPageIndex(0, guiHandler);
                         return true;
                     });
             lastPageButton.init("none", inventoryAPI.getWolfyUtilities());
             update.setButton(53, lastPageButton);
 
-            ActionButton nextPageButton = new ActionButton("next_page",
+            ActionButton<GuiCache> nextPageButton = new ActionButton<>("next_page",
                     PlayerHeadUtils.getViaURL("d9eccc5c1c79aa7826a15a7f5f12fb40328157c5242164ba2aef47e5de9a5cfc"),
-                    (guiHandler, player, inventory, i, inventoryClickEvent) -> {
+                    (cache, guiHandler, player, inventory, slot, event) -> {
                         window.setPageIndex(index - 1, guiHandler);
                         return true;
                     });
@@ -247,11 +242,8 @@ public class GuiUtils {
         window.getPage(update.getGuiHandler()).forEach(button -> {
             if (slot.get() > 44)
                 return;
-            NewNanPlus.debug("放置按钮");
             update.setButton(slot.get(), button);
             slot.getAndIncrement();
         });
     }
-
-    public static final HashMap<Object, SkullMeta> globalHeadMetaMap = new HashMap<>();
 }

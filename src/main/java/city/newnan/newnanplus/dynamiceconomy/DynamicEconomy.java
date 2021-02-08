@@ -4,7 +4,7 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
-import me.wolfyscript.utilities.api.utils.inventory.ItemUtils;
+import city.newnan.newnanplus.utility.ItemKit;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
@@ -290,7 +290,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      * @param event 玩家退出事件
      */
     @EventHandler
-    public void onPlayerQuit(PlayerQuitEvent event) throws Exception {
+    public void onPlayerQuit(PlayerQuitEvent event) {
         displayEcoInfoPlayers.remove(event.getPlayer());
     }
 
@@ -466,7 +466,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
      * @param event 玩家成功与箱子商店交易时的事件
      */
     @EventHandler
-    public void onShopSuccessPurchase(ShopSuccessPurchaseEvent event) throws Exception {
+    public void onShopSuccessPurchase(ShopSuccessPurchaseEvent event) {
         // 检查是否为国库
         if (!event.getShop().getOwner().equals(ntOwner))
             return;
@@ -635,9 +635,9 @@ class SystemCommodity {
         assert data != null;
         // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
         if (data.charAt(0) == '{') {
-            itemStack = ItemUtils.convertJsontoItemStack(data);
+            itemStack = ItemKit.convertJsontoItemStack(data);
         } else {
-            itemStack = ItemUtils.deserializeNMSItemStack(data);
+            itemStack = ItemKit.deserializeNMSItemStack(data);
         }
 
         amount = commoditySection.getInt("amount", 0);
@@ -746,9 +746,9 @@ class SystemCommodity {
         Material type = itemStack.getType();
         // 带文字的书、潜影盒属于json化内容很多的，转化为base64存储
         if (type.equals(Material.WRITABLE_BOOK) || type.equals(Material.WRITTEN_BOOK) || type.equals(Material.SHULKER_BOX)) {
-            section.set("data", ItemUtils.serializeNMSItemStack(itemStack));
+            section.set("data", ItemKit.serializeNMSItemStack(itemStack));
         } else {
-            section.set("data", ItemUtils.convertItemStackToJson(itemStack));
+            section.set("data", ItemKit.convertItemStackToJson(itemStack));
         }
 
         section.set("amount", amount);

@@ -2,27 +2,32 @@ package city.newnan.newnanplus.settingsgui;
 
 import city.newnan.newnanplus.maingui.GuiCache;
 import city.newnan.newnanplus.maingui.GuiUtils;
-import me.wolfyscript.utilities.api.inventory.GuiUpdate;
-import me.wolfyscript.utilities.api.inventory.GuiWindow;
-import me.wolfyscript.utilities.api.inventory.InventoryAPI;
-import me.wolfyscript.utilities.api.inventory.button.buttons.ActionButton;
+import me.wolfyscript.utilities.api.inventory.gui.GuiCluster;
+import me.wolfyscript.utilities.api.inventory.gui.GuiUpdate;
+import me.wolfyscript.utilities.api.inventory.gui.GuiWindow;
+import me.wolfyscript.utilities.api.inventory.gui.button.buttons.ActionButton;
 import org.bukkit.Material;
 
-public class SettingsMenu extends GuiWindow {
-    public SettingsMenu(InventoryAPI<GuiCache> inventoryAPI) {
-        super("settings", inventoryAPI, 54);
+public class SettingsMenu extends GuiWindow<GuiCache> {
+    public SettingsMenu(GuiCluster<GuiCache> cluster) {
+        super(cluster, "settings", 54);
     }
 
     public void onInit() {
         // 设置
-        registerButton(new ActionButton("tpa_blocklist", Material.BARRIER,
-                (guiHandler, player, inventory, i, inventoryClickEvent) -> {
-                    guiHandler.changeToInv("none", "tpa_blocklist");
+        registerButton(new ActionButton<>("tpa_blocklist", Material.BARRIER,
+                (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.openWindow("tpa_blocklist");
                     return true;
                 }));
     }
 
-    public void onUpdateAsync(GuiUpdate update) {
+    @Override
+    public void onUpdateSync(GuiUpdate<GuiCache> guiUpdate) {
+
+    }
+
+    public void onUpdateAsync(GuiUpdate<GuiCache> update) {
         // 顶栏
         GuiUtils.setTopBar(update);
         update.setButton(9, "tpa_blocklist");
