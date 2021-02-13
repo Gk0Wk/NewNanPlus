@@ -335,8 +335,8 @@ permissions:
   'newnanplus.tpa.bypassblock':
     description: '无视传送请求黑名单的权限'
     default: op
-  'newnanplus.teleport.nocooldown':
-    description: '传送无冷却'
+  'newnanplus.tpa.nocooldown':
+    description: 'TPA传送无冷却'
     default: op
   'newnanplus.teleport.free':
     description: '在拥有该权限的世界的传输距离免费'

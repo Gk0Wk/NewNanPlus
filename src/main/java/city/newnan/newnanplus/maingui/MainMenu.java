@@ -39,12 +39,13 @@ public class MainMenu extends GuiWindow<GuiCache> {
         registerButton(new ActionButton<>("mail",
                 PlayerHeadUtils.getViaURL("eb2815b99c13bfc55b4c5c2959d157a6233ab06186459233bc1e4d4f78792c69"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
-
+                    guiHandler.openWindow("mail_list");
                     return true;
                 }));
         // 称号
         registerButton(new ActionButton<>("title", Material.NAME_TAG,
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     NewNanPlus.getPlugin().printf(Objects.requireNonNull(guiHandler.getPlayer()),
                             "$global_message.function_not_open$");
                     return true;
@@ -53,6 +54,7 @@ public class MainMenu extends GuiWindow<GuiCache> {
         registerButton(new ActionButton<>("achievement",
                 PlayerHeadUtils.getViaURL("1a696e152363ad477ed6cb5a518bfea84b036148fecac0581f32c5b5396958"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     Objects.requireNonNull(guiHandler.getPlayer()).performCommand("aach list");
                     return true;
                 }));
@@ -66,6 +68,7 @@ public class MainMenu extends GuiWindow<GuiCache> {
         // 任务
         registerButton(new ActionButton<>("task", Material.WRITABLE_BOOK,
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     Objects.requireNonNull(guiHandler.getPlayer()).performCommand("betonquest:betonquestbackpack");
                     return true;
                 }));
@@ -73,6 +76,7 @@ public class MainMenu extends GuiWindow<GuiCache> {
         registerButton(new ActionButton<>("town",
                 PlayerHeadUtils.getViaURL("cf7cdeefc6d37fecab676c584bf620832aaac85375e9fcbff27372492d69f"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     NewNanPlus.getPlugin().printf(Objects.requireNonNull(guiHandler.getPlayer()),
                             "$global_message.function_not_open$");
                     return true;

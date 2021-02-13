@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.maingui;
 
 import city.newnan.newnanplus.NewNanPlus;
+import city.newnan.newnanplus.playermanager.MailList;
 import city.newnan.newnanplus.settingsgui.SettingsMenu;
 import city.newnan.newnanplus.teleport.TPABlockList;
 import me.wolfyscript.utilities.api.inventory.gui.GuiCluster;
@@ -27,6 +28,7 @@ public class NoneCluster extends GuiCluster<GuiCache> {
         registerGuiWindow(new ToolKits(this));
         registerGuiWindow(new SettingsMenu(this));
         registerGuiWindow(new TPABlockList(this));
+        registerGuiWindow(new MailList(this));
     }
 
     public void myRegisterButton(Button<GuiCache> button) {

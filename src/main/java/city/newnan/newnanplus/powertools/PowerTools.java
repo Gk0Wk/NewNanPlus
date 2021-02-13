@@ -258,9 +258,6 @@ public class PowerTools implements NewNanPlusModule {
             return;
 
         Player player = (Player) sender;
-        for (String arg : args) {
-            plugin.messageManager.printINFO(arg);
-        }
         if (args.length > 0 && args[0].equals("base64")) {
             plugin.messageManager.sendMessage(sender,
                     ItemKit.serializeNMSItemStack(player.getInventory().getItemInMainHand()));

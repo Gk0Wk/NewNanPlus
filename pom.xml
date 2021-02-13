@@ -84,16 +84,16 @@
         <dependency>
             <groupId>com.wolfyscript</groupId>
             <artifactId>wolfyutilities</artifactId>
-            <version>1.6.3.6</version>
+            <version>1.6.3.8</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.3.6.jar</systemPath>
+            <systemPath>${project.basedir}/lib/wolfyutilities-1.6.3.8.jar</systemPath>
         </dependency>
         <dependency>
             <groupId>org.maxgamer</groupId>
             <artifactId>QuickShop</artifactId>
-            <version>4.0.6.3</version>
+            <version>4.0.7.3</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/lib/QuickShop-4.0.6.3.jar</systemPath>
+            <systemPath>${project.basedir}/lib/QuickShop-4.0.7.3.jar</systemPath>
         </dependency>
         <dependency>
             <!--https://github.com/webbukkit/dynmap/wiki-->

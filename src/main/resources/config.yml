@@ -12,7 +12,7 @@ global-settings:
   date-formatter: 'yyyy-MM-dd HH:mm:ss'
   balance-symbol: '₦'
 module-dynamicaleconomy:
-  enable: false
+  enable: true
   owner-player: 'NewNanCity'
   exclude-world: []
 module-playermanager:

@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Objects;
 
 public class MailList extends GuiWindow<GuiCache> implements Listable {
-    public MailList(GuiCluster<GuiCache> cluster) { super(cluster, "tpa_blocklist", 54); }
+    public MailList(GuiCluster<GuiCache> cluster) { super(cluster, "mail_list", 54); }
 
     public void onInit() {
         loreString = NewNanPlus.getPlugin().wolfyLanguageAPI.replaceKey(
@@ -86,22 +86,23 @@ public class MailList extends GuiWindow<GuiCache> implements Listable {
                         mailButtons.add(button);
                     }
                 } else {
-                    boolean ifRead = unreadMailList.contains(mailName);
+                    boolean ifRead = readMailList.contains(mailName);
+                    String oriMailName = mailName;
                     mailName = mailName + (ifRead ? "#Read" : "#Unread");
                     if (buttons.containsKey(mailName)) {
                         mailButtons.add(buttons.get(mailName));
                     } else {
-                        String finalMailName = mailName;
                         ButtonState<GuiCache> state = new ButtonState<>(mail.icon,
                                 "§r" + mail.title + (ifRead ? readTitleString : unreadTitleString),
                                 loreString, (cache, guiHandler, player, inventory, slot, event) -> {
                                     if (event instanceof InventoryClickEvent) {
-                                        if (((InventoryClickEvent)event).getClick().isRightClick()) {
+                                        if (((InventoryClickEvent)event).getClick().isLeftClick()) {
                                             try {
                                                 boolean resultRead = instance.showEmail(player, mail, ifRead);
                                                 if (ifRead ^ resultRead) {
-                                                    unreadMailList.remove(finalMailName);
-                                                    readMailList.add(finalMailName);
+                                                    unreadMailList.remove(oriMailName);
+                                                    readMailList.add(oriMailName);
+                                                    PlayerConfig.getPlayerConfig(Objects.requireNonNull(handler.getPlayer())).commit();
                                                 }
                                             } catch (Exception e) {
                                                 e.printStackTrace();

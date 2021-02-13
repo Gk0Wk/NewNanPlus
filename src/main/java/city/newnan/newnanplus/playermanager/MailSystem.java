@@ -123,11 +123,13 @@ public class MailSystem implements NewNanPlusModule {
                 }
             }
 
+            texts.add("===================");
             // 正文渲染
             texts.add(mail.text);
 
             readIt = true;
         } catch (Exception e) {
+            e.printStackTrace();
             readIt = false;
         }
 
@@ -146,7 +148,10 @@ public class MailSystem implements NewNanPlusModule {
         ListIterator<ItemStack> oriIter =  originInventory.iterator();
         int slotIndex = 0;
         while (oriIter.hasNext()) {
-            inventory.setItem(slotIndex, oriIter.next().clone());
+            ItemStack item = oriIter.next();
+            if (item != null) {
+                inventory.setItem(slotIndex, item.clone());
+            }
             slotIndex ++;
         }
 

@@ -23,6 +23,7 @@ public class ToolKits extends GuiWindow<GuiCache> implements Listable  {
         // 家
         tools.add(new ActionButton<>("home", Material.RED_BED,
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("home");
                     return true;
                 }));
@@ -30,12 +31,14 @@ public class ToolKits extends GuiWindow<GuiCache> implements Listable  {
         tools.add(new ActionButton<>("city",
                 PlayerHeadUtils.getViaURL("4528ed45802400f465b5c4e3a6b7a9f2b6a5b3d478b6fd84925cc5d988391c7d"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("city");
                     return true;
                 }));
         // 创造区
         tools.add(new ActionButton<>("ctp", Material.WOODEN_AXE,
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("nnp ctp");
                     return true;
                 }));
@@ -43,6 +46,7 @@ public class ToolKits extends GuiWindow<GuiCache> implements Listable  {
         tools.add(new ActionButton<>("resource",
                 PlayerHeadUtils.getViaURL("8112f87cee578894e2d07253abb1466247cee48f1727bb9d1eac53f8e0571012"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("resource tp");
                     return true;
                 }));

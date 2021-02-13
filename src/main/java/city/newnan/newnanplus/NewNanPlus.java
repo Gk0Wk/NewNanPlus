@@ -391,6 +391,15 @@ public class NewNanPlus extends JavaPlugin {
         printf(sender, true, formatString, param);
     }
 
+    /**
+     * 向控制台发送一条格式化消息，可以包含i18n路径
+     * @param formatString 发送的消息的格式化字符串，可以包含i18n路径
+     * @param param 格式化参数
+     */
+    public void printf(String formatString, Object... param) {
+        printf(getServer().getConsoleSender(), true, formatString, param);
+    }
+
     static private boolean verbose;
     public static void debug(String formatString, Object... param) {
         if (verbose) {

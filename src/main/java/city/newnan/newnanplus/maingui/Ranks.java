@@ -23,6 +23,7 @@ public class Ranks extends GuiWindow<GuiCache> implements Listable {
         rankList.add(new ActionButton<>("balance",
                 PlayerHeadUtils.getViaURL("e36e94f6c34a35465fce4a90f2e25976389eb9709a12273574ff70fd4daa6852"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("essentials:baltop");
                     return true;
                 }));
@@ -30,6 +31,7 @@ public class Ranks extends GuiWindow<GuiCache> implements Listable {
         rankList.add(new ActionButton<>("achievement_total",
                 PlayerHeadUtils.getViaURL("1b8fe1c44acbeeb918d38bc42d550bedd5c3dd049889fd9eeea1160ab8b6a"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("aach top");
                     return true;
                 }));
@@ -37,6 +39,7 @@ public class Ranks extends GuiWindow<GuiCache> implements Listable {
         rankList.add(new ActionButton<>("achievement_monthly",
                 PlayerHeadUtils.getViaURL("4d9dedfe01d8efd96e7dca2e930d984568c411ba83449c190af0c5ef052f2729"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("aach month");
                     return true;
                 }));
@@ -44,6 +47,7 @@ public class Ranks extends GuiWindow<GuiCache> implements Listable {
         rankList.add(new ActionButton<>("achievement_weekly",
                 PlayerHeadUtils.getViaURL("3d80617f6b451d0c2fbc1bb939cfeffa06fa375dc57d5e8f61b8e3fa40452b4b"),
                 (cache, guiHandler, player, inventory, slot, event) -> {
+                    guiHandler.close();
                     player.performCommand("aach week");
                     return true;
                 }));

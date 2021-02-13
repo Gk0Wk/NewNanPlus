@@ -187,7 +187,7 @@ public class Tpa implements NewNanPlusModule {
         plugin.printf(sourcePlayer, "$module_message.teleport.tpa_accept_receive$");
 
         // 设置冷却
-        if (sourcePlayer.hasPermission("newnanplus.teleport.nocooldown")) {
+        if (sourcePlayer.hasPermission("newnanplus.tpa.nocooldown")) {
             sessionCache.remove(sourcePlayer.getUniqueId());
         } else {
             sessionCache.set(sourcePlayer.getUniqueId(), null, "CoolDown", tpCoolDownTime);
