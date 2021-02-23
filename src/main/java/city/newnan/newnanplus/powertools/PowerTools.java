@@ -93,8 +93,7 @@ public class PowerTools implements NewNanPlusModule {
         if (!player.isOnline()) {
             throw new CommandExceptions.PlayerOfflineException();
         }
-        plugin.messageManager.sendMessage(player.getPlayer(),
-                StringUtils.join(args, ' ', 1, args.length));
+        plugin.messageManager.printf(player.getPlayer(), true, false, StringUtils.join(args, ' ', 1, args.length));
     }
 
     private void sendTitleMessage(String[] args) throws Exception {
@@ -229,9 +228,8 @@ public class PowerTools implements NewNanPlusModule {
         }
 
         for (OfflinePlayer player : players) {
-            plugin.messageManager.sendMessage(sender, MessageFormat.format(
-                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.power_tools.user_display_format$"),
-                    player.getName(), player.getUniqueId().toString()));
+            plugin.messageManager.printf(sender, "$module_message.power_tools.user_display_format$",
+                    player.getName(), player.getUniqueId().toString());
         }
     }
 
@@ -259,11 +257,9 @@ public class PowerTools implements NewNanPlusModule {
 
         Player player = (Player) sender;
         if (args.length > 0 && args[0].equals("base64")) {
-            plugin.messageManager.sendMessage(sender,
-                    ItemKit.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
+            sender.sendMessage(ItemKit.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
         } else {
-            plugin.messageManager.sendMessage(sender,
-                    ItemKit.convertItemStackToJson(player.getInventory().getItemInMainHand()));
+            sender.sendMessage(Objects.requireNonNull(ItemKit.convertItemStackToJson(player.getInventory().getItemInMainHand())));
         }
     }
 }

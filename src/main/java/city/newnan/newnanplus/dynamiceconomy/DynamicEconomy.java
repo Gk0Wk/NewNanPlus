@@ -1,20 +1,18 @@
 package city.newnan.newnanplus.dynamiceconomy;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
-import city.newnan.newnanplus.utility.ItemKit;
+import me.lucko.helper.config.ConfigurationNode;
 import net.ess3.api.events.UserBalanceUpdateEvent;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Item;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -35,6 +33,7 @@ import org.maxgamer.quickshop.shop.ContainerShop;
 import org.maxgamer.quickshop.shop.Shop;
 import org.maxgamer.quickshop.shop.ShopType;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.*;
 
@@ -96,7 +95,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         put(Material.NETHER_QUARTZ_ORE, 0L); // 下界石英矿石
     }};
 
-    public ConfigurationSection commodities;
+    public ConfigurationNode commodities;
 
     /**
      * 系统总价值量
@@ -122,7 +121,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
 
     public DynamicEconomy() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-dynamicaleconomy.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-dynamicaleconomy", "enable").getBoolean(false)) {
             throw new ModuleExeptions.ModuleOffException();
         }
         reloadConfig();
@@ -134,15 +133,15 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         // 国库所有者是 NewNanCity
         ntOwner = ((city.newnan.newnanplus.playermanager.PlayerManager)
                 plugin.getModule(city.newnan.newnanplus.playermanager.PlayerManager.class))
-                .findOnePlayerByName(plugin.configManager.get("config.yml")
-                        .getString("module-dynamicaleconomy.owner-player")).getUniqueId();
+                .findOnePlayerByName(plugin.configManagers.get("config.yml")
+                        .getNode("module-dynamicaleconomy", "owner-player").getString()).getUniqueId();
 
         SystemCommodity.ntOwner = plugin.getServer().getOfflinePlayer(ntOwner);
         SystemCommodity.plugin = plugin;
         SystemCommodity.dynamicEconomy = this;
 
         // 设置缓存文件持久化
-        plugin.configManager.setPersistent("dyneco_cache.yml");
+        plugin.configManagers.setPersistent("dyneco_cache.yml");
         // 定时保存配置
         plugin.getServer().getScheduler().scheduleSyncRepeatingTask(plugin, this::updateAndSave, 600L, 600L);
 
@@ -181,62 +180,60 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     @Override
     public void reloadConfig() {
         excludeWorld.clear();
-        FileConfiguration mainConfig = plugin.configManager.get("config.yml");
-        mainConfig.getStringList("module-dynamicaleconomy.exclude-world").
-                forEach(world -> excludeWorld.add(plugin.getServer().getWorld(world)));
+        try {
+            ConfigurationNode mainConfig = plugin.configManagers.get("config.yml").getNode("module-dynamicaleconomy");
+            mainConfig.getNode("exclude-world").getList(Object::toString).
+                    forEach(world -> excludeWorld.add(plugin.getServer().getWorld(world)));
 
-        boolean ifInit = !plugin.configManager.touch("dyneco_cache.yml");
+            boolean ifInit = !plugin.configManagers.touch("dyneco_cache.yml");
 
-        FileConfiguration config = plugin.configManager.reload("dyneco_cache.yml");
-        systemTotalWealth = config.getDouble("wealth.total");
+            ConfigurationNode config = plugin.configManagers.reload("dyneco_cache.yml");
+            systemTotalWealth = config.getNode("wealth", "total").getDouble();
 
-        ConfigurationSection vrCountMap = config.getConfigurationSection("wealth.valued-resource-count");
-        assert vrCountMap != null;
-        vrCountMap.getKeys(false).
-                forEach(key -> valueResourceCounter.put(Material.valueOf(key.toUpperCase()), vrCountMap.getLong(key)));
+            config.getNode("wealth", "valued-resource-count").getChildrenMap().forEach((key, value) ->
+                    valueResourceCounter.put(Material.valueOf(((String) key).toUpperCase()), value.getLong()));
 
-        if (ifInit) {
-            reloadCurrencyIssuance();
-        } else {
-            currencyIssuance = config.getDouble("currency-issuance");
-        }
-        nationalTreasury = config.getDouble("national-treasury");
-
-        systemCommodityListMap.forEach((material, systemCommodities) -> {
-            systemCommodities.forEach((systemCommodity -> systemCommodity.shopList.clear()));
-            systemCommodities.clear();
-        });
-        systemCommodityListMap.clear();
-
-        commodities = config.getConfigurationSection("commodities");
-        assert commodities != null;
-        commodities.getKeys(false).forEach(key -> {
-            ConfigurationSection commoditySection = commodities.getConfigurationSection(key);
-            assert commoditySection != null;
-            SystemCommodity commodity = new SystemCommodity(commoditySection);
-            Material mKey = commodity.itemStack.getType();
-            if (systemCommodityListMap.containsKey(mKey)) {
-                systemCommodityListMap.get(mKey).add(commodity);
+            if (ifInit) {
+                reloadCurrencyIssuance();
             } else {
-                ArrayList<SystemCommodity> commoditiesList = new ArrayList<>();
-                commoditiesList.add(commodity);
-                systemCommodityListMap.put(mKey, commoditiesList);
+                currencyIssuance = config.getNode("currency-issuance").getDouble();
             }
-        });
+            nationalTreasury = config.getNode("national-treasury").getDouble();
 
-        updateCurrencyIndex();
+            systemCommodityListMap.forEach((material, systemCommodities) -> {
+                systemCommodities.forEach((systemCommodity -> systemCommodity.shopList.clear()));
+                systemCommodities.clear();
+            });
+            systemCommodityListMap.clear();
+
+            config.getNode("commodities").getChildrenMap().forEach((key, node) -> {
+                SystemCommodity commodity = new SystemCommodity(node);
+                Material mKey = commodity.itemStack.getType();
+                if (systemCommodityListMap.containsKey(mKey)) {
+                    systemCommodityListMap.get(mKey).add(commodity);
+                } else {
+                    ArrayList<SystemCommodity> commoditiesList = new ArrayList<>();
+                    commoditiesList.add(commodity);
+                    systemCommodityListMap.put(mKey, commoditiesList);
+                }
+            });
+
+            updateCurrencyIndex();
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     public void updateAndSave() {
-        updateCurrencyIndex();
-        FileConfiguration config = plugin.configManager.get("dyneco_cache.yml");
-        config.set("wealth.total", systemTotalWealth);
-        valueResourceCounter.forEach(((material, count) ->
-                config.set("wealth.valued-resource-count." + material.toString(), count)));
-        config.set("currency-issuance", currencyIssuance);
-        config.set("national-treasury", nationalTreasury);
         try {
-            plugin.configManager.save("dyneco_cache.yml");
+            updateCurrencyIndex();
+            ConfigurationNode config = plugin.configManagers.get("dyneco_cache.yml");
+            config.getNode("wealth", "total").setValue(systemTotalWealth);
+            valueResourceCounter.forEach((material, count) ->
+                    config.getNode("wealth", "valued-resource-count", material.toString()).setValue(count));
+            config.getNode("currency-issuance").setValue(currencyIssuance);
+            config.getNode("national-treasury").setValue(nationalTreasury);
+            plugin.configManagers.save("dyneco_cache.yml");
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -269,10 +266,8 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
             throw new CommandExceptions.RefuseConsoleException();
         }
         issueCurrency(Double.parseDouble(args[0]));
-        plugin.messageManager.sendMessage(sender, MessageFormat.format(
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.dynamical_economy.issue_complete$"),
-                currencyIssuance, plugin.configManager.get("config.yml").getString("global-settings.balance-symbol")
-        ));
+        plugin.messageManager.printf(sender, "$module_message.dynamical_economy.issue_complete$",
+                currencyIssuance, plugin.configManagers.get("config.yml").getNode("global-settings", "balance-symbol").getString());
         updateCurrencyIndex();
     }
 
@@ -382,13 +377,6 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
             if (!oPlayer.getUniqueId().equals(ntOwner))
                 currencyIssuance += plugin.vaultEco.getBalance(oPlayer);
         });
-
-        // 统计城镇
-        if (plugin.getModule(city.newnan.newnanplus.town.TownManager.class) != null)
-            ((city.newnan.newnanplus.town.TownManager) plugin.getModule(city.newnan.newnanplus.town.TownManager.class))
-                    .getTowns().forEach(town -> currencyIssuance += town.balance);
-
-        // 统计集体(?不搞了不搞了，太肝了)
     }
 
     /**
@@ -615,149 +603,3 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
     }
 }
 
-class SystemCommodity {
-    public String name;
-    public ItemStack itemStack;
-    public int amount;
-    public double value;
-    public double sellResponseVolume, buyResponseVolume;
-    public long lastSellTime, lastBuyTime;
-    public double buyValue, sellValue;
-    public ArrayList<Shop> shopList = new ArrayList<>();
-
-    public static OfflinePlayer ntOwner;
-    public static DynamicEconomy dynamicEconomy;
-    public static NewNanPlus plugin;
-    
-    public SystemCommodity(ConfigurationSection commoditySection) {
-        name = commoditySection.getName();
-        String data = commoditySection.getString("data");
-        assert data != null;
-        // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
-        if (data.charAt(0) == '{') {
-            itemStack = ItemKit.convertJsontoItemStack(data);
-        } else {
-            itemStack = ItemKit.deserializeNMSItemStack(data);
-        }
-
-        amount = commoditySection.getInt("amount", 0);
-        value = commoditySection.getDouble("value", 0.0);
-        sellResponseVolume = commoditySection.getDouble("sell-response-volume", 0.0);
-        buyResponseVolume = commoditySection.getDouble("buy-response-volume", 0.0);
-        lastSellTime = commoditySection.getLong("last-sell-time", 0L);
-        lastBuyTime = commoditySection.getLong("last-buy-time", 0L);
-
-        updatePrice();
-    }
-
-    /**
-     * 收购：官方 <- 玩家
-     * @param amount 收购数量
-     */
-    public void buy(long amount) {
-        // 维持国库所有者的虚拟存款在500000以上
-        if (plugin.vaultEco.getBalance(ntOwner) < 500000.0)
-            plugin.vaultEco.depositPlayer(ntOwner, 500000.0 - plugin.vaultEco.getBalance(ntOwner));
-
-        this.amount += amount;
-
-        long curTime = System.currentTimeMillis();
-        // 计算γ
-        double gamma = (lastBuyTime == 0) ? 0.0 : (10.0 / (10.0 + Math.log10(1 + curTime - lastBuyTime)));
-
-        // 更新时间
-        lastBuyTime = curTime;
-
-        // 更新响应量
-        buyResponseVolume = amount + gamma * buyResponseVolume;
-
-        // 更新商品价值
-        updatePrice();
-
-        // 刷新所有商店
-        updateShops();
-    }
-
-    /**
-     * 售卖：官方 -> 玩家
-     * @param amount 售卖数量
-     */
-    public void sell(long amount) {
-        this.amount -= amount;
-
-        // 小于0检查，虽然一般不可能出现这种情况，但是还是检测一下
-        if (this.amount < 0)
-            this.amount = 0;
-
-        long curTime = System.currentTimeMillis();
-        // 计算γ
-        double gamma = (lastSellTime == 0) ? 0.0 : (10.0 / (10.0 + Math.log10(1 + curTime - lastSellTime)));
-
-        // 更新时间
-        lastSellTime = curTime;
-
-        // 更新响应量
-        sellResponseVolume = amount + gamma * sellResponseVolume;
-
-        // 更新商品价值
-        updatePrice();
-
-        // 刷新所有商店
-        updateShops();
-    }
-
-    final static double EPSILON = 0.001;
-    private void updatePrice() {
-        // 计算响应比
-        double ratio = (amount + sellResponseVolume + EPSILON) / (amount + buyResponseVolume + EPSILON);
-        if (ratio > 10) {
-            ratio = 10;
-        }
-        else if (ratio < 1.0) {
-            ratio = 1.0;
-        }
-        buyValue = value * Math.pow(ratio, 0.8);
-        sellValue = value * Math.pow(ratio, 1.2);
-    }
-
-    public void updateShops() {
-        shopList.forEach(this::updateShop);
-    }
-
-    public void updateShop(Shop shop) {
-        // 更新库存
-        Objects.requireNonNull(((ContainerShop) shop).getInventory()).clear();
-        shop.add(itemStack, amount);
-
-        //更新价格
-        if (shop.getShopType().equals(ShopType.BUYING)) {
-            // 收购商店
-            shop.setPrice(dynamicEconomy.buyCurrencyIndex * buyValue);
-        } else {
-            // 售卖商店
-            shop.setPrice(dynamicEconomy.sellCurrencyIndex * sellValue);
-        }
-    }
-
-    public void saveCommodityToSection() {
-        ConfigurationSection section = dynamicEconomy.commodities.getConfigurationSection(name);
-        assert section != null;
-
-        Material type = itemStack.getType();
-        // 带文字的书、潜影盒属于json化内容很多的，转化为base64存储
-        if (type.equals(Material.WRITABLE_BOOK) || type.equals(Material.WRITTEN_BOOK) || type.equals(Material.SHULKER_BOX)) {
-            section.set("data", ItemKit.serializeNMSItemStack(itemStack));
-        } else {
-            section.set("data", ItemKit.convertItemStackToJson(itemStack));
-        }
-
-        section.set("amount", amount);
-        section.set("value", value);
-        section.set("sell-response-volume", sellResponseVolume);
-        section.set("last-sell-time", lastSellTime);
-        section.set("buy-response-volume", buyResponseVolume);
-        section.set("last-buy-time", lastBuyTime);
-
-        dynamicEconomy.commodities.set(name, section);
-    }
-}

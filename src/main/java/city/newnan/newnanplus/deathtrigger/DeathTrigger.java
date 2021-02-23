@@ -1,21 +1,21 @@
 package city.newnan.newnanplus.deathtrigger;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import me.lucko.helper.config.ConfigurationNode;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class DeathTrigger implements Listener, NewNanPlusModule {
     /**
@@ -33,7 +33,7 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      */
     public DeathTrigger() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-deathtrigger.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-deathtrigger", "enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
@@ -46,25 +46,26 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      */
     @Override
     public void reloadConfig() {
-        // 获取配置实例
-        FileConfiguration config = plugin.configManager.get("config.yml");
-
-        // 加载配置内容
         costStages.clear();
-        if (config.getBoolean("module-deathtrigger.cash-cost.use-simple-mode")) {
-            // 简单扣费模式
-            costStages.add(new CostStage(-1,
-                    config.getDouble("module-deathtrigger.cash-cost.simple-mode.cost"),
-                    config.getBoolean("module-deathtrigger.cash-cost.simple-mode.if-percent")));
-        } else {
-            // 复杂扣费模式
-            List<Map<?,?>> list_map = config.getMapList("module-deathtrigger.cash-cost.complex-mode");
-            for (Map<?,?> map : list_map) {
-                costStages.add(new CostStage(
-                        (Double) map.get("max"),
-                        (Double) map.get("cost"),
-                        (Boolean) map.get("if-percent")));
+
+        try {
+            // 加载配置内容
+            ConfigurationNode costConfig = plugin.configManagers.get("config.yml").getNode("module-deathtrigger", "cash-cost");
+            if (costConfig.getNode("use-simple-mode").getBoolean()) {
+                // 简单扣费模式
+                costStages.add(new CostStage(-1,
+                        costConfig.getNode("simple-mode", "cost").getDouble(),
+                        costConfig.getNode("simple-mode", "if-percent").getBoolean()));
+            } else {
+                // 复杂扣费模式
+                costConfig.getNode("complex-mode").getChildrenList().forEach(stageNode -> costStages.add(new CostStage(
+                        stageNode.getNode("max").getDouble(),
+                        stageNode.getNode("cost").getDouble(),
+                        stageNode.getNode("if-percent").getBoolean()
+                )));
             }
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
         }
     }
 
@@ -140,37 +141,37 @@ public class DeathTrigger implements Listener, NewNanPlusModule {
      * @param cost 玩家死亡花费
      */
     public void sendDeathMessage(Player player, double cost) {
-        FileConfiguration config = plugin.configManager.get("config.yml");
+        try {
+            ConfigurationNode config = plugin.configManagers.get("config.yml").getNode("module-deathtrigger", "death-message");
 
-        // 向玩家发送消息
-        if (config.getBoolean("module-deathtrigger.death-message.player-enable", false)) {
-            plugin.messageManager.sendPlayerMessage(player, MessageFormat.format(plugin.wolfyLanguageAPI.
-                            replaceColoredKeys("$module_message.death_trigger.death_message_to_player$")
-                            , player.getDisplayName(), cost));
+            // 向玩家发送消息
+            if (config.getNode("player-enable").getBoolean(false)) {
+                plugin.messageManager.printf(player, "$module_message.death_trigger.death_message_to_player$", player.getDisplayName(), cost);
+            }
+            // 广播发送消息
+            if (config.getNode("broadcast-enable").getBoolean(false)) {
+                plugin.getServer().broadcastMessage(plugin.messageManager.sprintf(
+                        "$module_message.death_trigger.death_message_broadcast$", player.getDisplayName(), cost));
+            }
+            // 控制台发送消息
+            if (config.getNode("console-enable").getBoolean(false)) {
+                plugin.messageManager.printf("$module_message.death_trigger.death_message_to_console$", player.getDisplayName(), cost);
+            }
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
         }
-        // 广播发送消息
-        if (config.getBoolean("module-deathtrigger.death-message.broadcast-enable", false)) {
-            plugin.getServer().broadcastMessage(MessageFormat.format(plugin.wolfyLanguageAPI.
-                            replaceColoredKeys("$module_message.death_trigger.death_message_broadcast$"),
-                            player.getDisplayName(), cost));
-        }
-        // 控制台发送消息
-        if (config.getBoolean("module-deathtrigger.death-message.console-enable", false)) {
-            plugin.messageManager.printINFO(MessageFormat.format(plugin.wolfyLanguageAPI.
-                            replaceColoredKeys("$module_message.death_trigger.death_message_to_console$"),
-                            player.getDisplayName(), cost));
+    }
+
+    static class CostStage {
+        public double max;
+        public double cost;
+        public boolean ifPercent;
+
+        public CostStage(double max, double cost, boolean ifPercent) {
+            this.max = max;
+            this.cost = cost;
+            this.ifPercent = ifPercent;
         }
     }
 }
 
-class CostStage {
-    public double max;
-    public double cost;
-    public boolean ifPercent;
-
-    public CostStage(double max, double cost, boolean ifPercent) {
-        this.max = max;
-        this.cost = cost;
-        this.ifPercent = ifPercent;
-    }
-}

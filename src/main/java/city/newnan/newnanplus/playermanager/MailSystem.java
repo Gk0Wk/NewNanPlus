@@ -1,5 +1,6 @@
 package city.newnan.newnanplus.playermanager;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
@@ -13,6 +14,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -30,7 +32,7 @@ public class MailSystem implements NewNanPlusModule {
 
     public MailSystem() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-mail.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-mail", "enable").getBoolean(false)) {
             throw new ModuleExeptions.ModuleOffException();
         }
         reloadConfig();
@@ -49,7 +51,11 @@ public class MailSystem implements NewNanPlusModule {
                 if (!mailFile.isFile() || !mailFile.exists() || !fileName.endsWith(".yml")) {
                     continue;
                 }
-                mails.put(fileName.split("\\.", 2)[0], new Mail(plugin.configManager.get("email/" + fileName)));
+                try {
+                    mails.put(fileName.split("\\.", 2)[0], new Mail(plugin.configManagers.get("email/" + fileName)));
+                } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
@@ -89,8 +95,7 @@ public class MailSystem implements NewNanPlusModule {
                 if (mail.permissionMessage != null) {
                     texts.add(ChatColor.translateAlternateColorCodes('&', mail.permissionMessage));
                 } else {
-                    texts.add(plugin.wolfyLanguageAPI.
-                            replaceColoredKeys("$module_message.player_manager.email_no_permission$"));
+                    texts.add(plugin.messageManager.sprintf("$module_message.player_manager.email_no_permission$"));
                 }
                 throw new Exception("Permission denied.");
             }
@@ -100,7 +105,7 @@ public class MailSystem implements NewNanPlusModule {
                 // 过期检查
                 if (mail.expiry != 0 && mail.expiry < System.currentTimeMillis()) {
                     // 过期则不执行命令，并显示邮件已失效
-                    texts.add(plugin.wolfyLanguageAPI.replaceColoredKeys(
+                    texts.add(plugin.messageManager.sprintf(
                             "$module_message.player_manager.email_outdated$") + "§r\n");
                 } else {
                     // 检查背包是否有足够的空间来存储附件
@@ -116,7 +121,7 @@ public class MailSystem implements NewNanPlusModule {
                         });
                     } else {
                         // 命令需要玩家物品栏有空位置,否则退回
-                        texts.add(plugin.wolfyLanguageAPI.replaceColoredKeys
+                        texts.add(plugin.messageManager.sprintf
                                 ("$module_message.player_manager.email_require_inventory$"));
                         throw new Exception("Inventory full.");
                     }

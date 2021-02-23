@@ -35,10 +35,10 @@ public class ItemKit {
             Object nmsItemStackObj = asNMSCopyMethod.invoke(null, itemStack);
             itemAsJsonObject = saveNmsItemStackMethod.invoke(nmsItemStackObj, nmsNbtTagCompoundObj);
         } catch (InstantiationException|java.lang.reflect.InvocationTargetException|NoSuchMethodException|IllegalAccessException e) {
-            NewNanPlus.getPlugin().messageManager.printINFO("failed to serialize itemstack to nms item");
-            NewNanPlus.getPlugin().messageManager.printINFO(e.toString());
+            NewNanPlus.getPlugin().messageManager.info("failed to serialize itemstack to nms item");
+            NewNanPlus.getPlugin().messageManager.info(e.toString());
             for (StackTraceElement element : e.getStackTrace())
-                NewNanPlus.getPlugin().messageManager.printINFO(element.toString());
+                NewNanPlus.getPlugin().messageManager.info(element.toString());
             return null;
         }
         return itemAsJsonObject.toString();

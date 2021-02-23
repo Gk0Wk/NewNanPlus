@@ -1,18 +1,21 @@
 package city.newnan.newnanplus.feefly;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.CommandExceptions.PlayerOfflineException;
 import city.newnan.newnanplus.exception.CommandExceptions.RefuseConsoleException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import me.lucko.helper.config.ConfigurationNode;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,7 +27,7 @@ import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.MessageFormat;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Vector;
 
@@ -53,7 +56,7 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      */
     public FeeFly() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-feefly.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-feefly", "enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
@@ -71,17 +74,22 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
      */
     @Override
     public void reloadConfig() {
-        // 获取配置实例
-        FileConfiguration config = plugin.configManager.get("config.yml");
-        // 加载配置内容
-        flySpeed = (float) config.getDouble("module-feefly.fly-speed");
-        costPerCount = config.getDouble("module-feefly.cost-per-count");
-        tickPerCount = config.getLong("module-feefly.tick-per-count");
-        costPerSecond = (20.0 / tickPerCount) * costPerCount;
+        try {
+            // 获取配置实例
+            ConfigurationNode config = plugin.configManagers.get("config.yml").getNode("module-feefly");
 
-        actionbarBypassMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_bypass$");
-        actionbarFeeMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.actionbar_fee$");
-        lessChargeWarningMessage = plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.charge_less_warning$");
+            // 加载配置内容
+            flySpeed = config.getNode("fly-speed").getFloat();
+            costPerCount = config.getNode("cost-per-count").getDouble();
+            tickPerCount = config.getNode("tick-per-count").getLong();
+            costPerSecond = (20.0 / tickPerCount) * costPerCount;
+
+            actionbarBypassMessage = plugin.languageManager.provideLanguage("$module_message.fee_fly.actionbar_bypass$");
+            actionbarFeeMessage = plugin.languageManager.provideLanguage("$module_message.fee_fly.actionbar_fee$");
+            lessChargeWarningMessage = plugin.languageManager.provideLanguage("$module_message.fee_fly.charge_less_warning$");
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -112,8 +120,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 遍历飞行玩家
             flyingPlayers.forEach(((player, flyingPlayer) -> {
                 if (player.hasPermission("newnanplus.feefly.free")) {
-                    plugin.messageManager.sendPlayerActionBar(
-                            player, MessageFormat.format(actionbarBypassMessage, player.getName()));
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                            plugin.messageManager.sprintf(actionbarBypassMessage, player.getName())));
                     // lambda表达式中要用return跳过本次调用，相当于for的continue
                     return;
                 }
@@ -123,8 +131,8 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 if (balance > 0.0) {
                     int remain_second = (int)(balance / costPerSecond);
                     plugin.vaultEco.withdrawPlayer(player, Math.min(balance, costPerCount));
-                    plugin.messageManager.sendPlayerActionBar(player,
-                            MessageFormat.format(actionbarFeeMessage, formatSecond(remain_second), balance));
+                    player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                            plugin.messageManager.sprintf(actionbarFeeMessage, formatSecond(remain_second), balance)));
 
                     // 如果只能飞一分钟以内，就警告
                     if (remain_second <= 60.0) {
@@ -263,14 +271,12 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
             // 不在飞行，就开启飞行
             // 原本在创造或者观察者模式不能进入付费飞行
             if (player.getGameMode().equals(GameMode.CREATIVE) || player.getGameMode().equals(GameMode.SPECTATOR)) {
-                plugin.messageManager.sendPlayerMessage(player,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.in_invalid_gamemode$"));
+                plugin.messageManager.printf(player, "$module_message.fee_fly.in_invalid_gamemode$");
                 return;
             }
             // 原本就能飞的不能进入付费飞行
             if (player.getAllowFlight()) {
-                plugin.messageManager.sendPlayerMessage(player,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.already_flying$"));
+                plugin.messageManager.printf(player, "$module_message.fee_fly.already_flying$");
                 return;
             }
             // 现金大于零才能飞
@@ -283,13 +289,11 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
                 player.setFlySpeed(flySpeed);
                 player.setAllowFlight(true);
                 // 发送消息并播放声音
-                plugin.messageManager.sendPlayerMessage(player,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.begin_flying$"));
+                plugin.messageManager.printf(player, "$module_message.fee_fly.begin_flying$");
                 player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1.0f, 0.0f);
             } else {
                 // 不大于零就提示不能飞
-                plugin.messageManager.sendPlayerMessage(player,
-                        plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.no_charge_warning$"));
+                plugin.messageManager.printf(player, "$module_message.fee_fly.no_charge_warning$");
             }
         }
     }
@@ -314,10 +318,9 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 删除玩家
         flyingPlayers.remove(player);
         // 发送飞行结束通知
-        plugin.messageManager.sendPlayerMessage(player,
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
-        plugin.messageManager.sendPlayerActionBar(player,
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.finish_flying$"));
+        plugin.messageManager.printf(player, "$module_message.fee_fly.finish_flying$");
+        player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                plugin.messageManager.sprintf("$module_message.fee_fly.finish_flying$")));
         return true;
     }
 
@@ -326,13 +329,9 @@ public class FeeFly extends BukkitRunnable implements Listener, NewNanPlusModule
         // 使用StringBuilder解决这个问题
         StringBuilder list = new StringBuilder();
         flyingPlayers.forEach(((player, flyingPlayer) -> list.append(player.getName()).append(' ')));
-        plugin.messageManager.sendMessage(sender, MessageFormat.format(
-                plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.count_flying_players$"),
-                flyingPlayers.size()));
+        plugin.messageManager.printf(sender, "$module_message.fee_fly.count_flying_players$", flyingPlayers.size());
         if (flyingPlayers.size() > 0) {
-            plugin.messageManager.sendMessage(sender, MessageFormat.format(
-                    plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.fee_fly.list_flying_players$"),
-                    list));
+            plugin.messageManager.printf(sender,"$module_message.fee_fly.list_flying_players$", list);
         }
     }
 }

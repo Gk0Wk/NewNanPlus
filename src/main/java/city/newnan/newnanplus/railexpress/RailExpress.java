@@ -1,16 +1,16 @@
 package city.newnan.newnanplus.railexpress;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import me.lucko.helper.config.ConfigurationNode;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Minecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -19,6 +19,7 @@ import org.bukkit.event.vehicle.VehicleExitEvent;
 import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -40,7 +41,7 @@ public class RailExpress implements NewNanPlusModule, Listener {
 
     public RailExpress() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-railexpress.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-railexpress", "enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
         reloadConfig();
@@ -52,16 +53,18 @@ public class RailExpress implements NewNanPlusModule, Listener {
      */
     @Override
     public void reloadConfig() {
-        FileConfiguration config = plugin.configManager.get("config.yml");
         excludeWorlds.clear();
-        config.getStringList("module-railexpress.exclude-world")
-                .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
+        try {
+            ConfigurationNode config = plugin.configManagers.get("config.yml").getNode("module-railexpress");
+            config.getNode("exclude-world").getList(Object::toString)
+                    .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
 
-        blockSpeedMap.clear();
-        ConfigurationSection blockSpeedSection = config.getConfigurationSection("module-railexpress.block-type");
-        assert blockSpeedSection != null;
-        blockSpeedSection.getKeys(false).forEach(block -> blockSpeedMap.
-                put(Material.valueOf(block.toUpperCase()), blockSpeedSection.getDouble(block, DEFAULT_SPEED)));
+            blockSpeedMap.clear();
+            config.getNode("block-type").getChildrenMap().forEach((key, node) -> blockSpeedMap.
+                    put(Material.valueOf(((String) key).toUpperCase()), node.getDouble(DEFAULT_SPEED)));
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**

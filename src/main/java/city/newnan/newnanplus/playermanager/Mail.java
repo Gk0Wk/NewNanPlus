@@ -1,14 +1,13 @@
 package city.newnan.newnanplus.playermanager;
 
+import city.newnan.newnanplus.powertools.SkullKits;
 import city.newnan.newnanplus.utility.ItemKit;
-import me.wolfyscript.utilities.util.inventory.PlayerHeadUtils;
-import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.inventory.ItemStack;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
+import me.lucko.helper.config.ConfigurationNode;
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 public class Mail {
     public final String title;
@@ -23,24 +22,24 @@ public class Mail {
 
     private static final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     public static final ItemStack defaultIcon = new ItemStack(Material.WRITTEN_BOOK);
-    public Mail(ConfigurationSection config) {
+    public Mail(ConfigurationNode mailNode)
+    {
+        title = mailNode.getNode("title").getString("[No Title]");
+        author = mailNode.getNode("author").getString("[Unknown Author]");
+        date = mailNode.getNode("date").getString("[Unknown Date]");
 
-        title = config.getString("title", "[No Title]");
-        author = config.getString("author", "[Unknown Author]");
-        date = config.getString("date", "[Unknown Date]");
-
-        String _permission = config.getString("permission", null);
+        String _permission = mailNode.getNode("permission").getString(null);
         permission = (_permission == null || _permission.isEmpty()) ? null : _permission;
 
         if (permission != null) {
-            String _permissionMessage = config.getString("permission-message", null);
+            String _permissionMessage = mailNode.getNode("permission-message").getString(null);
             permissionMessage = (_permissionMessage == null || _permissionMessage.isEmpty()) ? null : _permissionMessage;
         } else {
             permissionMessage = null;
         }
 
         {
-            String availableDateString = config.getString("available-until");
+            String availableDateString = mailNode.getNode("available-until").getString(null);
             if (availableDateString != null) {
                 try {
                     expiry = dateFormatter.parse(availableDateString).getTime();
@@ -53,15 +52,15 @@ public class Mail {
         }
 
         actions = new ArrayList<>();
-        config.getStringList("commands").forEach(actionString -> {
+        mailNode.getNode("commands").getList(Object::toString).forEach(actionString -> {
             Mail.MailAction action = Mail.MailAction.parse(actionString);
             if (action != null)
                 actions.add(action);
         });
 
-        text = config.getString("text", "[No Text]");
+        text = mailNode.getNode("text").getString("[No Text]");
 
-        String _icon = config.getString("icon", null);
+        String _icon = mailNode.getNode("icon").getString(null);
         ItemStack icon1;
         if (_icon == null || _icon.isEmpty()) {
             icon1 = defaultIcon;
@@ -70,7 +69,7 @@ public class Mail {
                 icon1 = new ItemStack(Material.valueOf(_icon.toUpperCase()));
             } catch (IllegalArgumentException e1) {
                 try {
-                    icon1 = PlayerHeadUtils.getViaValue(_icon);
+                    icon1 = SkullKits.getSkull(_icon);
                 } catch (Exception e2) {
                     icon1 = defaultIcon;
                 }
@@ -84,7 +83,8 @@ public class Mail {
         public String command;
         public ItemStack item;
 
-        public static MailAction parse(String actionString) {
+        public static MailAction parse(String actionString)
+        {
             String[] splits = actionString.split(" ", 2);
             if (splits.length < 2)
                 return null;
@@ -107,6 +107,7 @@ public class Mail {
             return null;
         }
 
-        enum ActionType {ITEM, COMMAND}
+        enum ActionType { ITEM,
+            COMMAND }
     }
 }

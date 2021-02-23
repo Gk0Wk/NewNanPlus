@@ -1,20 +1,19 @@
 package city.newnan.newnanplus.town;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import me.lucko.helper.config.ConfigurationNode;
 import org.bukkit.Location;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
-
-import java.io.File;
-import java.text.ParseException;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 
 // Mojang生成玩家UUID的办法：
 // UUID.nameUUIDFromBytes(("OfflinePlayer:" + characterName).getBytes(StandardCharsets.UTF_8))
@@ -36,9 +35,10 @@ public class TownManager implements NewNanPlusModule {
      * 构造函数
      * @throws Exception 构造时异常
      */
-    public TownManager() throws Exception {
+    public TownManager() throws Exception
+    {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-townmanager.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-townmanager", "enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
         File townDir = new File(plugin.getDataFolder(), "town");
@@ -53,7 +53,7 @@ public class TownManager implements NewNanPlusModule {
         townMarkers = plugin.dynmapAPI.getMarkerAPI().getMarkerSet("NewNanPlus.Towns");
         if (townMarkers == null) {
             townMarkers = plugin.dynmapAPI.getMarkerAPI().createMarkerSet(
-                    "NewNanPlus.Towns", "Towns", null, false);
+                "NewNanPlus.Towns", "Towns", null, false);
         }
     }
 
@@ -61,8 +61,8 @@ public class TownManager implements NewNanPlusModule {
      * 重新加载模块的配置
      */
     @Override
-    public void reloadConfig() {
-
+    public void reloadConfig()
+    {
     }
 
     /**
@@ -74,61 +74,49 @@ public class TownManager implements NewNanPlusModule {
      * @param args    指令的参数
      */
     @Override
-    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
-
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception
+    {
     }
 
-    private Town _loadTown(String configPath) {
-        FileConfiguration config = plugin.configManager.get(configPath);
-        Town town = new Town();
-        town.townConfig = config;
-        town.uniqueID = UUID.fromString(Objects.requireNonNull(config.getString("uuid")));
-        town.name = config.getString("name");
-        town.location = new Location(
-                plugin.getServer().getWorld(Objects.requireNonNull(config.getString("location.world"))),
-                config.getDouble("location.x"),
-                config.getDouble("location.y"),
-                config.getDouble("location.z")
-        );
-        town.balance = config.getDouble("balance");
-        town.exp = config.getInt("exp");
-        town.level = config.getInt("level");
-        town.leader = plugin.getServer().getOfflinePlayer(
-                UUID.fromString(Objects.requireNonNull(config.getString("town-leader"))));
-        town.website = config.getString("intro-website");
-
-        ConfigurationSection resource = config.getConfigurationSection("resource");
-        assert resource != null;
-        resource.getKeys(false).forEach(key ->
-                town.resources.put(ResourceType.fromString(key), resource.getDouble(key)));
-
-        List<Map<?,?>> effects = config.getMapList("effect");
-        effects.forEach(map -> {
-            try {
-                TownEffectType effect = TownEffectType.fromString((String) map.get("name"));
-                Date date = plugin.dateFormatter.parse((String) map.get("expirydate"));
-                town.effects.put(effect, date);
-            }
-            catch (ParseException e) {
-                e.printStackTrace();
-            }
-        });
-
-        return town;
+    private Town _loadTown(String configPath)
+    {
+        try {
+            ConfigurationNode config = plugin.configManagers.get(configPath);
+            Town town = new Town();
+            town.townConfig = config;
+            town.uniqueID = UUID.fromString(Objects.requireNonNull(config.getString("uuid")));
+            town.name = config.getNode("name").getString();
+            town.location = new Location(
+                    plugin.getServer().getWorld(Objects.requireNonNull(config.getNode("location", "world").getString())),
+                    config.getNode("location", "x").getDouble(),
+                    config.getNode("location", "y").getDouble(),
+                    config.getNode("location", "z").getDouble());
+            town.score = config.getNode("level").getInt(0);
+            town.leader = plugin.getServer().getOfflinePlayer(
+                    UUID.fromString(Objects.requireNonNull(config.getNode("town-leader").getString())));
+            town.website = config.getNode("intro-website").getString();
+            return town;
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+            return null;
+        }
     }
 
-    private void resistTown(Town town) {
+    private void resistTown(Town town)
+    {
         towns.put(town.uniqueID, town);
     }
 
-    public void loadTown(UUID uuid) {
+    public void loadTown(UUID uuid)
+    {
         if (towns.containsKey(uuid))
             return;
-        Town town =  _loadTown((new File(plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
+        Town town = _loadTown((new File(plugin.getDataFolder(), "town/" + uuid.toString() + ".yml")).getPath());
         resistTown(town);
     }
 
-    public void saveTowns() {
+    public void saveTowns()
+    {
         towns.forEach((uuid, town) -> {
             try {
                 saveTown(town);
@@ -138,37 +126,14 @@ public class TownManager implements NewNanPlusModule {
         });
     }
 
-    public void saveTown(Town town) throws Exception {
+    public void saveTown(Town town) throws Exception
+    {
         town.saveCacheToConfig(plugin.dateFormatter);
-        plugin.configManager.save("town/" + town.uniqueID.toString() + ".yml");
+        plugin.configManagers.save("town/" + town.uniqueID.toString() + ".yml");
     }
 
-    public boolean checkAndRemoveOutdatedTownEffect(Town town, TownEffectType effect) {
-        if (town.effects.get(effect).before(new Date())) {
-            detachEffect(town, effect);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    public void detachEffect(Town town, TownEffectType effect) {
-        if (!town.effects.containsKey(effect))
-            return;
-        // Unregisters Something...
-
-        // Remove from map
-        town.effects.remove(effect);
-    }
-
-    public void attachEffect(Town town, TownEffectType effect, Date date) {
-        // Unregisters Something...
-
-        // Add to map
-        town.effects.put(effect, date);
-    }
-
-    public List<Town> getTowns() {
+    public List<Town> getTowns()
+    {
         ArrayList<Town> townsList = new ArrayList<>();
         towns.forEach((uuid, town) -> townsList.add(town));
         return townsList;

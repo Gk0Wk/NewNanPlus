@@ -4,7 +4,6 @@ import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import com.mojang.authlib.GameProfile;
 import com.mojang.authlib.properties.Property;
-import me.wolfyscript.utilities.util.inventory.PlayerHeadUtils;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
@@ -33,6 +32,10 @@ public class SkullKits {
 
         // 创建一个随机的UUID虚拟玩家，并赋予对应的材质
         GameProfile profile = new GameProfile(UUID.randomUUID(), null);
+        // 如果不是http资源链接就添加默认的
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            url = "http://textures.minecraft.net/texture/" + url;
+        }
         profile.getProperties().put("textures", new Property("textures",
                 new String(encoder.encode(("{textures:{SKIN:{url:\"" + url + "\"}}}").getBytes()))));
 
@@ -73,12 +76,11 @@ public class SkullKits {
         }
 
         Player player = (Player) sender;
-        if (player.getInventory().addItem(PlayerHeadUtils.getViaValue(args[0])).size() > 0) {
+        if (player.getInventory().addItem(getSkull(args[0])).size() > 0) {
             throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().
-                    wolfyLanguageAPI.replaceColoredKeys("$global_message.no_more_space_in_inventory$"));
+                    messageManager.sprintf("$global_message.no_more_space_in_inventory$"));
         }
 
-        NewNanPlus.getPlugin().messageManager.sendMessage(sender, NewNanPlus.getPlugin().wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.power_tools.skull_create_succeed$"));
+        NewNanPlus.getPlugin().messageManager.printf(sender, "$module_message.power_tools.skull_create_succeed$");
     }
 }

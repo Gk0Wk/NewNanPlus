@@ -1,5 +1,6 @@
 package city.newnan.newnanplus.createarea;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions.BadUsageException;
@@ -7,6 +8,9 @@ import city.newnan.newnanplus.exception.CommandExceptions.CustomCommandException
 import city.newnan.newnanplus.exception.CommandExceptions.NoPermissionException;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
 import city.newnan.newnanplus.playermanager.PlayerManager;
+import me.lucko.helper.config.ConfigurationNode;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.anjocaido.groupmanager.data.Group;
 import org.anjocaido.groupmanager.dataholder.OverloadedWorldHolder;
 import org.bukkit.Location;
@@ -14,8 +18,6 @@ import org.bukkit.OfflinePlayer;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -26,6 +28,7 @@ import org.dynmap.markers.AreaMarker;
 import org.dynmap.markers.MarkerSet;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.Objects;
 
@@ -57,7 +60,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      */
     public CreateArea() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("create_area.yml").getBoolean("enable", false)) {
+        if (!plugin.configManagers.get("create_area.yml").getNode("enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
 
@@ -81,30 +84,30 @@ public class CreateArea implements NewNanPlusModule, Listener {
      */
     @Override
     public void reloadConfig() {
-        FileConfiguration createArea = plugin.configManager.reload("create_area.yml");
-        createWorld = plugin.getServer().getWorld(Objects.requireNonNull(createArea.getString("world")));
+        try {
+            ConfigurationNode createArea = plugin.configManagers.reload("create_area.yml");
+            createWorld = plugin.getServer().getWorld(Objects.requireNonNull(createArea.getNode("world").getString()));
 
-        createWorldPermissionHandler = plugin.groupManager.getWorldsHolder().getWorldData(createWorld.getName());
-        builderGroup = createWorldPermissionHandler.getGroup(createArea.getString("builder-group"));
+            createWorldPermissionHandler = plugin.groupManager.getWorldsHolder().getWorldData(createWorld.getName());
+            builderGroup = createWorldPermissionHandler.getGroup(createArea.getNode("builder-group").getString());
 
-        // 检查有没有在图中画出的创造区域
-        ConfigurationSection areas = createArea.getConfigurationSection("areas");
-        assert areas != null;
-        for (String areaID : areas.getKeys(false)) {
-            if (createAreaMarkers.findAreaMarker(areaID) == null) {
-                ConfigurationSection area = areas.getConfigurationSection(areaID);
-                assert area != null;
-                int x1 = area.getInt("x1");
-                int x2 = area.getInt("x2");
-                int z1 = area.getInt("z1");
-                int z2 = area.getInt("z2");
-                String name = area.getString("name");
-                // 地图上绘制区域
-                createAreaMarkers.createAreaMarker(areaID, MessageFormat.format(
-                        plugin.wolfyLanguageAPI.replaceKeys("$module_message.create_area.title_on_dynmap$"),
-                        name), false, createWorld.getName(),
-                        new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
-            }
+            // 检查有没有在图中画出的创造区域
+            createArea.getNode("areas").getChildrenMap().forEach((key, value) -> {
+                if (key instanceof String && createAreaMarkers.findAreaMarker((String) key) == null) {
+                    int x1 = value.getNode("x1").getInt();
+                    int x2 = value.getNode("x2").getInt();
+                    int z1 = value.getNode("z1").getInt();
+                    int z2 = value.getNode("z2").getInt();
+                    String name = value.getNode("name").getString();
+                    // 地图上绘制区域
+                    createAreaMarkers.createAreaMarker((String) key,
+                            plugin.messageManager.sprintf("$module_message.create_area.title_on_dynmap$", name),
+                            false, createWorld.getName(),
+                            new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
+                }
+            });
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
         }
     }
 
@@ -132,7 +135,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
      * @param args 指令参数
      */
     public void teleportToCreateArea(CommandSender sender, String[] args) throws Exception {
-        FileConfiguration createArea = plugin.configManager.get("create_area.yml");
+        ConfigurationNode createAreas = plugin.configManagers.get("create_area.yml").getNode("areas");
 
         Player player = (Player) sender;
         // 输入了其他玩家的名字，传送到其他玩家所在的创造区
@@ -146,38 +149,38 @@ public class CreateArea implements NewNanPlusModule, Listener {
             OfflinePlayer _player = ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
                     getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).findOnePlayerByName(args[0]);
 
-            ConfigurationSection areas = createArea.getConfigurationSection("areas");
             // 检查对应的玩家有没有创造区
-            assert areas != null;
-            if (!areas.isConfigurationSection(_player.getUniqueId().toString())) {
-                throw new CustomCommandException(plugin.wolfyLanguageAPI.replaceColoredKeys(
+            ConfigurationNode area = createAreas.getNode(_player.getUniqueId().toString());
+            if (area.getValue() == null) {
+                throw new CustomCommandException(plugin.messageManager.sprintf(
                         "$module_message.create_area.player_have_no_area$"));
             }
+            _teleportTo(area, player);
 
-            _teleportTo(Objects.requireNonNull(areas.getConfigurationSection(_player.getUniqueId().toString())), player);
-            plugin.messageManager.sendPlayerActionBar(player,MessageFormat.format(plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.create_area.teleported_to_ones_area$"), args[0]));
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                    plugin.messageManager.sprintf("$module_message.create_area.teleported_to_ones_area$", args[0])));
         } else {
             // 不带参数，传送到自己的创造区
             // 检查权限
             if (!player.hasPermission("newnanplus.createarea.teleport.self")) {
                 throw new NoPermissionException();
             }
+
             // 看看玩家有没有创造区
-            if (!createArea.isConfigurationSection("areas."+player.getUniqueId())) {
-                throw new CustomCommandException(plugin.wolfyLanguageAPI.replaceColoredKeys(
+            ConfigurationNode area = createAreas.getNode(player.getUniqueId().toString());
+            if (area.getValue() == null) {
+                throw new CustomCommandException(plugin.messageManager.sprintf(
                         "$module_message.create_area.you_have_no_area$"));
             }
-            _teleportTo(Objects.requireNonNull(
-                    createArea.getConfigurationSection("areas." + player.getUniqueId())), player);
-            plugin.messageManager.sendPlayerActionBar(player,MessageFormat.format(plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.create_area.teleported_to_ones_area$"), player.getName()));
+            _teleportTo(area, player);
+            player.spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(
+                    plugin.messageManager.sprintf("$module_message.create_area.teleported_to_ones_area$", player.getName())));
         }
     }
 
-    private void _teleportTo(ConfigurationSection areaSection, Player player) {
-        int x =  areaSection.getInt("x1");
-        int z =  areaSection.getInt("z1");
+    private void _teleportTo(ConfigurationNode areaNode, Player player) {
+        int x =  areaNode.getNode("x1").getInt();
+        int z =  areaNode.getNode("z1").getInt();
         Location locate = new Location(
                 createWorld,
                 x,
@@ -201,8 +204,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
         // 创建创造区域
         newCreateArea(args, _player);
 
-        plugin.messageManager.sendMessage(sender, MessageFormat.format(plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.create_area.create_area_succeed$"), args[0]));
+        plugin.messageManager.printf(sender, "$module_message.create_area.create_area_succeed$", args[0]);
     }
 
     /**
@@ -227,7 +229,7 @@ public class CreateArea implements NewNanPlusModule, Listener {
             z1 ^= z2;
         }
 
-        FileConfiguration createArea = plugin.configManager.get("create_area.yml");
+        ConfigurationNode createAreas = plugin.configManagers.get("create_area.yml").getNode("areas");
 
         // 看看玩家原来有没有创造区地图标记，有的话需要先删除标记
         AreaMarker marker = createAreaMarkers.findAreaMarker(player.getUniqueId().toString());
@@ -238,30 +240,29 @@ public class CreateArea implements NewNanPlusModule, Listener {
         }
 
         // 地图上绘制区域
-        createAreaMarkers.createAreaMarker(player.getUniqueId().toString(), MessageFormat.format(
-                plugin.wolfyLanguageAPI.replaceKeys("$module_message.create_area.title_on_dynmap$"),
-                player.getName()), false, createWorld.getName(),
+        createAreaMarkers.createAreaMarker(player.getUniqueId().toString(),
+                plugin.messageManager.sprintf("$module_message.create_area.title_on_dynmap$", player.getName()),
+                false, createWorld.getName(),
                 new double[]{x1, x1, x2, x2}, new double[]{z1, z2, z2, z1}, false);
 
         // 存储玩家数据
-        ConfigurationSection section = createArea.createSection("areas."+player.getUniqueId());
-        section.set("name", player.getName());
-        section.set("x1", x1);
-        section.set("z1", z1);
-        section.set("x2", x2);
-        section.set("z2", z2);
+        ConfigurationNode area = createAreas.getNode(player.getUniqueId().toString());
+        area.getNode("name").setValue(player.getName());
+        area.getNode("x1").setValue(x1);
+        area.getNode("x2").setValue(x2);
+        area.getNode("z1").setValue(z1);
+        area.getNode("z1").setValue(z2);
+
         // 存储设置
-        plugin.configManager.save("create_area.yml");
+        plugin.configManagers.save("create_area.yml");
 
         if (player.isOnline()) {
-            plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.create_area.create_area_player_notice$"));
+            plugin.messageManager.printf(player.getPlayer(), "$module_message.create_area.create_area_player_notice$");
         } else {
             ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
                     getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).
-                    pushTask(player, MessageFormat.format("nnp msg {0} {1}",
-                            player.getName(), plugin.wolfyLanguageAPI.
-                                    replaceKeys("$module_message.create_area.create_area_player_notice$")));
+                    pushTask(player, plugin.messageManager.sprintf(
+                            "nnp msg {0} $module_message.create_area.create_area_player_notice$", player.getName()));
         }
     }
 
@@ -286,23 +287,19 @@ public class CreateArea implements NewNanPlusModule, Listener {
         }
 
         // 删除配置文件对应的设置
-        FileConfiguration createArea = plugin.configManager.get("create_area.yml");
-        createArea.set("areas." + player.getUniqueId(), null);
+        plugin.configManagers.get("create_area.yml").getNode("areas", player.getUniqueId().toString()).setValue(null);
         // 存储设置
-        plugin.configManager.save("create_area.yml");
+        plugin.configManagers.save("create_area.yml");
 
-        plugin.messageManager.sendMessage(sender, plugin.wolfyLanguageAPI.
-                replaceColoredKeys("$module_message.create_area.remove_area_succeed$"));
+        plugin.messageManager.printf(sender, "$module_message.create_area.remove_area_succeed$");
 
         if (player.isOnline()) {
-            plugin.messageManager.sendMessage(player.getPlayer(), plugin.wolfyLanguageAPI.
-                    replaceColoredKeys("$module_message.create_area.remove_area_player_notice$"));
+            plugin.messageManager.printf(player.getPlayer(), "$module_message.create_area.remove_area_player_notice$");
         } else {
             ((city.newnan.newnanplus.playermanager.PlayerManager)plugin.
                     getModule(city.newnan.newnanplus.playermanager.PlayerManager.class)).
-                    pushTask(player, MessageFormat.format("nnp msg {0} {1}",
-                            player.getName(), plugin.wolfyLanguageAPI.
-                                    replaceKeys("$module_message.create_area.remove_area_player_notice$")));
+                    pushTask(player, plugin.messageManager.sprintf("nnp msg {0} $module_message.create_area.remove_area_player_notice$",
+                            player.getName()));
         }
     }
 
@@ -337,12 +334,17 @@ public class CreateArea implements NewNanPlusModule, Listener {
         if (player.hasPermission("newnanplus.createarea.bypass"))
             return;
         if (createWorldPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(builderGroup)) {
-            FileConfiguration createArea = plugin.configManager.get("create_area.yml");
-            if (createArea.getConfigurationSection("areas." + player.getUniqueId()) == null) {
+            boolean exist = false;
+            try {
+                exist = plugin.configManagers.get("create_area.yml").getNode("areas", player.getUniqueId().toString()).getValue() != null;
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (!exist) {
                 createWorldPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(
                         createWorldPermissionHandler.getDefaultGroup());
-                plugin.messageManager.sendPlayerMessage(player, plugin.wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.create_area.remove_from_builder_for_no_area$"));
+
+                plugin.messageManager.printf(player, "$module_message.create_area.remove_from_builder_for_no_area$");
             }
         }
     }

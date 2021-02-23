@@ -1,10 +1,16 @@
 package city.newnan.newnanplus.teleport;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import city.newnan.newnanplus.utility.PlayerConfig;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.UUID;
+import me.lucko.helper.config.ConfigurationNode;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -14,14 +20,9 @@ import org.bukkit.Location;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
-
-import java.text.MessageFormat;
-import java.util.List;
-import java.util.UUID;
 
 public class Tpa implements NewNanPlusModule {
     /**
@@ -46,9 +47,10 @@ public class Tpa implements NewNanPlusModule {
      */
     public long tpOutdatedTime;
 
-    public Tpa() throws Exception {
+    public Tpa() throws Exception
+    {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-teleport.tpa.enable", false))
+        if (!plugin.configManagers.get("config.yml").getNode("module-teleport", "tpa", "enable").getBoolean(false))
             throw new ModuleExeptions.ModuleOffException();
         reloadConfig();
         sessionCache = new SessionCache();
@@ -66,13 +68,16 @@ public class Tpa implements NewNanPlusModule {
      * 重新加载模块的配置
      */
     @Override
-    public void reloadConfig() {
-        ConfigurationSection section =
-                plugin.configManager.get("config.yml").getConfigurationSection("module-teleport.tpa");
-        assert section != null;
-        tpCoolDownTime = section.getLong("cooldown-time", 0) * 1000;
-        tpDelayTime = section.getLong("delay-time", 0) * 20;
-        tpOutdatedTime = section.getLong("outdated-time", 0) * 1000;
+    public void reloadConfig()
+    {
+        try {
+            ConfigurationNode section = plugin.configManagers.get("config.yml").getNode("module-teleport", "tpa");
+            tpCoolDownTime = section.getNode("cooldown-time").getLong(0) * 1000;
+            tpDelayTime = section.getNode("delay-time").getLong(0) * 20;
+            tpOutdatedTime = section.getNode("outdated-time").getLong(0) * 1000;
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -84,30 +89,31 @@ public class Tpa implements NewNanPlusModule {
      * @param args    指令的参数
      */
     @Override
-    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception {
+    public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception
+    {
         if (args.length != 1) {
             throw new CommandExceptions.BadUsageException();
         }
 
         switch (token) {
-            case "tpa":
-                TpaCommand.TpaRequestCommand(sender, args, false);
-                break;
-            case "tpahere":
-                TpaCommand.TpaRequestCommand(sender, args, true);
-                break;
-            case "tpaaccept":
-                TpaCommand.TpaResponseCommand(sender, args, true);
-                break;
-            case "tparefuse":
-                TpaCommand.TpaResponseCommand(sender, args, false);
-                break;
-            case "tpablock":
-                TpaCommand.TpaBlockListCommand(sender, args, false);
-                break;
-            case "tpaallow":
-                TpaCommand.TpaBlockListCommand(sender, args, true);
-                break;
+        case "tpa":
+            TpaCommand.TpaRequestCommand(sender, args, false);
+            break;
+        case "tpahere":
+            TpaCommand.TpaRequestCommand(sender, args, true);
+            break;
+        case "tpaaccept":
+            TpaCommand.TpaResponseCommand(sender, args, true);
+            break;
+        case "tparefuse":
+            TpaCommand.TpaResponseCommand(sender, args, false);
+            break;
+        case "tpablock":
+            TpaCommand.TpaBlockListCommand(sender, args, false);
+            break;
+        case "tpaallow":
+            TpaCommand.TpaBlockListCommand(sender, args, true);
+            break;
         }
     }
 
@@ -123,8 +129,8 @@ public class Tpa implements NewNanPlusModule {
             return;
 
         sessionCache.remove(sourcePlayer.getUniqueId());
-        plugin.printf(targetPlayer, "$module_message.teleport.tpa_refuse_send$", sourcePlayer.getName());
-        plugin.printf(sourcePlayer, "$module_message.teleport.tpa_refuse_receive$");
+        plugin.messageManager.printf(targetPlayer, "$module_message.teleport.tpa_refuse_send$", sourcePlayer.getName());
+        plugin.messageManager.printf(sourcePlayer, "$module_message.teleport.tpa_refuse_receive$");
     }
 
     /**
@@ -133,19 +139,20 @@ public class Tpa implements NewNanPlusModule {
      * @param sourcePlayer 邀请人
      * @return 如果是TPAHere则返回true，反之为false，如果没有找到请求就返回null
      */
-    private Boolean checkSession(final Player targetPlayer, final Player sourcePlayer) {
+    private Boolean checkSession(final Player targetPlayer, final Player sourcePlayer)
+    {
         long time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPA");
         if (time < 0) {
             time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPAHere");
             if (time < 0) {
-                plugin.printf(targetPlayer, "$module_message.teleport.request_notfound$");
+                plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_notfound$");
             } else if (time == 0) {
-                plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
+                plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_outdated$");
             } else {
                 return Boolean.TRUE;
             }
         } else if (time == 0) {
-            plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
+            plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_outdated$");
         } else {
             return Boolean.FALSE;
         }
@@ -168,23 +175,23 @@ public class Tpa implements NewNanPlusModule {
         if (time < 0) {
             time = sessionCache.test(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), "TPAHere");
             if (time < 0) {
-                plugin.printf(targetPlayer, "$module_message.teleport.request_notfound$");
+                plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_notfound$");
                 return;
             } else if (time == 0) {
-                plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
+                plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_outdated$");
                 return;
             } else {
                 tpaHere = true;
             }
         } else if (time == 0) {
-            plugin.printf(targetPlayer, "$module_message.teleport.request_outdated$");
+            plugin.messageManager.printf(targetPlayer, "$module_message.teleport.request_outdated$");
             return;
         } else {
             tpaHere = false;
         }
 
-        plugin.printf(targetPlayer, "$module_message.teleport.tpa_accept_send$", sourcePlayer.getName());
-        plugin.printf(sourcePlayer, "$module_message.teleport.tpa_accept_receive$");
+        plugin.messageManager.printf(targetPlayer, "$module_message.teleport.tpa_accept_send$", sourcePlayer.getName());
+        plugin.messageManager.printf(sourcePlayer, "$module_message.teleport.tpa_accept_receive$");
 
         // 设置冷却
         if (sourcePlayer.hasPermission("newnanplus.tpa.nocooldown")) {
@@ -219,8 +226,8 @@ public class Tpa implements NewNanPlusModule {
         // 检查冷却
         long time = sessionCache.test(sourcePlayer.getUniqueId(), null, "CoolDown");
         if (time > 0) {
-            plugin.printf(sourcePlayer, "$module_message.teleport.cooling_down$",
-                    city.newnan.newnanplus.feefly.FeeFly.formatSecond((int)(time / 1000)));
+            plugin.messageManager.printf(sourcePlayer, "$module_message.teleport.cooling_down$",
+                city.newnan.newnanplus.feefly.FeeFly.formatSecond((int)(time / 1000)));
             return;
         }
 
@@ -228,41 +235,32 @@ public class Tpa implements NewNanPlusModule {
         // 但如果有权限就依然可以
         if (!isInBlackList(targetPlayer, sourcePlayer) || sourcePlayer.hasPermission("newnanplus.tpa.bypassblock")) {
             final TextComponent spaceText = new TextComponent(" ");
-            TextComponent requestText = new TextComponent(MessageFormat.format(
-                    plugin.wolfyLanguageAPI.replaceColoredKeys(tpaHere ?
-                            "$module_message.teleport.tpahere_request$" : "$module_message.teleport.tpa_request$"),
-                    sourcePlayer.getName()));
-
-            TextComponent acceptButton = new TextComponent(
-                    plugin.wolfyLanguageAPI.replaceKeys("$module_message.teleport.gui_accept_title$"));
+            TextComponent requestText = new TextComponent(plugin.messageManager.sprintf(tpaHere ?
+                    "$module_message.teleport.tpahere_request$" : "$module_message.teleport.tpa_request$", sourcePlayer.getName()));
+            TextComponent acceptButton = new TextComponent(plugin.messageManager.sprintf("$module_message.teleport.gui_accept_title$"));
             acceptButton.setColor(ChatColor.GREEN);
             acceptButton.setBold(Boolean.TRUE);
             acceptButton.setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND, "/nnp tpaaccept " + sourcePlayer.getUniqueId().toString()));
-            acceptButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, (new ComponentBuilder(
-                    plugin.wolfyLanguageAPI.replaceColoredKeys(tpaHere ?
-                            "$module_message.teleport.gui_accept_describe_tpahere$"
-                            : "$module_message.teleport.gui_accept_describe_tpa$"))).create()));
+                ClickEvent.Action.RUN_COMMAND, "/nnp tpaaccept " + sourcePlayer.getUniqueId().toString()));
+            acceptButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
+                    (new ComponentBuilder(plugin.messageManager.sprintf(tpaHere ?
+                            "$module_message.teleport.gui_accept_describe_tpahere$" : "$module_message.teleport.gui_accept_describe_tpa$")).create())));
 
-            TextComponent refuseButton = new TextComponent(
-                    plugin.wolfyLanguageAPI.replaceKeys("$module_message.teleport.gui_refuse_title$"));
+            TextComponent refuseButton = new TextComponent(plugin.messageManager.sprintf("$module_message.teleport.gui_refuse_title$"));
             refuseButton.setColor(ChatColor.RED);
             refuseButton.setBold(Boolean.TRUE);
             refuseButton.setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND, "/nnp tparefuse " + sourcePlayer.getUniqueId().toString()));
+                ClickEvent.Action.RUN_COMMAND, "/nnp tparefuse " + sourcePlayer.getUniqueId().toString()));
             refuseButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    (new ComponentBuilder(plugin.wolfyLanguageAPI.replaceColoredKeys(
-                            "$module_message.teleport.gui_refuse_describe$"))).create()));
+                (new ComponentBuilder(plugin.messageManager.sprintf("$module_message.teleport.gui_refuse_describe$"))).create()));
 
-            TextComponent blockButton = new TextComponent(
-                    plugin.wolfyLanguageAPI.replaceKeys("$module_message.teleport.gui_block_title$"));
+            TextComponent blockButton = new TextComponent(plugin.messageManager.sprintf("$module_message.teleport.gui_block_title$"));
             blockButton.setColor(ChatColor.YELLOW);
             blockButton.setBold(Boolean.TRUE);
             blockButton.setClickEvent(new ClickEvent(
-                    ClickEvent.Action.RUN_COMMAND, "/nnp tpablock " + sourcePlayer.getUniqueId().toString()));
+                ClickEvent.Action.RUN_COMMAND, "/nnp tpablock " + sourcePlayer.getUniqueId().toString()));
             blockButton.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,
-                    (new ComponentBuilder(plugin.wolfyLanguageAPI.replaceColoredKeys(
-                            "$module_message.teleport.gui_block_describe$"))).create()));
+                (new ComponentBuilder(plugin.messageManager.sprintf("$module_message.teleport.gui_block_describe$"))).create()));
 
             requestText.addExtra(spaceText);
             requestText.addExtra(acceptButton);
@@ -271,16 +269,16 @@ public class Tpa implements NewNanPlusModule {
             requestText.addExtra(spaceText);
             requestText.addExtra(blockButton);
 
-            plugin.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
+            plugin.messageManager.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
             targetPlayer.spigot().sendMessage(requestText);
-            plugin.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
+            plugin.messageManager.printf(targetPlayer, false, "&7&l&m---------------------------------------------");
 
             // 创建会话
             sessionCache.set(sourcePlayer.getUniqueId(), targetPlayer.getUniqueId(), tpaHere ? "TPAHere" : "TPA", tpOutdatedTime);
         }
 
         // 发送反馈
-        plugin.printf(sourcePlayer, "$module_message.teleport.request_sent$");
+        plugin.messageManager.printf(sourcePlayer, "$module_message.teleport.request_sent$");
     }
 
     /**
@@ -289,7 +287,8 @@ public class Tpa implements NewNanPlusModule {
      * @param operatedPlayer 被检查者
      * @return 如果在黑名单就返回true，反之为false
      */
-    public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer){
+    public boolean isInBlackList(Player hostPlayer, OfflinePlayer operatedPlayer)
+    {
         try {
             return PlayerConfig.getPlayerConfig(hostPlayer).getTpaBlockList().contains(operatedPlayer.getUniqueId().toString());
         } catch (Exception e) {
@@ -307,7 +306,7 @@ public class Tpa implements NewNanPlusModule {
     {
         UUID operatedPlayerUUID = operatedPlayer.getUniqueId();
         if (hostPlayer.getUniqueId().equals(operatedPlayerUUID)) {
-            plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_same_player$");
+            plugin.messageManager.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_same_player$");
         } else {
             try {
                 // 找一下本来存在的会话
@@ -321,9 +320,9 @@ public class Tpa implements NewNanPlusModule {
                     blockList.add(operatedPlayerUUID.toString());
                     playerConfig.commit();
                 }
-                plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_succeed$");
+                plugin.messageManager.printf(hostPlayer, "$module_message.teleport.block_tpa_succeed$");
             } catch (Exception e) {
-                plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_file$");
+                plugin.messageManager.printf(hostPlayer, "$module_message.teleport.block_tpa_failed_for_file$");
             }
         }
     }
@@ -334,14 +333,16 @@ public class Tpa implements NewNanPlusModule {
      * @param operatedPlayer 被移除者
      * @throws Exception 移除时发生的异常
      */
-    public void removeFromBlackList(Player hostPlayer, OfflinePlayer operatedPlayer) throws Exception {
+    public void removeFromBlackList(Player hostPlayer, OfflinePlayer operatedPlayer) throws Exception
+    {
         PlayerConfig playerConfig = city.newnan.newnanplus.utility.PlayerConfig.getPlayerConfig(hostPlayer);
         playerConfig.getTpaBlockList().remove(operatedPlayer.getUniqueId().toString());
         playerConfig.commit();
-        plugin.printf(hostPlayer, "$module_message.teleport.block_tpa_remove_succeed$");
+        plugin.messageManager.printf(hostPlayer, "$module_message.teleport.block_tpa_remove_succeed$");
     }
 
-    private double calculateTransportFee(Location location1, Location location2) {
+    private double calculateTransportFee(Location location1, Location location2)
+    {
         return 0.0;
     }
 }

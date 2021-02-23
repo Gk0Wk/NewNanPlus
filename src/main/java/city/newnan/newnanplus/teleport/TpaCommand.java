@@ -50,8 +50,8 @@ public class TpaCommand {
 
             checkPlayer(targetPlayer);
             if (sourcePlayer.equals(targetPlayer)) {
-                throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_failed_for_sane_player$"));
+                throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().
+                        messageManager.sprintf("$module_message.teleport.request_failed_for_sane_player$"));
             }
 
             tpaInstance.requestTpa(sourcePlayer, targetPlayer, tpaHere);
@@ -73,8 +73,8 @@ public class TpaCommand {
 
             checkPlayer(targetPlayer);
             if (sourcePlayer.equals(targetPlayer)) {
-                throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().wolfyLanguageAPI.
-                        replaceColoredKeys("$module_message.teleport.request_failed_for_sane_player$"));
+                throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().
+                        messageManager.sprintf("$module_message.teleport.request_failed_for_sane_player$"));
             }
 
             if (accept) {

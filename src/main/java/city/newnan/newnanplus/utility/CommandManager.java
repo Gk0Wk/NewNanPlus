@@ -15,21 +15,22 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.function.BiConsumer;
 
 /**
  * 直接分担掉plugin.yml的功能
  */
 public class CommandManager implements CommandExecutor {
     private final JavaPlugin plugin;
-    private final MessageManager messageManager;
+    private final BiConsumer<CommandSender, String> messager;
     private final String prefix;
     private final ConfigurationSection commandsConfig;
     private final HashMap<String, CommandContainer> commandContainerHashMap = new HashMap<>();
     private final HashMap<String, CommandContainer> aliasCommandContainerHashMap = new HashMap<>();
 
-    public CommandManager(JavaPlugin plugin, MessageManager messageManager,  String prefix, FileConfiguration config) {
+    public CommandManager(JavaPlugin plugin, BiConsumer<CommandSender, String> messager, String prefix, FileConfiguration config) {
         this.plugin = plugin;
-        this.messageManager = messageManager;
+        this.messager = messager;
         this.prefix = prefix;
         this.commandsConfig = config.getConfigurationSection("commands");
 
@@ -122,18 +123,18 @@ public class CommandManager implements CommandExecutor {
 
         // 如果没有找到指令
         if (container == null) {
-            messageManager.sendMessage(sender, NoSuchCommandException.message);
+            messager.accept(sender, NoSuchCommandException.message);
             return true;
         }
         // 检查权限
         if (sender instanceof ConsoleCommandSender) {
             if (!container.consoleAllowable) {
-                messageManager.sendMessage(sender, RefuseConsoleException.message);
+                messager.accept(sender, RefuseConsoleException.message);
                 return true;
             }
         }
         else if (container.permission != null && !sender.hasPermission(container.permission)) {
-            messageManager.sendMessage(sender, (container.permissionMessage == null) ?
+            messager.accept(sender, (container.permissionMessage == null) ?
                     NoPermissionException.message : container.permissionMessage);
             return true;
         }
@@ -146,27 +147,27 @@ public class CommandManager implements CommandExecutor {
         }
         catch (Exception e) {
             if (e instanceof NoPermissionException)
-                messageManager.sendMessage(sender, NoPermissionException.message);
+                messager.accept(sender, NoPermissionException.message);
             else if (e instanceof BadUsageException)
-                messageManager.sendMessage(sender,
+                messager.accept(sender,
                         MessageFormat.format(BadUsageException.message, container.usageSuggestion));
             else if (e instanceof NoSuchCommandException)
-                messageManager.sendMessage(sender, NoSuchCommandException.message);
+                messager.accept(sender, NoSuchCommandException.message);
             else if (e instanceof OnlyConsoleException)
-                messageManager.sendMessage(sender, OnlyConsoleException.message);
+                messager.accept(sender, OnlyConsoleException.message);
             else if (e instanceof PlayerOfflineException)
-                messageManager.sendMessage(sender, PlayerOfflineException.message);
+                messager.accept(sender, PlayerOfflineException.message);
             else if (e instanceof PlayerNotFountException)
-                messageManager.sendMessage(sender, PlayerNotFountException.message);
+                messager.accept(sender, PlayerNotFountException.message);
             else if (e instanceof PlayerMoreThanOneException)
-                messageManager.sendMessage(sender, PlayerMoreThanOneException.message);
+                messager.accept(sender, PlayerMoreThanOneException.message);
             else if (e instanceof RefuseConsoleException)
-                messageManager.sendMessage(sender, RefuseConsoleException.message);
+                messager.accept(sender, RefuseConsoleException.message);
             else if (e instanceof CustomCommandException)
-                messageManager.sendMessage(sender, MessageFormat.format(CustomCommandException.message,
+                messager.accept(sender, MessageFormat.format(CustomCommandException.message,
                         ((CustomCommandException) e).reason));
             else if (e instanceof  AccessFileErrorException)
-                messageManager.sendMessage(sender, MessageFormat.format(AccessFileErrorException.message,
+                messager.accept(sender, MessageFormat.format(AccessFileErrorException.message,
                         ((AccessFileErrorException)e).who));
             else e.printStackTrace();
         }
@@ -175,7 +176,7 @@ public class CommandManager implements CommandExecutor {
     }
 
     public void printCommandHelp(CommandSender sender) {
-        messageManager.sendMessage(sender, "NewNanPlus Commands:", false);
+        messager.accept(sender, "NewNanPlus Commands:");
         commandContainerHashMap.forEach((token, command) -> {
             if (command.hidden)
                 return;
@@ -183,12 +184,12 @@ public class CommandManager implements CommandExecutor {
                 return;
             if (command.permission != null && sender instanceof Player && !sender.hasPermission(command.permission))
                 return;
-            messageManager.sendMessage(sender, "/nnp " + command.token + " " + command.description, false);
-            messageManager.sendMessage(sender, "  Usage: " + command.usageSuggestion, false);
+            messager.accept(sender, "/nnp " + command.token + " " + command.description);
+            messager.accept(sender, "  Usage: " + command.usageSuggestion);
             StringBuilder aliasBuffer = new StringBuilder();
             Arrays.stream(command.aliases).forEach(alias -> aliasBuffer.append(alias).append(' '));
             if (aliasBuffer.length() > 0)
-                messageManager.sendMessage(sender, "  Alias: " + aliasBuffer.toString(), false);
+                messager.accept(sender, "  Alias: " + aliasBuffer.toString());
         });
     }
 }

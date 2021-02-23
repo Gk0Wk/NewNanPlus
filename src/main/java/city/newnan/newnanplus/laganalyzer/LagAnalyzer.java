@@ -29,7 +29,7 @@ public class LagAnalyzer implements NewNanPlusModule {
      */
     public LagAnalyzer() throws Exception {
         plugin = NewNanPlus.getPlugin();
-        if (!plugin.configManager.get("config.yml").getBoolean("module-lagganalyzer.enable", false)) {
+        if (!plugin.configManagers.get("config.yml").getNode("module-lagganalyzer", "enable").getBoolean(false)) {
             throw new ModuleOffException();
         }
     }
@@ -92,9 +92,9 @@ public class LagAnalyzer implements NewNanPlusModule {
                 }
             });
             fp.close();
-            plugin.messageManager.printINFO("漏斗报告已保存至 hopper.csv");
+            plugin.messageManager.info("漏斗报告已保存至 hopper.csv");
         } catch (IOException e) {
-            plugin.messageManager.printERROR("无法保存报告: " + e.getMessage());
+            plugin.messageManager.info("无法保存报告: " + e.getMessage());
             return false;
         }
         return true;

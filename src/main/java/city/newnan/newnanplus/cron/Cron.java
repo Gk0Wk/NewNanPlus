@@ -1,12 +1,11 @@
 package city.newnan.newnanplus.cron;
 
+import city.newnan.api.config.ConfigManager;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
-import org.bukkit.configuration.ConfigurationSection;
-import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
@@ -14,6 +13,7 @@ import org.bukkit.event.server.ServerLoadEvent;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.jetbrains.annotations.NotNull;
 
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -35,7 +35,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     {
         plugin = NewNanPlus.getPlugin();
         // 是否禁用
-        if (!plugin.configManager.get("cron.yml").getBoolean("enable", false)) {
+        if (!plugin.configManagers.get("cron.yml").getNode("enable").getBoolean(false)) {
             throw new ModuleExeptions.ModuleOffException();
         }
         reloadConfig();
@@ -52,16 +52,19 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     @Override
     public void reloadConfig()
     {
-        FileConfiguration config = plugin.configManager.reload("cron.yml");
-        this.tasks.clear();
-        this.cacheInTimeTasks.clear();
-        this.inTimeTasks.clear();
-        this.outdatedTasks.clear();
-        ConfigurationSection map = config.getConfigurationSection("schedule-tasks");
-        assert map != null;
-        for (String name : map.getKeys(false)) {
-            List<String> commands = map.getStringList(name);
-            addTask(name, commands.toArray(new String[0]));
+        try {
+            this.tasks.clear();
+            this.cacheInTimeTasks.clear();
+            this.inTimeTasks.clear();
+            this.outdatedTasks.clear();
+            plugin.configManagers.reload("cron.yml").getNode("schedule-tasks").getChildrenMap().forEach((key, value) -> {
+                if (key instanceof String) {
+                    List<String> commands = value.getList(Object::toString);
+                    addTask((String) key, commands.toArray(new String[0]));
+                }
+            });
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
         }
     }
 
@@ -77,7 +80,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     public void executeCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String token, @NotNull String[] args) throws Exception
     {
         if (token.equals("lscron")) {
-            tasks.forEach(task -> plugin.messageManager.sendMessage(sender, task.expression.expressionString + "  |  " + task.commands[0] + "§r  |  " + plugin.dateFormatter.format(new Date(task.expression.getNextTime()))));
+            tasks.forEach(task -> plugin.messageManager.printf(sender, true, false, "{0} | {1}§r | {2}",
+                    task.expression.expressionString, task.commands[0], plugin.dateFormatter.format(new Date(task.expression.getNextTime()))));
         }
     }
 
@@ -88,12 +92,15 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onServerLoad(ServerLoadEvent event)
     {
-        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-server-ready");
-        CommandSender sender = plugin.getServer().getConsoleSender();
-        commands.forEach(command -> {
-            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
-            plugin.getServer().dispatchCommand(sender, command);
-        });
+        try {
+            CommandSender sender = plugin.getServer().getConsoleSender();
+            plugin.configManagers.get("cron.yml").getNode("on-server-ready").getList(Object::toString).forEach(command -> {
+                plugin.messageManager.info("§a§lRun Command: §r" + command);
+                plugin.getServer().dispatchCommand(sender, command);
+            });
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -102,12 +109,15 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      */
     public void onPluginReady()
     {
-        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-ready");
-        CommandSender sender = plugin.getServer().getConsoleSender();
-        commands.forEach(command -> {
-            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
-            plugin.getServer().dispatchCommand(sender, command);
-        });
+        try {
+            CommandSender sender = plugin.getServer().getConsoleSender();
+            plugin.configManagers.get("cron.yml").getNode("on-plugin-ready").getList(Object::toString).forEach(command -> {
+                plugin.messageManager.info("§a§lRun Command: §r" + command);
+                plugin.getServer().dispatchCommand(sender, command);
+            });
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
@@ -115,12 +125,15 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
      */
     public void onPluginDisable()
     {
-        List<String> commands = plugin.configManager.get("cron.yml").getStringList("on-plugin-disable");
-        CommandSender sender = plugin.getServer().getConsoleSender();
-        commands.forEach(command -> {
-            plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
-            plugin.getServer().dispatchCommand(sender, command);
-        });
+        try {
+            CommandSender sender = plugin.getServer().getConsoleSender();
+            plugin.configManagers.get("cron.yml").getNode("on-plugin-disable").getList(Object::toString).forEach(command -> {
+                plugin.messageManager.info("§a§lRun Command: §r" + command);
+                plugin.getServer().dispatchCommand(sender, command);
+            });
+        } catch (IOException | ConfigManager.UnknownConfigFileFormatException e) {
+            e.printStackTrace();
+        }
     }
 
     ArrayList<CronCommand> tasks = new ArrayList<>();
@@ -143,7 +156,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
             CronCommand task = new CronCommand(cronExpression, commands);
             this.tasks.add(task);
         } catch (Exception e) {
-            plugin.messageManager.printWARN(MessageFormat.format(plugin.wolfyLanguageAPI.replaceColoredKeys("$module_message.cron.invalid_expression$"), cronExpression));
+            plugin.messageManager.warn(plugin.messageManager.sprintf(
+                    "$module_message.cron.invalid_expression$", cronExpression));
         }
     }
 
@@ -331,7 +345,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
         CommandSender sender = plugin.getServer().getConsoleSender();
         this.inTimeTasks.forEach(task -> {
             for (String command : task.commands) {
-                plugin.messageManager.printINFO("§a§lRun Command: §r" + command);
+                plugin.messageManager.info("§a§lRun Command: §r" + command);
                 plugin.getServer().dispatchCommand(sender, command);
             }
         });
