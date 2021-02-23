@@ -16,7 +16,6 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BookMeta;
 import org.jetbrains.annotations.NotNull;
 
-import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -78,7 +77,7 @@ public class PowerTools implements NewNanPlusModule {
                 serializeItem(sender, args);
                 break;
             case "skull":
-                SkullKits.skullCommand(sender, args);
+                skullCommand(sender, args);
                 break;
         }
     }
@@ -241,9 +240,9 @@ public class PowerTools implements NewNanPlusModule {
         if (args.length !=0) {
             ItemStack itemStack;
             if (args[0].charAt(0) == '{') {
-                itemStack = ItemKit.convertJsontoItemStack(args[0]);
+                itemStack = ItemKit.fromJSON(args[0]);
             } else {
-                itemStack = ItemKit.deserializeNMSItemStack(args[0]);
+                itemStack = ItemKit.fromBase64(args[0]);
             }
             if (itemStack != null) {
                 player.getInventory().addItem(itemStack);
@@ -257,9 +256,29 @@ public class PowerTools implements NewNanPlusModule {
 
         Player player = (Player) sender;
         if (args.length > 0 && args[0].equals("base64")) {
-            sender.sendMessage(ItemKit.serializeNMSItemStack(player.getInventory().getItemInMainHand()));
+            sender.sendMessage(ItemKit.toBase64String(player.getInventory().getItemInMainHand()));
         } else {
-            sender.sendMessage(Objects.requireNonNull(ItemKit.convertItemStackToJson(player.getInventory().getItemInMainHand())));
+            sender.sendMessage(Objects.requireNonNull(ItemKit.toJSON(player.getInventory().getItemInMainHand())));
         }
+    }
+
+    /**
+     * /nnp skull指令
+     * @param sender 指令发送者
+     * @param args 指令参数
+     * @throws Exception 任何异常
+     */
+    public static void skullCommand(CommandSender sender, String[] args) throws Exception {
+        if (args.length != 1) {
+            throw new CommandExceptions.BadUsageException();
+        }
+
+        Player player = (Player) sender;
+        if (player.getInventory().addItem(ItemKit.getSkull(args[0])).size() > 0) {
+            throw new CommandExceptions.CustomCommandException(NewNanPlus.getPlugin().
+                    messageManager.sprintf("$global_message.no_more_space_in_inventory$"));
+        }
+
+        NewNanPlus.getPlugin().messageManager.printf(sender, "$module_message.power_tools.skull_create_succeed$");
     }
 }

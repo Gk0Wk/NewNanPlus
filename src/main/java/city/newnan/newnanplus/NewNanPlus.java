@@ -13,6 +13,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Objects;
+import me.lucko.helper.plugin.ExtendedJavaPlugin;
 import net.milkbowl.vault.economy.Economy;
 import org.anjocaido.groupmanager.GroupManager;
 import org.bukkit.Bukkit;
@@ -21,7 +22,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredServiceProvider;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 
 /**
@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
  * 插件的主类需要继承 JavaPlugin，JavaPlugin 提供了插件工作时所需要的各种方法和属性
  * 每个插件只能有一个主类，在其他地方如果需要用到这个主类，应当在实例化、传参时将这个类传过去
  */
-public class NewNanPlus extends JavaPlugin {
+public class NewNanPlus extends ExtendedJavaPlugin {
     /**
      * 插件的唯一静态实例，加载不成功是null
      */
@@ -69,11 +69,16 @@ public class NewNanPlus extends JavaPlugin {
     public org.dynmap.DynmapAPI dynmapAPI;
     public LanguageManager languageManager;
 
+    @Override
+    protected void load()
+    {
+    }
+
     /**
      * 插件启用时调用的方法
      */
     @Override
-    public void onEnable()
+    protected void enable()
     {
         // 核心初始化
         try {
@@ -86,7 +91,8 @@ public class NewNanPlus extends JavaPlugin {
 
             // 初始化多语言模块
             languageManager = new LanguageManager(this)
-                                  .register(Locale.CHINA, "lang/zh-CN.json");
+                                  .register(Locale.CHINA, "lang/zh-CN.json")
+                                  .setMajorLanguage(Locale.CHINA);
 
             // 初始化消息管理器
             messageManager = new MessageManager(this)
@@ -94,7 +100,7 @@ public class NewNanPlus extends JavaPlugin {
                                  .setPlayerPrefix(languageManager.provideLanguage("$chat_prefix$"));
 
             // 初始化命令管理器
-            commandManager = new CommandManager(this,  messageManager::printf, "nnp",
+            commandManager = new CommandManager(this, messageManager::printf, "nnp",
                 YamlConfiguration.loadConfiguration(Objects.requireNonNull(getTextResource("plugin.yml"))));
             // 错误消息初始化
             CommandExceptions.init(this);
@@ -125,7 +131,7 @@ public class NewNanPlus extends JavaPlugin {
             messageManager.info("§6---------------------------------------------------");
             messageManager.info("§2Loading main configure file...");
             messageManager.info("Major language: §e" + languageManager.getMajorLanguage().getLanguage().getDisplayName());
-            messageManager.info("Fallback language: §e" + languageManager.getFallbackLanguage().getLanguage().getDisplayName());
+            messageManager.info("Fallback language: §e" + (languageManager.getFallbackLanguage() == null ? "" : languageManager.getFallbackLanguage().getLanguage().getDisplayName()));
         }
 
         // API 绑定
@@ -194,7 +200,7 @@ public class NewNanPlus extends JavaPlugin {
      * 插件禁用时调用的方法
      */
     @Override
-    public void onDisable()
+    protected void disable()
     {
         if (messageManager != null) {
             messageManager.info("§aDisabling NewNanPlus...");

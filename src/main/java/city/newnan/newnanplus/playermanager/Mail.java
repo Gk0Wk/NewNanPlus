@@ -1,6 +1,5 @@
 package city.newnan.newnanplus.playermanager;
 
-import city.newnan.newnanplus.powertools.SkullKits;
 import city.newnan.newnanplus.utility.ItemKit;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -69,7 +68,7 @@ public class Mail {
                 icon1 = new ItemStack(Material.valueOf(_icon.toUpperCase()));
             } catch (IllegalArgumentException e1) {
                 try {
-                    icon1 = SkullKits.getSkull(_icon);
+                    icon1 = ItemKit.getSkull(_icon);
                 } catch (Exception e2) {
                     icon1 = defaultIcon;
                 }
@@ -93,9 +92,9 @@ public class Mail {
                 action.type = ActionType.ITEM;
                 // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
                 if (splits[1].charAt(0) == '{') {
-                    action.item = ItemKit.convertJsontoItemStack(splits[1]);
+                    action.item = ItemKit.fromJSON(splits[1]);
                 } else {
-                    action.item = ItemKit.deserializeNMSItemStack(splits[1]);
+                    action.item = ItemKit.fromBase64(splits[1]);
                 }
                 return action;
             } else if (splits[0].equalsIgnoreCase("COMMAND")) {

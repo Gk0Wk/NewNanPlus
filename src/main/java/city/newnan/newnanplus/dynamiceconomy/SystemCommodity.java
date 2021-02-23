@@ -33,9 +33,9 @@ class SystemCommodity {
         assert data != null;
         // 两种不同的构造方式。{开头的是JSON格式，反之是base64格式
         if (data.charAt(0) == '{') {
-            itemStack = ItemKit.convertJsontoItemStack(data);
+            itemStack = ItemKit.fromJSON(data);
         } else {
-            itemStack = ItemKit.deserializeNMSItemStack(data);
+            itemStack = ItemKit.fromBase64(data);
         }
 
         amount = commodityNode.getNode("amount").getInt(0);
@@ -151,9 +151,9 @@ class SystemCommodity {
         Material type = itemStack.getType();
         // 带文字的书、潜影盒属于json化内容很多的，转化为base64存储
         if (type.equals(Material.WRITABLE_BOOK) || type.equals(Material.WRITTEN_BOOK) || type.equals(Material.SHULKER_BOX)) {
-            section.getNode("data").setValue(ItemKit.serializeNMSItemStack(itemStack));
+            section.getNode("data").setValue(ItemKit.toBase64(itemStack));
         } else {
-            section.getNode("data").setValue(ItemKit.convertItemStackToJson(itemStack));
+            section.getNode("data").setValue(ItemKit.toJSON(itemStack));
         }
 
         section.getNode("amount").setValue(amount);
