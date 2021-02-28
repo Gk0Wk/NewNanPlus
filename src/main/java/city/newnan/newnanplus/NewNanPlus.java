@@ -64,10 +64,10 @@ public class NewNanPlus extends ExtendedJavaPlugin {
     public ConfigManager configManagers;
     public city.newnan.newnanplus.utility.CommandManager commandManager;
     public MessageManager messageManager;
+    public LanguageManager languageManager;
     public org.anjocaido.groupmanager.GroupManager groupManager;
     public net.milkbowl.vault.economy.Economy vaultEco;
     public org.dynmap.DynmapAPI dynmapAPI;
-    public LanguageManager languageManager;
 
     @Override
     protected void load()

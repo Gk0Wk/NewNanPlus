@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.playermanager;
 
 import city.newnan.api.config.ConfigManager;
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
@@ -109,11 +110,10 @@ public class PlayerManager implements Listener, NewNanPlusModule {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) throws Exception {
         Player player = event.getPlayer();
-        PlayerConfig playerConfig = new PlayerConfig(player);
         joinCheck(player);
         executeTaskQueue(player);
         showUpdateLog(player);
-        playerConfig.commit();
+        PlayerConfig.getPlayerConfig(player).commit();
     }
 
     /**
@@ -196,7 +196,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
             if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(newbiesGroup)) {
                 workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).setGroup(playersGroup);
                 // 获取未通过的新人组的List
-                List<String> list_not = new ArrayList<>(newbiesList.getNode("not-passed-newbies").getList(Object::toString));
+                List<String> list_not = new ArrayList<>(ConfigUtil.setListIfNull(newbiesList.getNode("not-passed-newbies")).getList(Object::toString));
                 // 如果未通过里有这个玩家，那就去掉
                 if (list_not.contains(player.getName())) {
                     list_not.remove(player.getName());
@@ -224,14 +224,14 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         // 如果玩家不在线或不存在，就存到配置里
         else {
             // 获取未通过的新人组的List
-            List<String> list_not = new ArrayList<>(newbiesList.getNode("not-passed-newbies").getList(Object::toString));
+            List<String> list_not = new ArrayList<>(ConfigUtil.setListIfNull(newbiesList.getNode("not-passed-newbies")).getList(Object::toString));
             if (list_not.contains(args[0])) {
                 list_not.remove(args[0]);
                 newbiesList.getNode("not-passed-newbies").setValue(list_not);
                 need_refresh = true;
             }
             // 获取已通过的新人组的List
-            List<String> list_yet = new ArrayList<>(newbiesList.getNode("yet-passed-newbies").getList(Object::toString));
+            List<String> list_yet = new ArrayList<>(ConfigUtil.setListIfNull(newbiesList.getNode("yet-passed-newbies")).getList(Object::toString));
             if (!list_yet.contains(args[0])) {
                 list_yet.add(args[0]);
                 newbiesList.getNode("yet-passed-newbies").setValue(list_yet);
@@ -357,7 +357,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
         ConfigurationNode newbiesList = plugin.configManagers.get("newbies_list.yml");
         boolean need_refresh = false;
         // 获取已通过的新人组的List
-        List<String> list_yet = new ArrayList<>(newbiesList.getNode("yet-passed-newbies").getList(Object::toString));
+        List<String> list_yet = new ArrayList<>(ConfigUtil.setListIfNull(newbiesList.getNode("yet-passed-newbies")).getList(Object::toString));
         // 如果是新人组的话
         if (workWorldsPermissionHandler.getUser(player.getUniqueId().toString()).getGroup().equals(newbiesGroup)) {
             if (list_yet.contains(player.getName())) {
@@ -374,7 +374,7 @@ public class PlayerManager implements Listener, NewNanPlusModule {
                         plugin.messageManager.sprintf("$module_message.player_manager.welcome_subtitle$"),
                         3, 97, 5);
                 // 获取未通过的新人组的List
-                List<String> list_not = new ArrayList<>(newbiesList.getNode("not-passed-newbies").getList(Object::toString));
+                List<String> list_not = new ArrayList<>(ConfigUtil.setListIfNull(newbiesList.getNode("not-passed-newbies")).getList(Object::toString));
                 if (!list_not.contains(player.getName())) {
                     // 查看玩家是否在未通过新人组，没加入就加入，并更新
                     list_not.add(player.getName());

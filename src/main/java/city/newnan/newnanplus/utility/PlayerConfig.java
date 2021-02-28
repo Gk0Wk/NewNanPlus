@@ -1,10 +1,10 @@
 package city.newnan.newnanplus.utility;
 
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.NewNanPlus;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+
+import java.util.*;
+
 import me.lucko.helper.config.ConfigurationNode;
 import org.bukkit.OfflinePlayer;
 import org.jetbrains.annotations.NotNull;
@@ -71,7 +71,7 @@ public class PlayerConfig {
         configFilePath = "player/" + player.getUniqueId().toString() + ".yml";
         ConfigurationNode config = plugin.configManagers.getOrCopyTemplate(configFilePath, "player/template.yml");
 
-        switch (Objects.requireNonNull(config.getString("version"))) {
+        switch (Objects.requireNonNull(config.getNode("version").getString())) {
         case "1.6.0":
         case "1.7.0":
         case "1.7.1":
@@ -82,10 +82,10 @@ public class PlayerConfig {
             config.getNode("emails", "readed").setValue(null);
         case "1.7.5":
             lastLoginTime = config.getNode("last-login-time").getLong(0);
-            unreadEmails = config.getNode("emails", "unread").getList(Object::toString);
-            readEmails = config.getNode("emails", "read").getList(Object::toString);
-            loginTaskQueue = config.getNode("login-task-queue").getList(Object::toString);
-            tpaBlockList = config.getNode("tpa-blocklist").getList(Object::toString);
+            unreadEmails = new ArrayList<>(ConfigUtil.setListIfNull(config.getNode("emails", "unread")).getList(Object::toString));
+            readEmails = new ArrayList<>(ConfigUtil.setListIfNull(config.getNode("emails", "read")).getList(Object::toString));
+            loginTaskQueue = new ArrayList<>(ConfigUtil.setListIfNull(config.getNode("login-task-queue")).getList(Object::toString));
+            tpaBlockList = new ArrayList<>(ConfigUtil.setListIfNull(config.getNode("tpa-blocklist")).getList(Object::toString));
         }
         commit();
     }

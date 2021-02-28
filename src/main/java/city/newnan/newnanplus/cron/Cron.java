@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.cron;
 
 import city.newnan.api.config.ConfigManager;
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions;
@@ -59,7 +60,7 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
             this.outdatedTasks.clear();
             plugin.configManagers.reload("cron.yml").getNode("schedule-tasks").getChildrenMap().forEach((key, value) -> {
                 if (key instanceof String) {
-                    List<String> commands = value.getList(Object::toString);
+                    List<String> commands = ConfigUtil.setListIfNull(value).getList(Object::toString);
                     addTask((String) key, commands.toArray(new String[0]));
                 }
             });
@@ -94,7 +95,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     {
         try {
             CommandSender sender = plugin.getServer().getConsoleSender();
-            plugin.configManagers.get("cron.yml").getNode("on-server-ready").getList(Object::toString).forEach(command -> {
+            ConfigUtil.setListIfNull(plugin.configManagers.get("cron.yml").getNode("on-server-ready"))
+                    .getList(Object::toString).forEach(command -> {
                 plugin.messageManager.info("§a§lRun Command: §r" + command);
                 plugin.getServer().dispatchCommand(sender, command);
             });
@@ -111,7 +113,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     {
         try {
             CommandSender sender = plugin.getServer().getConsoleSender();
-            plugin.configManagers.get("cron.yml").getNode("on-plugin-ready").getList(Object::toString).forEach(command -> {
+            ConfigUtil.setListIfNull(plugin.configManagers.get("cron.yml").getNode("on-plugin-ready"))
+                    .getList(Object::toString).forEach(command -> {
                 plugin.messageManager.info("§a§lRun Command: §r" + command);
                 plugin.getServer().dispatchCommand(sender, command);
             });
@@ -127,7 +130,8 @@ public class Cron extends BukkitRunnable implements Listener, NewNanPlusModule {
     {
         try {
             CommandSender sender = plugin.getServer().getConsoleSender();
-            plugin.configManagers.get("cron.yml").getNode("on-plugin-disable").getList(Object::toString).forEach(command -> {
+            ConfigUtil.setListIfNull(plugin.configManagers.get("cron.yml").getNode("on-plugin-disable"))
+                    .getList(Object::toString).forEach(command -> {
                 plugin.messageManager.info("§a§lRun Command: §r" + command);
                 plugin.getServer().dispatchCommand(sender, command);
             });

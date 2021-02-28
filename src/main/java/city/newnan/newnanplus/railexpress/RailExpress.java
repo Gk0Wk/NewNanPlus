@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.railexpress;
 
 import city.newnan.api.config.ConfigManager;
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.ModuleExeptions.ModuleOffException;
@@ -20,6 +21,7 @@ import org.bukkit.event.vehicle.VehicleMoveEvent;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 
@@ -56,7 +58,7 @@ public class RailExpress implements NewNanPlusModule, Listener {
         excludeWorlds.clear();
         try {
             ConfigurationNode config = plugin.configManagers.get("config.yml").getNode("module-railexpress");
-            config.getNode("exclude-world").getList(Object::toString)
+            ConfigUtil.setListIfNull(config.getNode("exclude-world")).getList(Object::toString)
                     .forEach(world -> excludeWorlds.add(plugin.getServer().getWorld(world)));
 
             blockSpeedMap.clear();

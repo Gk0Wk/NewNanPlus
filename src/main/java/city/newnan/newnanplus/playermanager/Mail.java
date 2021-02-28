@@ -1,5 +1,6 @@
 package city.newnan.newnanplus.playermanager;
 
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.utility.ItemKit;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -51,7 +52,7 @@ public class Mail {
         }
 
         actions = new ArrayList<>();
-        mailNode.getNode("commands").getList(Object::toString).forEach(actionString -> {
+        ConfigUtil.setListIfNull(mailNode.getNode("commands")).getList(Object::toString).forEach(actionString -> {
             Mail.MailAction action = Mail.MailAction.parse(actionString);
             if (action != null)
                 actions.add(action);

@@ -25,7 +25,6 @@ depend:
   - 'Essentials'
   - 'Vault'
   - 'dynmap'
-  - 'WolfyUtilities'
   - 'QuickShop'
   - 'GroupManager'
 # 软依赖，插件会在这些依赖加载后再加载

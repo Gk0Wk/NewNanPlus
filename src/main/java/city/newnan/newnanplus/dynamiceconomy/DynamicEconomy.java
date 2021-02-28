@@ -1,6 +1,7 @@
 package city.newnan.newnanplus.dynamiceconomy;
 
 import city.newnan.api.config.ConfigManager;
+import city.newnan.api.config.ConfigUtil;
 import city.newnan.newnanplus.NewNanPlus;
 import city.newnan.newnanplus.NewNanPlusModule;
 import city.newnan.newnanplus.exception.CommandExceptions;
@@ -182,7 +183,7 @@ public class DynamicEconomy implements NewNanPlusModule, Listener {
         excludeWorld.clear();
         try {
             ConfigurationNode mainConfig = plugin.configManagers.get("config.yml").getNode("module-dynamicaleconomy");
-            mainConfig.getNode("exclude-world").getList(Object::toString).
+            ConfigUtil.setListIfNull(mainConfig.getNode("exclude-world")).getList(Object::toString).
                     forEach(world -> excludeWorld.add(plugin.getServer().getWorld(world)));
 
             boolean ifInit = !plugin.configManagers.touch("dyneco_cache.yml");
